@@ -1,4 +1,5 @@
 /* eslint global-require: off, no-console: off, promise/always-return: off */
+/* eslint-disable promise/no-callback-in-promise */
 
 /**
  * This module executes inside of electron's main process. You can start
@@ -9,7 +10,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -24,11 +25,10 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
+let origin: string | null = null;
 
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
+ipcMain.on('change-origin', (_, newOrigin) => {
+  origin = newOrigin;
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -78,6 +78,7 @@ const createWindow = async () => {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
+      webSecurity: false,
     },
   });
 
@@ -128,6 +129,17 @@ app
   .whenReady()
   .then(() => {
     createWindow();
+
+    session.defaultSession.webRequest.onBeforeSendHeaders(
+      { urls: ['*://*/*'] },
+      (details, callback) => {
+        details.requestHeaders.Referer = details.url;
+        details.requestHeaders.Origin = origin || '*';
+
+        callback({ cancel: false, requestHeaders: details.requestHeaders });
+      },
+    );
+
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
