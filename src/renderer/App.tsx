@@ -1,6 +1,8 @@
 import { MemoryRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import Extensions from './pages/extensions';
 import Browse from './pages/browse';
 import Watch from './pages/watch';
+import Entry from './pages/entry';
 import './App.css';
 
 function Links() {
@@ -10,7 +12,7 @@ function Links() {
         <Link to="/">Home</Link>
       </li>
       <li>
-        <Link to="/pages/browse">Browse</Link>
+        <Link to="/extensions">Extensions</Link>
       </li>
     </ul>
   );
@@ -22,8 +24,10 @@ export default function App() {
       <Links />
       <Routes>
         <Route path="/" element={<h1>v0.0.1</h1>} />
-        <Route path="/pages/browse" element={<Browse />} />
-        <Route path="/pages/watch" element={<Watch />} />
+        <Route path="/extensions" element={<Extensions />} />
+        <Route path="/browse" element={<Browse />} />
+        <Route path="/entry" element={<Entry />} />
+        <Route path="/watch" element={<Watch />} />
       </Routes>
     </Router>
   );
