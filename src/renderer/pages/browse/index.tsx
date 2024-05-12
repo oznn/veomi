@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Entries from '../../components/Entries';
-import { baseURL } from '../../utils';
 
 export default function Browse() {
   const [entries, setEntries] = useState(null);
@@ -11,8 +10,12 @@ export default function Browse() {
   useEffect(() => {
     (async () => {
       try {
-        const url = `${baseURL}/extensions/${ext}/entries?sort=latest`;
-        const res = await (await fetch(url)).json();
+        // const res = await electron.send('extension-getEntries', ext, 'popular');
+        // const { getEntires } = await import(`../extensions/extension/${ext}`);
+        const { getEntries } = await import(
+          `../../extensions/extension/${ext}`
+        );
+        const res = await getEntries('popular');
 
         setEntries(res);
       } catch (err) {

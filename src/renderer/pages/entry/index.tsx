@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { baseURL } from '../../utils';
 
 type T = { details: any; episodes: { title: string; info: string[] }[] };
 export default function Entry() {
@@ -12,14 +11,9 @@ export default function Entry() {
   useEffect(() => {
     (async () => {
       try {
-        const url = `${baseURL}/extensions/${ext}/entry`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body,
-        });
-        // const episodesList = (await res.json()).episodes;
-        setEntry(await res.json());
+        const { getEntry } = await import(`../../extensions/extension/${ext}`);
+        const res = await getEntry(JSON.parse(body));
+        setEntry(res);
       } catch (err) {
         console.log(`${err}`);
       }

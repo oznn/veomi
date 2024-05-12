@@ -30,7 +30,18 @@ let origin: string | null = null;
 ipcMain.on('change-origin', (_, newOrigin) => {
   origin = newOrigin;
 });
+ipcMain.handle('extension-getEntries', async (_, ext, sort) => {
+  const { getEntries } = await import(`./extensions/extension/${ext}`);
+  const entries = await getEntries(sort);
 
+  return entries;
+});
+ipcMain.handle('extension-getEntry', async (_, ext, body) => {
+  const { getEntry } = await import(`./extensions/extension/${ext}`);
+  const entry = await getEntry(JSON.parse(body));
+
+  return entry;
+});
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();

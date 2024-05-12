@@ -18,12 +18,16 @@ function Links() {
   );
 }
 
+function Home() {
+  return <h1>v0.0.1</h1>;
+}
+
 export default function App() {
   return (
     <Router>
       <Links />
       <Routes>
-        <Route path="/" element={<h1>v0.0.1</h1>} />
+        <Route path="/" element={<Home />} />
         <Route path="/extensions" element={<Extensions />} />
         <Route path="/browse" element={<Browse />} />
         <Route path="/entry" element={<Entry />} />

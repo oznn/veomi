@@ -2,9 +2,16 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'change-origin';
+export type Channels =
+  | 'change-origin'
+  | 'extension-getEntries'
+  | 'extension-getServers'
+  | 'extension-getEntry';
 
 const electronHandler = {
+  send: (channel: Channels, ...args: unknown[]) =>
+    ipcRenderer.invoke(channel, ...args),
+
   ipcRenderer: {
     sendMessage(channel: Channels, ...args: unknown[]) {
       ipcRenderer.send(channel, ...args);

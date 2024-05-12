@@ -5,13 +5,9 @@ import { useEffect, useRef } from 'react';
 type Video = {
   sources: { file: string; qual: string }[];
   tracks: { file: string; label: string; caption: string }[];
-  origin: string;
   skips: { intro: number[]; outro: number[] };
 };
-const { electron } = window;
 export default function Player({ video }: { video: Video }) {
-  electron.ipcRenderer.sendMessage('change-origin', video.origin);
-
   const videoRef = useRef<HTMLVideoElement>(null);
   const src = video.sources[0].file;
   const track = video.tracks[0];
