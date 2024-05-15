@@ -8,22 +8,12 @@ const parser = new DOMParser();
 const parse = (html: string) => parser.parseFromString(html, 'text/html');
 const { electron } = window;
 
-export async function getResults(
-  sort: 'popular' | 'latest',
-  keyword = '',
-  page = 1,
-) {
-  const url = new URL(`${baseURL}/filter`);
-  type SortMap = { [k: string]: string };
-  const sortMap: SortMap = { popular: 'trending', latest: 'recently_updated' };
-  url.searchParams.append('sort', sortMap[sort]);
-  url.searchParams.append('page', `${page}`);
-  if (keyword) url.searchParams.append('keyword', keyword);
-  const res = await fetch(url.href);
-
+export async function getResults(query: string) {
+  const res = await fetch(`${baseURL}/filter?keyword=${query}`);
   const doc = parse(await res.text());
   const results: Result[] = [];
   const items = doc.querySelectorAll('.ani.items > .item');
+
   for (let i = 0; i < items.length; i += 1) {
     const item = items[i];
     const title = item.querySelector('a.name')?.textContent || '';
@@ -31,7 +21,7 @@ export async function getResults(
     let id = item.querySelector('.ani.poster')?.getAttribute('data-tip') || '';
     id = id.slice(0, id?.indexOf('?'));
 
-    results.push({ id, title, poster });
+    results.push({ title, poster, id });
   }
 
   return results;
@@ -50,14 +40,14 @@ async function getEpisodes(dataId: string) {
     const id = a.getAttribute('data-ids') || '';
     const epTitle = a.querySelector('.d-title')?.textContent || '';
     const infoString = a.parentElement?.getAttribute('title') || '';
-    const releaseDate = infoString.split(' ', 3).at(2) || '';
+    const [releaseDate] = /\d{4}\/\d{2}\/\d{2}/.exec(epTitle) || [''];
     const types: string[] = [];
     const isFiller = infoString.includes('Filler');
     ['Sub', 'Softsub', 'Dub'].forEach((type) => {
       if (infoString.includes(type)) types.push(type);
     });
 
-    if (isFiller) info.push('FILLER');
+    if (isFiller) info.push('Filler');
     info.push(releaseDate);
     info.push(types.join(','));
 

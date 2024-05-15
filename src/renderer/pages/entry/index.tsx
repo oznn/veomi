@@ -19,7 +19,6 @@ export default function Entry() {
           const { getEntry } = await import(
             `../../extensions/extension/${ext}`
           );
-          console.log('getting entry');
           res = await getEntry(parsedBody);
           if (res) {
             await electron.send('store-set', body, res);

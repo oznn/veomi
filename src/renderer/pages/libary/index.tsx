@@ -11,7 +11,6 @@ export default function Libary() {
     (async () => {
       try {
         const res = await electron.send('store-get', 'libary');
-        console.log(res);
         setResults((res as Result[]) || []);
       } catch (err) {
         console.log(`${err}`);

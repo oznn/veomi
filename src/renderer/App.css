@@ -6,8 +6,14 @@ body {
   background-color: black;
   color: white;
   font-size: 2em;
+  font-family: arial;
 }
 
-input {
+input,button {
   font-size: 1em;
+}
+
+a {
+  text-decoration: none;
+  color: grey;
 }

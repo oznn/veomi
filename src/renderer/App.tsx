@@ -1,4 +1,10 @@
-import { MemoryRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import {
+  MemoryRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+} from 'react-router-dom';
 import Extensions from './pages/extensions';
 import Libary from './pages/libary';
 import Browse from './pages/browse';
@@ -7,8 +13,14 @@ import Entry from './pages/entry';
 import './App.css';
 
 function Links() {
+  const nav = useNavigate();
   return (
     <ul>
+      <li>
+        <button type="button" onClick={() => nav(-1)}>
+          go back
+        </button>
+      </li>
       <li>
         <Link to="/">Libary</Link>
       </li>
