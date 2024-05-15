@@ -13,10 +13,9 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import { Database } from 'sqlite3';
+import Store from 'electron-store';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import query from './query';
 
 class AppUpdater {
   constructor() {
@@ -32,18 +31,10 @@ let origin: string | null = null;
 ipcMain.on('change-origin', (_, newOrigin) => {
   origin = newOrigin;
 });
-ipcMain.handle('extension-getEntries', async (_, ext, sort) => {
-  const { getEntries } = await import(`./extensions/extension/${ext}`);
-  const entries = await getEntries(sort);
 
-  return entries;
-});
-ipcMain.handle('extension-getEntry', async (_, ext, body) => {
-  const { getEntry } = await import(`./extensions/extension/${ext}`);
-  const entry = await getEntry(JSON.parse(body));
-
-  return entry;
-});
+const store = new Store();
+ipcMain.handle('store-get', (_, k) => store.get(k));
+ipcMain.handle('store-set', (_, k, v) => store.set(k, v));
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
@@ -129,41 +120,18 @@ const createWindow = async () => {
  * Add event listeners...
  */
 
-let db: Database | null = null;
-
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
   if (process.platform !== 'darwin') {
-    if (db) db.close();
     app.quit();
   }
 });
 
-function connectToSql() {
-  console.log('connecting to dev.db...');
-  try {
-    db = new Database(getAssetPath('dev.db'));
-    console.log('connected to dev.db');
-  } catch (err) {
-    console.log(`failed to connect to dev.db ${err}`);
-  }
-}
-ipcMain.handle('sql-query', async (_, q, vals) => {
-  try {
-    if (!db) return null;
-    const res = await query(db, q, vals);
-    console.log(JSON.stringify(res));
-  } catch (e) {
-    console.log(`${e}`);
-  }
-  return null;
-});
 app
   .whenReady()
   .then(() => {
     createWindow();
-    connectToSql();
 
     session.defaultSession.webRequest.onBeforeSendHeaders(
       { urls: ['*://*/*'] },

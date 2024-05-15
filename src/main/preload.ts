@@ -2,14 +2,7 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels =
-  | 'change-origin'
-  | 'store-get'
-  | 'store-set'
-  | 'sql-query'
-  | 'extension-getEntries'
-  | 'extension-getServers'
-  | 'extension-getEntry';
+export type Channels = 'change-origin' | 'store-get' | 'store-set';
 
 const electronHandler = {
   send: (channel: Channels, ...args: unknown[]) =>

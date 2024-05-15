@@ -21,23 +21,24 @@ function Links() {
   );
 }
 
+async function get(k: string) {
+  const res = await electron.send('store-get', k);
+  console.log(res);
+}
+async function set(k: string, v: unknown) {
+  const res = await electron.send('store-set', k, v);
+  console.log(res);
+}
+
 function Home() {
-  const valsRef = useRef<HTMLInputElement>(null);
   return (
     <div>
-      <input type="text" placeholder="vals" ref={valsRef} />
-      <input
-        type="text"
-        placeholder="query"
-        onKeyUp={({ key, target }) => {
-          if (key === 'Enter' && valsRef.current) {
-            const { value } = target as HTMLInputElement;
-            const valsString = valsRef.current.value;
-            const vals = valsString ? valsString.split(' ') : [];
-            electron.send('sql-query', value, vals);
-          }
-        }}
-      />
+      <button type="button" onClick={() => get('k')}>
+        GET
+      </button>
+      <button type="button" onClick={() => set('k', 'v')}>
+        SET
+      </button>
     </div>
   );
 }
