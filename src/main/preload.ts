@@ -4,6 +4,9 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
 export type Channels =
   | 'change-origin'
+  | 'store-get'
+  | 'store-set'
+  | 'sql-query'
   | 'extension-getEntries'
   | 'extension-getServers'
   | 'extension-getEntry';

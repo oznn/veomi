@@ -1,9 +1,12 @@
+import { useRef } from 'react';
 import { MemoryRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Extensions from './pages/extensions';
 import Browse from './pages/browse';
 import Watch from './pages/watch';
 import Entry from './pages/entry';
 import './App.css';
+
+const { electron } = window;
 
 function Links() {
   return (
@@ -19,7 +22,24 @@ function Links() {
 }
 
 function Home() {
-  return <h1>v0.0.1</h1>;
+  const valsRef = useRef<HTMLInputElement>(null);
+  return (
+    <div>
+      <input type="text" placeholder="vals" ref={valsRef} />
+      <input
+        type="text"
+        placeholder="query"
+        onKeyUp={({ key, target }) => {
+          if (key === 'Enter' && valsRef.current) {
+            const { value } = target as HTMLInputElement;
+            const valsString = valsRef.current.value;
+            const vals = valsString ? valsString.split(' ') : [];
+            electron.send('sql-query', value, vals);
+          }
+        }}
+      />
+    </div>
+  );
 }
 
 export default function App() {

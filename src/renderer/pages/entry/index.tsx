@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
+const { electron } = window;
 type T = { details: any; episodes: { title: string; info: string[] }[] };
 export default function Entry() {
   const [entry, setEntry] = useState<T | null>(null);
@@ -12,8 +13,13 @@ export default function Entry() {
     (async () => {
       try {
         const { getEntry } = await import(`../../extensions/extension/${ext}`);
-        const res = await getEntry(JSON.parse(body));
-        setEntry(res);
+        let res = await electron.send('store-get', `${ext} ${body}`);
+        if (res) setEntry(res);
+        else {
+          res = await getEntry(JSON.parse(body));
+          await electron.send('store-set', `${ext} ${body}`, res);
+          setEntry(res);
+        }
       } catch (err) {
         console.log(`${err}`);
       }

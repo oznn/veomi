@@ -13,8 +13,10 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import { Database } from 'sqlite3';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import query from './query';
 
 class AppUpdater {
   constructor() {
@@ -67,18 +69,17 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
+const RESOURCES_PATH = app.isPackaged
+  ? path.join(process.resourcesPath, 'assets')
+  : path.join(__dirname, '../../assets');
+
+const getAssetPath = (...paths: string[]): string => {
+  return path.join(RESOURCES_PATH, ...paths);
+};
 const createWindow = async () => {
   if (isDebug) {
     await installExtensions();
   }
-
-  const RESOURCES_PATH = app.isPackaged
-    ? path.join(process.resourcesPath, 'assets')
-    : path.join(__dirname, '../../assets');
-
-  const getAssetPath = (...paths: string[]): string => {
-    return path.join(RESOURCES_PATH, ...paths);
-  };
 
   mainWindow = new BrowserWindow({
     show: false,
@@ -128,18 +129,41 @@ const createWindow = async () => {
  * Add event listeners...
  */
 
+let db: Database | null = null;
+
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
   if (process.platform !== 'darwin') {
+    if (db) db.close();
     app.quit();
   }
 });
 
+function connectToSql() {
+  console.log('connecting to dev.db...');
+  try {
+    db = new Database(getAssetPath('dev.db'));
+    console.log('connected to dev.db');
+  } catch (err) {
+    console.log(`failed to connect to dev.db ${err}`);
+  }
+}
+ipcMain.handle('sql-query', async (_, q, vals) => {
+  try {
+    if (!db) return null;
+    const res = await query(db, q, vals);
+    console.log(JSON.stringify(res));
+  } catch (e) {
+    console.log(`${e}`);
+  }
+  return null;
+});
 app
   .whenReady()
   .then(() => {
     createWindow();
+    connectToSql();
 
     session.defaultSession.webRequest.onBeforeSendHeaders(
       { urls: ['*://*/*'] },
