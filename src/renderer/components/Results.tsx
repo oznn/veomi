@@ -11,7 +11,7 @@ export default function Results({ results }: { results: Result[] }) {
       {results.map((result) => (
         <li key={result.title}>
           <Link
-            to={`/entry?ext=${ext}&body=${encodeURIComponent(
+            to={`/entry?ext=${ext}&result=${encodeURIComponent(
               JSON.stringify(result),
             )}`}
           >

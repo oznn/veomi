@@ -1,6 +1,7 @@
 export type Result = Required<{
   title: string;
   poster: string;
+  path: string;
 }> & {
   [key: string]: any;
 };

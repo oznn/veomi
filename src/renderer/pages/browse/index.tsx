@@ -10,6 +10,7 @@ export default function Browse() {
   const ext = searchParams.get('ext') || '';
 
   useEffect(() => {
+    if (!query) return;
     (async () => {
       try {
         const { getResults } = await import(
@@ -29,7 +30,10 @@ export default function Browse() {
         type="search"
         placeholder="search"
         onKeyUp={({ key, target }) => {
-          if (key === 'Enter') setQuery((target as HTMLInputElement).value);
+          if (key === 'Enter') {
+            setResults(null);
+            setQuery((target as HTMLInputElement).value);
+          }
         }}
       />
       {results ? <Results results={results} /> : <h1>loading results...</h1>}

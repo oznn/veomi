@@ -1,30 +1,30 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Entry as T } from '../../types';
+import { Result, Entry as T } from '../../types';
 
 const { electron } = window;
 export default function Entry() {
   const [entry, setEntry] = useState<T | null>(null);
   const [searchParams] = useSearchParams();
   const ext = searchParams.get('ext') || '';
-  const body = searchParams.get('body') || '{}';
-  const parsedBody = JSON.parse(body);
+  const resultString = searchParams.get('result') || '{}';
+  const result = JSON.parse(resultString) as Result;
 
+  async function updateEntry() {
+    const { getEntry } = await import(`../../extensions/extension/${ext}`);
+    const res = await getEntry(result);
+    if (res) {
+      await electron.send('store-set', `${ext} ${result.path}`, res);
+      setEntry(res);
+    }
+  }
   useEffect(() => {
     (async () => {
       try {
-        let res = (await electron.send('store-get', body)) as null | T;
+        const key = `${ext} ${result.path}`;
+        const res = (await electron.send('store-get', key)) as T | undefined;
         if (res) setEntry(res);
-        else {
-          const { getEntry } = await import(
-            `../../extensions/extension/${ext}`
-          );
-          res = await getEntry(parsedBody);
-          if (res) {
-            await electron.send('store-set', body, res);
-            setEntry(res);
-          }
-        }
+        else updateEntry();
       } catch (err) {
         console.log(`${err}`);
       }
@@ -38,14 +38,17 @@ export default function Entry() {
   )}`;
 
   function addToLibary() {
-    electron.send('store-push', 'libary', parsedBody);
-    if (entry) setEntry({ ...entry, isInLibary: !entry.isInLibary });
+    electron.send('store-push', 'libary', result);
+    if (entry) setEntry({ ...entry, isInLibary: true });
   }
 
   return (
     <div>
-      <button type="button" onClick={addToLibary}>
-        {entry.isInLibary ? 'remove from' : 'add to'} libary
+      <button type="button" onClick={updateEntry}>
+        refresh
+      </button>
+      <button type="button" onClick={addToLibary} disabled={entry.isInLibary}>
+        add to libary
       </button>
       <h1>details here</h1>
       <ul>

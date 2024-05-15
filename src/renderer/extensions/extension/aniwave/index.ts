@@ -16,12 +16,13 @@ export async function getResults(query: string) {
 
   for (let i = 0; i < items.length; i += 1) {
     const item = items[i];
+    const path = item.querySelector('a.name')?.getAttribute('href') || '';
     const title = item.querySelector('a.name')?.textContent || '';
     const poster = item.querySelector('img')?.getAttribute('src') || '';
     let id = item.querySelector('.ani.poster')?.getAttribute('data-tip') || '';
     id = id.slice(0, id?.indexOf('?'));
 
-    results.push({ title, poster, id });
+    results.push({ path, title, poster, id });
   }
 
   return results;
@@ -38,9 +39,9 @@ async function getEpisodes(dataId: string) {
   doc.querySelectorAll('a').forEach((a, i) => {
     const info: string[] = [];
     const id = a.getAttribute('data-ids') || '';
-    const epTitle = a.querySelector('.d-title')?.textContent || '';
     const infoString = a.parentElement?.getAttribute('title') || '';
-    const [releaseDate] = /\d{4}\/\d{2}\/\d{2}/.exec(epTitle) || [''];
+    const epTitle = a.querySelector('.d-title')?.textContent || '';
+    const [releaseDate] = /\d{4}\/\d{2}\/\d{2}/.exec(infoString) || [''];
     const types: string[] = [];
     const isFiller = infoString.includes('Filler');
     ['Sub', 'Softsub', 'Dub'].forEach((type) => {
@@ -57,9 +58,9 @@ async function getEpisodes(dataId: string) {
   return episodes;
 }
 
-export async function getEntry(entry: any): Promise<Entry> {
-  const details = { title: entry.title, poster: entry.poster };
-  const episodes = await getEpisodes(entry.id);
+export async function getEntry(result: Result): Promise<Entry> {
+  const details = { title: result.title, poster: result.poster };
+  const episodes = await getEpisodes(result.id);
 
   return { details, episodes, isInLibary: false };
 }
