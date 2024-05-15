@@ -35,6 +35,11 @@ ipcMain.on('change-origin', (_, newOrigin) => {
 const store = new Store();
 ipcMain.handle('store-get', (_, k) => store.get(k));
 ipcMain.handle('store-set', (_, k, v) => store.set(k, v));
+ipcMain.handle('store-push', (_, k, v) => {
+  const a = (store.get(k) as unknown[]) || [];
+  a.push(v);
+  store.set(k, a);
+});
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();

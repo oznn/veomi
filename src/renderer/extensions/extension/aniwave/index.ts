@@ -1,14 +1,14 @@
 import { vrfEncrypt, vrfDecrypt } from './utils';
 import vidsrcExtractor from '../../extractors/vidsrc';
 import mp4uploadExtractor from '../../extractors/mp4upload';
-import { Entry, Episode, Server } from '../../../types';
+import { Result, Entry, Episode, Server } from '../../../types';
 
 const baseURL = 'https://aniwave.to';
 const parser = new DOMParser();
 const parse = (html: string) => parser.parseFromString(html, 'text/html');
 const { electron } = window;
 
-export async function getEntries(
+export async function getResults(
   sort: 'popular' | 'latest',
   keyword = '',
   page = 1,
@@ -22,7 +22,7 @@ export async function getEntries(
   const res = await fetch(url.href);
 
   const doc = parse(await res.text());
-  const entries: Entry[] = [];
+  const results: Result[] = [];
   const items = doc.querySelectorAll('.ani.items > .item');
   for (let i = 0; i < items.length; i += 1) {
     const item = items[i];
@@ -31,10 +31,10 @@ export async function getEntries(
     let id = item.querySelector('.ani.poster')?.getAttribute('data-tip') || '';
     id = id.slice(0, id?.indexOf('?'));
 
-    entries.push({ id, title, poster });
+    results.push({ id, title, poster });
   }
 
-  return entries;
+  return results;
 }
 
 async function getEpisodes(dataId: string) {
@@ -67,11 +67,11 @@ async function getEpisodes(dataId: string) {
   return episodes;
 }
 
-export async function getEntry(entry: Entry) {
-  const details = {};
+export async function getEntry(entry: any): Promise<Entry> {
+  const details = { title: entry.title, poster: entry.poster };
   const episodes = await getEpisodes(entry.id);
 
-  return { details, episodes };
+  return { details, episodes, isInLibary: false };
 }
 
 export async function getServers(episode: Episode) {

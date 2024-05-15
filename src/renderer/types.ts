@@ -1,10 +1,15 @@
-export type Entry = Required<{
+export type Result = Required<{
   title: string;
   poster: string;
 }> & {
   [key: string]: any;
 };
 
+export type Entry = {
+  details: { title: string; poster: string };
+  episodes: { title: string; info: string[] }[];
+  isInLibary: boolean;
+};
 export type Episode = Required<{
   title: string;
   info: string[];

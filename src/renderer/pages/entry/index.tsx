@@ -1,24 +1,30 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { Entry as T } from '../../types';
 
 const { electron } = window;
-type T = { details: any; episodes: { title: string; info: string[] }[] };
 export default function Entry() {
   const [entry, setEntry] = useState<T | null>(null);
   const [searchParams] = useSearchParams();
   const ext = searchParams.get('ext') || '';
-  const body = searchParams.get('body') || '';
+  const body = searchParams.get('body') || '{}';
+  const parsedBody = JSON.parse(body);
 
   useEffect(() => {
     (async () => {
       try {
-        const { getEntry } = await import(`../../extensions/extension/${ext}`);
-        let res = await electron.send('store-get', `${ext} ${body}`);
+        let res = (await electron.send('store-get', body)) as null | T;
         if (res) setEntry(res);
         else {
-          res = await getEntry(JSON.parse(body));
-          await electron.send('store-set', `${ext} ${body}`, res);
-          setEntry(res);
+          const { getEntry } = await import(
+            `../../extensions/extension/${ext}`
+          );
+          console.log('getting entry');
+          res = await getEntry(parsedBody);
+          if (res) {
+            await electron.send('store-set', body, res);
+            setEntry(res);
+          }
         }
       } catch (err) {
         console.log(`${err}`);
@@ -32,8 +38,16 @@ export default function Entry() {
     JSON.stringify(entry.episodes),
   )}`;
 
+  function addToLibary() {
+    electron.send('store-push', 'libary', parsedBody);
+    if (entry) setEntry({ ...entry, isInLibary: !entry.isInLibary });
+  }
+
   return (
     <div>
+      <button type="button" onClick={addToLibary}>
+        {entry.isInLibary ? 'remove from' : 'add to'} libary
+      </button>
       <h1>details here</h1>
       <ul>
         {entry.episodes.map(({ title, info }, i) => (
