@@ -6,25 +6,32 @@ const { electron } = window;
 export default function Entry() {
   const [entry, setEntry] = useState<T | null>(null);
   const [searchParams] = useSearchParams();
-  const ext = searchParams.get('ext') || '';
   const resultString = searchParams.get('result') || '{}';
   const result = JSON.parse(resultString) as Result;
+  const key = `${result.ext} ${result.path}`;
 
-  async function updateEntry() {
-    const { getEntry } = await import(`../../extensions/extension/${ext}`);
-    const res = await getEntry(result);
+  async function getAndSetEntry() {
+    const { getEntry } = await import(
+      `../../extensions/extension/${result.ext}`
+    );
+    let res = (await getEntry(result)) as T | undefined;
     if (res) {
-      await electron.send('store-set', `${ext} ${result.path}`, res);
+      if (entry) {
+        const updatedEntry = structuredClone(entry);
+        updatedEntry.details.poster = res.details.poster;
+        updatedEntry.episodes = res.episodes;
+        res = updatedEntry;
+      } else electron.send('store-set', key, res);
       setEntry(res);
     }
   }
+
   useEffect(() => {
     (async () => {
       try {
-        const key = `${ext} ${result.path}`;
         const res = (await electron.send('store-get', key)) as T | undefined;
         if (res) setEntry(res);
-        else updateEntry();
+        else getAndSetEntry();
       } catch (err) {
         console.log(`${err}`);
       }
@@ -33,20 +40,26 @@ export default function Entry() {
 
   if (entry === null) return <h1>loading entry...</h1>;
 
-  const watchURL = `/watch?ext=${ext}&episodes=${encodeURIComponent(
+  const watchURL = `/watch?ext=${result.ext}&episodes=${encodeURIComponent(
     JSON.stringify(entry.episodes),
   )}`;
 
   function addToLibary() {
     electron.send('store-push', 'libary', result);
-    if (entry) setEntry({ ...entry, isInLibary: true });
+    if (entry) {
+      const updatedEntry = structuredClone(entry);
+      updatedEntry.isInLibary = true;
+      electron.send('store-set', key, updatedEntry);
+      setEntry(updatedEntry);
+    }
   }
 
   return (
     <div>
-      <button type="button" onClick={updateEntry}>
+      <button type="button" onClick={getAndSetEntry}>
         refresh
       </button>
+      <br />
       <button type="button" onClick={addToLibary} disabled={entry.isInLibary}>
         add to libary
       </button>

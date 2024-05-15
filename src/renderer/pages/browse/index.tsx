@@ -36,7 +36,8 @@ export default function Browse() {
           }
         }}
       />
-      {results ? <Results results={results} /> : <h1>loading results...</h1>}
+      {query &&
+        (results ? <Results results={results} /> : <h1>loading results...</h1>)}
     </div>
   );
 }

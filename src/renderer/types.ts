@@ -1,15 +1,17 @@
 export type Result = Required<{
+  ext: string;
+  path: string;
   title: string;
   poster: string;
-  path: string;
 }> & {
   [key: string]: any;
 };
 
 export type Entry = {
+  ext: string;
   details: { title: string; poster: string };
-  episodes: { title: string; info: string[] }[];
   isInLibary: boolean;
+  episodes: { title: string; info: string[] }[];
 };
 export type Episode = Required<{
   title: string;

@@ -4,6 +4,7 @@ import mp4uploadExtractor from '../../extractors/mp4upload';
 import { Result, Entry, Episode, Server } from '../../../types';
 
 const baseURL = 'https://aniwave.to';
+const ext = 'aniwave';
 const parser = new DOMParser();
 const parse = (html: string) => parser.parseFromString(html, 'text/html');
 const { electron } = window;
@@ -22,7 +23,7 @@ export async function getResults(query: string) {
     let id = item.querySelector('.ani.poster')?.getAttribute('data-tip') || '';
     id = id.slice(0, id?.indexOf('?'));
 
-    results.push({ path, title, poster, id });
+    results.push({ title, poster, path, ext, id });
   }
 
   return results;
@@ -62,7 +63,7 @@ export async function getEntry(result: Result): Promise<Entry> {
   const details = { title: result.title, poster: result.poster };
   const episodes = await getEpisodes(result.id);
 
-  return { details, episodes, isInLibary: false };
+  return { ext, details, isInLibary: false, episodes };
 }
 
 export async function getServers(episode: Episode) {
