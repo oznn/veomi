@@ -53,7 +53,12 @@ async function getEpisodes(dataId: string) {
     info.push(releaseDate);
     info.push(types.join(','));
 
-    episodes.push({ title: `E${i + 1}. ${epTitle}`, info, id });
+    episodes.push({
+      title: `E${i + 1}. ${epTitle}`,
+      info,
+      isSeen: false,
+      id,
+    });
   });
 
   return episodes;
@@ -63,7 +68,7 @@ export async function getEntry(result: Result): Promise<Entry> {
   const details = { title: result.title, poster: result.poster };
   const episodes = await getEpisodes(result.id);
 
-  return { ext, details, isInLibary: false, episodes };
+  return { details, isInLibary: false, episodes };
 }
 
 export async function getServers(episode: Episode) {

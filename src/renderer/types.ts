@@ -6,18 +6,17 @@ export type Result = Required<{
 }> & {
   [key: string]: any;
 };
-
-export type Entry = {
-  ext: string;
-  details: { title: string; poster: string };
-  isInLibary: boolean;
-  episodes: { title: string; info: string[] }[];
-};
 export type Episode = Required<{
   title: string;
   info: string[];
+  isSeen: boolean;
 }> & {
   [key: string]: any;
+};
+export type Entry = {
+  details: { title: string; poster: string };
+  episodes: Episode[];
+  isInLibary: boolean;
 };
 
 export type Server = Required<{

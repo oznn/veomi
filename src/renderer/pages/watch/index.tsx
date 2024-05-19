@@ -1,34 +1,43 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Player from './Player';
+import { Server, Entry } from '../../types';
 
-type Server = { name: string };
+const { electron } = window;
+
 export default function Watch() {
+  const [searchParams] = useSearchParams();
+  const startAt = searchParams.get('startAt') || '';
+  const ext = searchParams.get('ext') || '';
+  const path = searchParams.get('path') || '';
+  const [entry, setEntry] = useState<Entry | null>(null);
   const [servers, setServers] = useState<Server[] | null>(null);
   const [server, setServer] = useState<number>(0);
   const [video, setVideo] = useState(null);
-  const [searchParams] = useSearchParams();
-  const ext = searchParams.get('ext') || '';
-  const episodesString = searchParams.get('episodes') || '{}';
-  const episodes = JSON.parse(episodesString);
-  const startAt = searchParams.get('startAt') || '';
+  const [episode, setEpisode] = useState<number>(Number(startAt));
 
   useEffect(() => {
     (async () => {
-      try {
-        const { getServers } = await import(
-          `../../extensions/extension/${ext}`
-        );
-        const res = await getServers(episodes[Number(startAt)]);
-        setServers(res);
-      } catch (err) {
-        console.log(`failed to set servers ${err}`);
-      }
+      setEntry(await electron.send('store-get', `${ext} ${path}`));
     })();
   }, []);
 
   useEffect(() => {
-    if (servers === null || servers.length === 0 || video) return;
+    (async () => {
+      if (!entry) return;
+      try {
+        const { getServers } = await import(
+          `../../extensions/extension/${ext}`
+        );
+        setServers(await getServers(entry.episodes[episode]));
+      } catch (err) {
+        console.log(`failed to set servers ${err}`);
+      }
+    })();
+  }, [entry, episode]);
+
+  useEffect(() => {
+    if (!entry || !servers || servers.length === 0 || video) return;
     (async () => {
       try {
         const { getVideo } = await import(`../../extensions/extension/${ext}`);
@@ -45,6 +54,12 @@ export default function Watch() {
     setVideo(null);
     setServer(i);
   }
+  function changeEpisode(i: number) {
+    if (entry && i > -1 && i < entry.episodes.length) {
+      setVideo(null);
+      setEpisode(i);
+    }
+  }
 
   if (servers === null) return <h1>loading servers....</h1>;
   if (servers.length === 0) return <h1>0 servers.</h1>;
@@ -53,13 +68,26 @@ export default function Watch() {
       <ul>
         {servers.map(({ name }, i) => (
           <li key={name}>
-            <button type="button" onClick={() => changeServer(i)}>
+            <button
+              type="button"
+              onClick={() => changeServer(i)}
+              disabled={server === i}
+            >
               {name}
             </button>
           </li>
         ))}
       </ul>
-      {video ? <Player video={video} /> : <h1>loading video...</h1>}
+      <h1>episode: {episode + 1}</h1>
+      {video ? (
+        <Player
+          video={video}
+          nextEp={() => changeEpisode(episode + 1)}
+          prevEp={() => changeEpisode(episode - 1)}
+        />
+      ) : (
+        <h1>loading video...</h1>
+      )}
     </div>
   );
 }

@@ -14,15 +14,18 @@ export default function Entry() {
     const { getEntry } = await import(
       `../../extensions/extension/${result.ext}`
     );
-    let res = (await getEntry(result)) as T | undefined;
+    const res = (await getEntry(result)) as T | undefined;
     if (res) {
       if (entry) {
         const updatedEntry = structuredClone(entry);
         updatedEntry.details.poster = res.details.poster;
         updatedEntry.episodes = res.episodes;
-        res = updatedEntry;
-      } else electron.send('store-set', key, res);
-      setEntry(res);
+        electron.send('store-set', key, updatedEntry);
+        setEntry(updatedEntry);
+      } else {
+        electron.send('store-set', key, res);
+        setEntry(res);
+      }
     }
   }
 
@@ -40,15 +43,21 @@ export default function Entry() {
 
   if (entry === null) return <h1>loading entry...</h1>;
 
-  const watchURL = `/watch?ext=${result.ext}&episodes=${encodeURIComponent(
-    JSON.stringify(entry.episodes),
-  )}`;
+  const watchURL = `/watch?ext=${result.ext}&path=${result.path}`;
 
   function addToLibary() {
     electron.send('store-push', 'libary', result);
     if (entry) {
       const updatedEntry = structuredClone(entry);
       updatedEntry.isInLibary = true;
+      electron.send('store-set', key, updatedEntry);
+      setEntry(updatedEntry);
+    }
+  }
+  function toggleIsSeen(i: number) {
+    if (entry) {
+      const updatedEntry = structuredClone(entry);
+      updatedEntry.episodes[i].isSeen = !updatedEntry.episodes[i].isSeen;
       electron.send('store-set', key, updatedEntry);
       setEntry(updatedEntry);
     }
@@ -70,6 +79,9 @@ export default function Entry() {
             <Link to={`${watchURL}&startAt=${i}`}>
               {title} <sub>{info.join(' ')}</sub>
             </Link>
+            <button type="button" onClick={() => toggleIsSeen(i)}>
+              mark as {entry.episodes[i].isSeen ? 'not seen' : 'seen'}
+            </button>
           </li>
         ))}
       </ul>

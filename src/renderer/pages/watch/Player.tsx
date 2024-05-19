@@ -7,7 +7,13 @@ type Video = {
   tracks: { file: string; label: string; caption: string }[];
   skips: { intro: number[]; outro: number[] };
 };
-export default function Player({ video }: { video: Video }) {
+type Props = {
+  video: Video;
+  nextEp: () => void;
+  prevEp: () => void;
+};
+
+export default function Player({ video, nextEp, prevEp }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const src = video.sources[0].file;
   const track = video.tracks[0];
@@ -29,16 +35,25 @@ export default function Player({ video }: { video: Video }) {
   }, [src]);
 
   return (
-    <video ref={videoRef} controls autoPlay width={500}>
-      <source src={src} />
-      {track && (
-        <track
-          label={track.label}
-          kind={track.caption}
-          src={track.file}
-          default
-        />
-      )}
-    </video>
+    <div>
+      <video ref={videoRef} controls autoPlay width={500}>
+        <source src={src} />
+        {track && (
+          <track
+            label={track.label}
+            kind={track.caption}
+            src={track.file}
+            default
+          />
+        )}
+      </video>
+      <br />
+      <button type="button" onClick={prevEp}>
+        PREV
+      </button>
+      <button type="button" onClick={nextEp}>
+        NEXT
+      </button>
+    </div>
   );
 }

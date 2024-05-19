@@ -2,17 +2,19 @@
  * @NOTE: Prepend a `~` to css file paths that are in your node_modules
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
-body {
+/* body { */
+/*   background-color: black; */
+/*   color: white; */
+/*   font-size: 2em; */
+/*   font-family: arial; */
+/* } */
+
+body, input,button {
+  font-size: 32px;
   background-color: black;
-  color: white;
-  font-size: 2em;
+  color:white;
   font-family: arial;
 }
-
-input,button {
-  font-size: 1em;
-}
-
 a {
   text-decoration: none;
   color: grey;
