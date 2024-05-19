@@ -19,7 +19,7 @@ export default function Watch() {
   );
   useEffect(() => {
     (async () => {
-      setEntry(await electron.send('store-get', `${ext} ${path}`));
+      setEntry(await electron.send('store-get', ext + path));
     })();
   }, []);
 
@@ -58,13 +58,13 @@ export default function Watch() {
     setServer(i);
   }
   function changeEpisode(i: number) {
-    if (entry && i > -1 && i < entry.episodes.length) {
+    if (entry) {
       setVideo(null);
       setEpisode(i);
     }
   }
 
-  if (servers === null) return <h1>loading servers....</h1>;
+  if (!entry || !servers) return <h1>loading servers....</h1>;
   if (servers.length === 0) return <h1>0 servers.</h1>;
   return (
     <div>
@@ -83,14 +83,24 @@ export default function Watch() {
       </ul>
       <h1>episode: {episode + 1}</h1>
       {video ? (
-        <Player
-          video={video}
-          nextEp={() => changeEpisode(episode + 1)}
-          prevEp={() => changeEpisode(episode - 1)}
-        />
+        <Player video={video} entry={entry} ep={episode} />
       ) : (
         <h1>loading video...</h1>
       )}
+      <button
+        type="button"
+        onClick={() => changeEpisode(episode - 1)}
+        disabled={episode === 0}
+      >
+        prev
+      </button>
+      <button
+        type="button"
+        onClick={() => changeEpisode(episode + 1)}
+        disabled={episode === entry.episodes.length - 1}
+      >
+        next
+      </button>
     </div>
   );
 }

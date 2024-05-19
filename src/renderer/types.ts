@@ -10,6 +10,7 @@ export type Episode = Required<{
   title: string;
   info: string[];
   isSeen: boolean;
+  progress: number;
 }> & {
   [key: string]: any;
 };
@@ -17,6 +18,7 @@ export type Entry = {
   details: { title: string; poster: string };
   episodes: Episode[];
   isInLibary: boolean;
+  key: string;
 };
 
 export type Server = Required<{

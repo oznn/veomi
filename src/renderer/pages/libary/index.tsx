@@ -18,7 +18,8 @@ export default function Libary() {
     })();
   }, []);
 
-  if (results === null) return <h1>loading results...</h1>;
+  if (!results) return <h1>loading results...</h1>;
+  if (!results.length) return <h1>libary is empty.</h1>;
 
   function remove(i: number) {
     if (results) {

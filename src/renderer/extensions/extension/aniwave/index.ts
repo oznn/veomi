@@ -57,6 +57,7 @@ async function getEpisodes(dataId: string) {
       title: `E${i + 1}. ${epTitle}`,
       info,
       isSeen: false,
+      progress: 0,
       id,
     });
   });
@@ -68,7 +69,12 @@ export async function getEntry(result: Result): Promise<Entry> {
   const details = { title: result.title, poster: result.poster };
   const episodes = await getEpisodes(result.id);
 
-  return { details, isInLibary: false, episodes };
+  return {
+    details,
+    episodes,
+    isInLibary: false,
+    key: result.ext + result.path,
+  };
 }
 
 export async function getServers(episode: Episode) {

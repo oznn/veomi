@@ -8,7 +8,7 @@ export default function Entry() {
   const [searchParams] = useSearchParams();
   const resultString = searchParams.get('result') || '{}';
   const result = JSON.parse(resultString) as Result;
-  const key = `${result.ext} ${result.path}`;
+  const key = result.ext + result.path;
 
   async function getAndSetEntry() {
     const { getEntry } = await import(
@@ -49,18 +49,16 @@ export default function Entry() {
   function addToLibary() {
     electron.send('store-push', 'libary', result);
     if (entry) {
-      const updatedEntry = structuredClone(entry);
-      updatedEntry.isInLibary = true;
-      electron.send('store-set', key, updatedEntry);
-      setEntry(updatedEntry);
+      entry.isInLibary = true;
+      electron.send('store-set', key, entry);
+      setEntry(structuredClone(entry));
     }
   }
   function toggleIsSeen(i: number) {
     if (entry) {
-      const updatedEntry = structuredClone(entry);
-      updatedEntry.episodes[i].isSeen = !updatedEntry.episodes[i].isSeen;
-      electron.send('store-set', key, updatedEntry);
-      setEntry(updatedEntry);
+      entry.episodes[i].isSeen = !entry.episodes[i].isSeen;
+      electron.send('store-set', key, entry);
+      setEntry(structuredClone(entry));
     }
   }
 
@@ -81,7 +79,7 @@ export default function Entry() {
               {title} <sub>{info.join(' ')}</sub>
             </Link>
             <button type="button" onClick={() => toggleIsSeen(i)}>
-              mark as {entry.episodes[i].isSeen ? 'not seen' : 'seen'}
+              mark as {entry.episodes[i].isSeen ? 'unseen' : 'seen'}
             </button>
           </li>
         ))}
