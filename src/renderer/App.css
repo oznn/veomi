@@ -19,3 +19,6 @@ a {
   text-decoration: none;
   color: grey;
 }
+button:disabled{
+  color:grey;
+}

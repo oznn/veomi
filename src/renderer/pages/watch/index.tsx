@@ -14,8 +14,9 @@ export default function Watch() {
   const [servers, setServers] = useState<Server[] | null>(null);
   const [server, setServer] = useState<number>(0);
   const [video, setVideo] = useState(null);
-  const [episode, setEpisode] = useState<number>(Number(startAt));
-
+  const [episode, setEpisode] = useState<number>(
+    startAt ? Number(startAt) : -1,
+  );
   useEffect(() => {
     (async () => {
       setEntry(await electron.send('store-get', `${ext} ${path}`));
@@ -29,7 +30,9 @@ export default function Watch() {
         const { getServers } = await import(
           `../../extensions/extension/${ext}`
         );
-        setServers(await getServers(entry.episodes[episode]));
+        if (episode === -1)
+          setEpisode(entry.episodes.map(({ isSeen }) => isSeen).indexOf(false));
+        if (episode > -1) setServers(await getServers(entry.episodes[episode]));
       } catch (err) {
         console.log(`failed to set servers ${err}`);
       }

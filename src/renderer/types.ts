@@ -32,3 +32,8 @@ export type Track = {
   caption: string;
   defualt?: boolean;
 };
+export type Video = {
+  sources: Source[];
+  tracks: Track[];
+  skips: { intro: number[]; outro: number[] };
+};

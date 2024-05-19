@@ -1,12 +1,8 @@
 /* eslint no-console: off, jsx-a11y/media-has-caption: off */
 import Hls from 'hls.js';
 import { useEffect, useRef } from 'react';
+import { Video } from '../../types';
 
-type Video = {
-  sources: { file: string; qual: string }[];
-  tracks: { file: string; label: string; caption: string }[];
-  skips: { intro: number[]; outro: number[] };
-};
 type Props = {
   video: Video;
   nextEp: () => void;

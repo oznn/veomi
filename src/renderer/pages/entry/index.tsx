@@ -17,11 +17,12 @@ export default function Entry() {
     const res = (await getEntry(result)) as T | undefined;
     if (res) {
       if (entry) {
-        const updatedEntry = structuredClone(entry);
-        updatedEntry.details.poster = res.details.poster;
-        updatedEntry.episodes = res.episodes;
-        electron.send('store-set', key, updatedEntry);
-        setEntry(updatedEntry);
+        entry.details.poster = res.details.poster;
+        entry.episodes = entry.episodes.concat(
+          res.episodes.splice(entry.episodes.length, res.episodes.length),
+        );
+        electron.send('store-set', key, entry);
+        setEntry(structuredClone(entry));
       } else {
         electron.send('store-set', key, res);
         setEntry(res);
