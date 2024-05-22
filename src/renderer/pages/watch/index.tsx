@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Player from './Player';
 import { Server, Entry } from '../../types';
@@ -17,6 +17,8 @@ export default function Watch() {
   const [episode, setEpisode] = useState<number>(
     startAt ? Number(startAt) : -1,
   );
+  const container = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     (async () => {
       setEntry(await electron.send('store-get', ext + path));
@@ -32,7 +34,10 @@ export default function Watch() {
         );
         if (episode === -1)
           setEpisode(entry.episodes.map(({ isSeen }) => isSeen).indexOf(false));
-        if (episode > -1) setServers(await getServers(entry.episodes[episode]));
+        if (episode > -1) {
+          const res = (await getServers(entry.episodes[episode])) as Server[];
+          setServers(res.filter(({ name }) => name.includes('Mp4upload')));
+        }
       } catch (err) {
         console.log(`failed to set servers ${err}`);
       }
@@ -41,6 +46,7 @@ export default function Watch() {
 
   useEffect(() => {
     if (!entry || !servers || servers.length === 0 || video) return;
+    if (container.current) container.current.requestFullscreen();
     (async () => {
       try {
         const { getVideo } = await import(`../../extensions/extension/${ext}`);
@@ -67,7 +73,8 @@ export default function Watch() {
   if (!entry || !servers) return <h1>loading servers....</h1>;
   if (servers.length === 0) return <h1>0 servers.</h1>;
   return (
-    <div>
+    // <div onLoad={(e) => e.target.requestFullscreen()}>
+    <div ref={container}>
       <ul>
         {servers.map(({ name }, i) => (
           <li key={name}>
@@ -83,7 +90,7 @@ export default function Watch() {
       </ul>
       <h1>episode: {episode + 1}</h1>
       {video ? (
-        <Player video={video} entry={entry} ep={episode} />
+        <Player video={video} entry={entry} episode={episode} />
       ) : (
         <h1>loading video...</h1>
       )}

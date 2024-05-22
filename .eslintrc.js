@@ -14,6 +14,7 @@ module.exports = {
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': 'error',
     'react-hooks/exhaustive-deps': 'off',
+    'no-console': 'off',
   },
   parserOptions: {
     ecmaVersion: 2022,

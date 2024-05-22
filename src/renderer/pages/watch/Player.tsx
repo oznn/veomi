@@ -1,18 +1,20 @@
-/* eslint no-console: off, jsx-a11y/media-has-caption: off */
+/* eslint jsx-a11y/media-has-caption: off */
 import Hls from 'hls.js';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Video, Entry } from '../../types';
 
 const { electron } = window;
 type Props = {
   video: Video;
   entry: Entry;
-  ep: number;
+  episode: number;
 };
-export default function Player({ video, entry, ep }: Props) {
+export default function Player({ video, entry, episode }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const src = video.sources[0].file;
   const track = video.tracks[0];
+  const { skips } = video;
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const hls = new Hls({
@@ -29,7 +31,7 @@ export default function Player({ video, entry, ep }: Props) {
           console.log(err);
         });
       }
-      videoRef.current.currentTime = entry.episodes[ep].progress;
+      videoRef.current.currentTime = entry.episodes[episode].progress;
       videoRef.current.play();
     }
   }, [src]);
@@ -39,20 +41,27 @@ export default function Player({ video, entry, ep }: Props) {
       if (videoRef.current.paused) videoRef.current.play();
       else {
         videoRef.current.pause();
-        entry.episodes[ep].progress = videoRef.current.currentTime;
+        entry.episodes[episode].progress = videoRef.current.currentTime;
         electron.send('store-set', entry.key, entry);
         console.log('progress saved');
       }
     }
   }
+  function update() {
+    if (videoRef.current) {
+      const { currentTime } = videoRef.current;
+      const isInIntro =
+        currentTime >= skips.intro[0] && currentTime <= skips.intro[1];
+      const isInOutro =
+        currentTime >= skips.outro[0] && currentTime <= skips.outro[1];
+      if (isInIntro) videoRef.current.currentTime = skips.intro[1];// eslint-disable-line
+      if (isInOutro) videoRef.current.currentTime = skips.outro[1];// eslint-disable-line
+      setProgress(currentTime);
+    }
+  }
   return (
     <div>
-      <video
-        ref={videoRef}
-        width={500}
-        onClick={pp}
-        onTimeUpdate={() => console.log(videoRef.current?.currentTime)}
-      >
+      <video ref={videoRef} onClick={pp} onTimeUpdate={update} width={500}>
         <source src={src} />
         {track && (
           <track
@@ -63,6 +72,7 @@ export default function Player({ video, entry, ep }: Props) {
           />
         )}
       </video>
+      <h1>{Math.floor(progress)}</h1>
       <br />
     </div>
   );
