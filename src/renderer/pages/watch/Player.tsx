@@ -11,6 +11,7 @@ type Props = {
 };
 export default function Player({ video, entry, episode }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const seekerRef = useRef<HTMLInputElement>(null);
   const src = video.sources[0].file;
   const track = video.tracks[0];
   const { skips } = video;
@@ -36,19 +37,18 @@ export default function Player({ video, entry, episode }: Props) {
     }
   }, [src]);
 
-  function pp() {
+  function playback() {
     if (videoRef.current) {
       if (videoRef.current.paused) videoRef.current.play();
       else {
         videoRef.current.pause();
         entry.episodes[episode].progress = videoRef.current.currentTime;
         electron.send('store-set', entry.key, entry);
-        console.log('progress saved');
       }
     }
   }
   function update() {
-    if (videoRef.current) {
+    if (videoRef.current && seekerRef.current) {
       const { currentTime } = videoRef.current;
       const isInIntro =
         currentTime >= skips.intro[0] && currentTime <= skips.intro[1];
@@ -56,12 +56,34 @@ export default function Player({ video, entry, episode }: Props) {
         currentTime >= skips.outro[0] && currentTime <= skips.outro[1];
       if (isInIntro) videoRef.current.currentTime = skips.intro[1];// eslint-disable-line
       if (isInOutro) videoRef.current.currentTime = skips.outro[1];// eslint-disable-line
+      seekerRef.current.value = `${
+        (currentTime / videoRef.current.duration) * 100
+      }`;
       setProgress(currentTime);
     }
   }
+  function seek() {
+    if (videoRef.current && seekerRef.current) {
+      videoRef.current.currentTime =
+        (Number(seekerRef.current.value) / 100) * videoRef.current.duration;
+    }
+  }
+  function timeFormat(s: number) {
+    const minutes = s / 60;
+    const hours = minutes / 60;
+    const m = minutes > 0 ? `${Math.floor(minutes)}:` : '';
+    const h = hours > 0 ? `${Math.floor(hours)}:` : '';
+
+    return h + m + (s % 60);
+  }
   return (
     <div>
-      <video ref={videoRef} onClick={pp} onTimeUpdate={update} width={500}>
+      <video
+        ref={videoRef}
+        onClick={playback}
+        onTimeUpdate={update}
+        width={500}
+      >
         <source src={src} />
         {track && (
           <track
@@ -72,7 +94,8 @@ export default function Player({ video, entry, episode }: Props) {
           />
         )}
       </video>
-      <h1>{Math.floor(progress)}</h1>
+      <h1>{timeFormat(Math.floor(progress))}</h1>
+      <input type="range" ref={seekerRef} step={1} onChange={seek} />
       <br />
     </div>
   );

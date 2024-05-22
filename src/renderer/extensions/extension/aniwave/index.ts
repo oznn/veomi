@@ -124,5 +124,5 @@ export async function getVideo(server: Server) {
     // no default
   }
 
-  return { ...sourcesAndTracks, skips };
+  return { ...sourcesAndTracks, skips: JSON.parse(skips) };
 }
