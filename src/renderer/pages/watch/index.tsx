@@ -18,10 +18,12 @@ export default function Watch() {
     startAt ? Number(startAt) : -1,
   );
   const container = useRef<HTMLDivElement>(null);
+  const entryKey = (ext + path).replaceAll('.', ' ');
 
   useEffect(() => {
     (async () => {
-      setEntry(await electron.send('store-get', ext + path));
+      const res = await electron.send('store-get', `entries.${entryKey}`);
+      setEntry(res);
     })();
   }, []);
 
@@ -73,7 +75,6 @@ export default function Watch() {
   if (!entry || !servers) return <h1>loading servers....</h1>;
   if (servers.length === 0) return <h1>0 servers.</h1>;
   return (
-    // <div onLoad={(e) => e.target.requestFullscreen()}>
     <div ref={container}>
       <ul>
         {servers.map(({ name }, i) => (
@@ -90,7 +91,7 @@ export default function Watch() {
       </ul>
       <h1>episode: {episode + 1}</h1>
       {video ? (
-        <Player video={video} entry={entry} episode={episode} />
+        <Player video={video} entryKey={entry.key} episode={episode} />
       ) : (
         <h1>loading video...</h1>
       )}

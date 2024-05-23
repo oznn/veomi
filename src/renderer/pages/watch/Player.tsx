@@ -1,40 +1,46 @@
 /* eslint jsx-a11y/media-has-caption: off */
 import Hls from 'hls.js';
 import { useEffect, useRef, useState } from 'react';
-import { Video, Entry } from '../../types';
+import { Video } from '../../types';
 
 const { electron } = window;
 type Props = {
   video: Video;
-  entry: Entry;
+  entryKey: string;
   episode: number;
 };
-export default function Player({ video, entry, episode }: Props) {
+export default function Player({ video, entryKey, episode }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const seekerRef = useRef<HTMLInputElement>(null);
   const src = video.sources[0].file;
   const track = video.tracks[0];
   const { skips } = video;
   const [progress, setProgress] = useState(0);
+  const episodeKey = `entries.${entryKey}.episodes.${episode}`;
 
   useEffect(() => {
-    const hls = new Hls({
-      debug: false,
-    });
+    (async () => {
+      const hls = new Hls({
+        debug: false,
+      });
 
-    const fileType = src.slice(src.lastIndexOf('.') + 1, src.length);
-    if (videoRef.current) {
-      if (Hls.isSupported() && fileType === 'm3u8') {
-        // hls.log = true;
-        hls.loadSource(src);
-        hls.attachMedia(videoRef.current);
-        hls.on(Hls.Events.ERROR, (err) => {
-          console.log(err);
-        });
+      const fileType = src.slice(src.lastIndexOf('.') + 1, src.length);
+      if (videoRef.current) {
+        if (Hls.isSupported() && fileType === 'm3u8') {
+          // hls.log = true;
+          hls.loadSource(src);
+          hls.attachMedia(videoRef.current);
+          hls.on(Hls.Events.ERROR, (err) => {
+            console.log(err);
+          });
+        }
+        videoRef.current.currentTime = await electron.send(
+          'store-get',
+          `${episodeKey}.progress`,
+        );
+        videoRef.current.play();
       }
-      videoRef.current.currentTime = entry.episodes[episode].progress;
-      videoRef.current.play();
-    }
+    })();
   }, [src]);
 
   function playback() {
@@ -42,8 +48,8 @@ export default function Player({ video, entry, episode }: Props) {
       if (videoRef.current.paused) videoRef.current.play();
       else {
         videoRef.current.pause();
-        entry.episodes[episode].progress = videoRef.current.currentTime;
-        electron.send('store-set', entry.key, entry);
+        const { currentTime } = videoRef.current;
+        electron.send('store-set', `${episodeKey}.progress`, currentTime);
       }
     }
   }
@@ -69,12 +75,11 @@ export default function Player({ video, entry, episode }: Props) {
     }
   }
   function timeFormat(s: number) {
-    const minutes = s / 60;
-    const hours = minutes / 60;
-    const m = minutes > 0 ? `${Math.floor(minutes)}:` : '';
-    const h = hours > 0 ? `${Math.floor(hours)}:` : '';
+    const seconds = s < 10 ? `0${s % 60}` : s % 60;
+    const minutes = `${Math.floor((s / 60) % 60)}:`;
+    const hours = s / 3600 >= 1 ? `${Math.floor(s / 3600)}:` : '';
 
-    return h + m + (s % 60);
+    return hours + minutes + seconds;
   }
   return (
     <div>
@@ -95,7 +100,7 @@ export default function Player({ video, entry, episode }: Props) {
         )}
       </video>
       <h1>{timeFormat(Math.floor(progress))}</h1>
-      <input type="range" ref={seekerRef} step={1} onChange={seek} />
+      <input type="range" value={0} ref={seekerRef} step={1} onChange={seek} />
       <br />
     </div>
   );

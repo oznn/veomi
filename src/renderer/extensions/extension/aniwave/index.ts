@@ -73,7 +73,7 @@ export async function getEntry(result: Result): Promise<Entry> {
     details,
     episodes,
     isInLibary: false,
-    key: result.ext + result.path,
+    key: (result.ext + result.path).replaceAll('.', ' '),
   };
 }
 

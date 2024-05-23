@@ -32,7 +32,7 @@ ipcMain.on('change-origin', (_, newOrigin) => {
   origin = newOrigin;
 });
 
-const store = new Store({ accessPropertiesByDotNotation: false });
+const store = new Store();
 ipcMain.handle('store-get', (_, k) => store.get(k));
 ipcMain.handle('store-set', (_, k, v) => store.set(k, v));
 ipcMain.handle('store-push', (_, k, v) => {
