@@ -5,12 +5,12 @@ import {
   Link,
   useNavigate,
 } from 'react-router-dom';
-import Extensions from './pages/extensions';
-import Libary from './pages/libary';
-import Browse from './pages/browse';
-import Watch from './pages/watch';
-import Entry from './pages/entry';
-import './App.css';
+import Extensions from './extensions';
+import Libary from './libary';
+import Browse from './browse';
+import Watch from './watch';
+import Entry from './entry';
+import '../styles/App.css';
 
 function Links() {
   const nav = useNavigate();

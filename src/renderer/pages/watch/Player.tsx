@@ -3,7 +3,9 @@ import Hls from 'hls.js';
 import { useEffect, useRef, useState } from 'react';
 import { Entry, Video } from '../../types';
 
-const { electron } = window;
+const {
+  electron: { store },
+} = window;
 type Props = {
   video: Video;
   entry: Entry;
@@ -35,7 +37,7 @@ export default function Player({ video, entry, episode }: Props) {
             console.log(err);
           });
         }
-        const storedProgress = await electron.send('store-get', progressKey);
+        const storedProgress = await store.get(progressKey);
         videoRef.current.currentTime = storedProgress;
         videoRef.current.play();
       }
@@ -48,7 +50,7 @@ export default function Player({ video, entry, episode }: Props) {
       else {
         videoRef.current.pause();
         const { currentTime } = videoRef.current;
-        electron.send('store-set', progressKey, currentTime);
+        store.set(progressKey, currentTime);
       }
     }
   }
@@ -60,7 +62,7 @@ export default function Player({ video, entry, episode }: Props) {
   }
   function toggleIsSkip(part: 'intro' | 'outro', toggle: boolean) {
     entry.isSkip[part] = toggle;
-    electron.send('store-set', `entries.${entry.key}.isSkip.${part}`, toggle);
+    store.set(`entries.${entry.key}.isSkip.${part}`, toggle);
   }
   function update() {
     if (videoRef.current && seekerRef.current) {
@@ -96,7 +98,7 @@ export default function Player({ video, entry, episode }: Props) {
         onClick={playback}
         onTimeUpdate={update}
         onWaiting={() => setIsVideoLoading(true)}
-        width={500}
+        width={1000}
       >
         <source src={src} />
         {track && (
@@ -116,7 +118,6 @@ export default function Player({ video, entry, episode }: Props) {
         step={1}
         onChange={seek}
       />
-      <br />
       <label htmlFor="skipIntro">
         <input
           type="checkbox"

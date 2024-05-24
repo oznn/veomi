@@ -15,8 +15,7 @@ export async function getResults(query: string) {
   const results: Result[] = [];
   const items = doc.querySelectorAll('.ani.items > .item');
 
-  for (let i = 0; i < items.length; i += 1) {
-    const item = items[i];
+  items.forEach((item) => {
     const path = item.querySelector('a.name')?.getAttribute('href') || '';
     const title = item.querySelector('a.name')?.textContent || '';
     const poster = item.querySelector('img')?.getAttribute('src') || '';
@@ -24,7 +23,7 @@ export async function getResults(query: string) {
     id = id.slice(0, id?.indexOf('?'));
 
     results.push({ title, poster, path, ext, id });
-  }
+  });
 
   return results;
 }
@@ -74,7 +73,7 @@ export async function getEntry(result: Result): Promise<Entry> {
     episodes,
     isInLibary: false,
     isSkip: { intro: true, outro: true },
-    key: (result.ext + result.path).replaceAll('.', ' '),
+    key: (result.ext + result.path).replace(/\./g, ' '),
   };
 }
 

@@ -3,7 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import Player from './Player';
 import { Server, Entry } from '../../types';
 
-const { electron } = window;
+const {
+  electron: { store },
+} = window;
 
 export default function Watch() {
   const [searchParams] = useSearchParams();
@@ -18,11 +20,11 @@ export default function Watch() {
     startAt ? Number(startAt) : -1,
   );
   const container = useRef<HTMLDivElement>(null);
-  const entryKey = (ext + path).replaceAll('.', ' ');
+  const entryKey = (ext + path).replace(/\./g, ' ');
 
   useEffect(() => {
     (async () => {
-      const res = await electron.send('store-get', `entries.${entryKey}`);
+      const res = await store.get(`entries.${entryKey}`);
       setEntry(res);
     })();
   }, []);
@@ -31,9 +33,7 @@ export default function Watch() {
     (async () => {
       if (!entry) return;
       try {
-        const { getServers } = await import(
-          `../../extensions/extension/${ext}`
-        );
+        const { getServers } = await import(`../../extensions/${ext}`);
         if (episode === -1)
           setEpisode(entry.episodes.map(({ isSeen }) => isSeen).indexOf(false));
         if (episode > -1) {
@@ -51,7 +51,7 @@ export default function Watch() {
     if (container.current) container.current.requestFullscreen();
     (async () => {
       try {
-        const { getVideo } = await import(`../../extensions/extension/${ext}`);
+        const { getVideo } = await import(`../../extensions/${ext}`);
         const res = await getVideo(servers[server]);
 
         setVideo(res);

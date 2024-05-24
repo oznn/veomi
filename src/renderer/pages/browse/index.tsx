@@ -1,7 +1,23 @@
+import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import Results from '../../components/Results';
 import { Result } from '../../types';
+
+function Results({ results }: { results: Result[] }) {
+  if (results.length === 0) return <h1>0 results.</h1>;
+  return (
+    <ul>
+      {results.map((result) => (
+        <li key={result.title}>
+          <Link
+            to={`/entry?result=${encodeURIComponent(JSON.stringify(result))}`}
+          >
+            {result.title}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export default function Browse() {
   const [results, setResults] = useState<Result[] | null>(null);
@@ -13,9 +29,7 @@ export default function Browse() {
     if (!query) return;
     (async () => {
       try {
-        const { getResults } = await import(
-          `../../extensions/extension/${ext}`
-        );
+        const { getResults } = await import(`../../extensions/${ext}`);
 
         setResults((await getResults(query)) as Result[]);
       } catch (err) {

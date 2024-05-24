@@ -2,7 +2,9 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Result } from '../../types';
 
-const { electron } = window;
+const {
+  electron: { store },
+} = window;
 
 export default function Libary() {
   const [results, setResults] = useState<Result[] | null>(null);
@@ -10,7 +12,7 @@ export default function Libary() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await electron.send('store-get', 'libary');
+        const res = await store.get('libary');
         setResults((res as Result[]) || []);
       } catch (err) {
         console.log(`${err}`);
@@ -21,24 +23,28 @@ export default function Libary() {
   if (!results) return '';
   if (!results.length) return <h1>libary is empty.</h1>;
 
-  function remove(i: number) {
+  function deleteFromLibary(i: number) {
     if (results) {
+      const result = results[i];
+      const entryKey = (result.ext + result.path).replace(/\./g, ' ');
+
       results.splice(i, 1);
-      electron.send('store-set', 'libary', results);
+      store.set('libary', results);
+      store.set(`entries.${entryKey}.isInLibary`, false);
       setResults(structuredClone(results));
     }
   }
   return (
     <ul>
       {results.map((result, i) => (
-        <li key={result.title}>
+        <li key={result.ext + result.path}>
           <Link
             to={`/entry?result=${encodeURIComponent(JSON.stringify(result))}`}
           >
             {result.title}
           </Link>
-          <button type="button" onClick={() => remove(i)}>
-            remove
+          <button type="button" onClick={() => deleteFromLibary(i)}>
+            delete
           </button>
           <Link to={`/watch?ext=${result.ext}&path=${result.path}`}>
             resume

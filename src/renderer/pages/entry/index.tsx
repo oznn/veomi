@@ -2,18 +2,18 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Result, Entry as T } from '../../types';
 
-const { electron } = window;
+const {
+  electron: { store },
+} = window;
 export default function Entry() {
   const [entry, setEntry] = useState<T | null>(null);
   const [searchParams] = useSearchParams();
   const resultString = searchParams.get('result') || '{}';
   const result = JSON.parse(resultString) as Result;
-  const key = (result.ext + result.path).replaceAll('.', ' ');
+  const key = (result.ext + result.path).replace(/\./g, ' ');
 
   async function getAndSetEntry() {
-    const { getEntry } = await import(
-      `../../extensions/extension/${result.ext}`
-    );
+    const { getEntry } = await import(`../../extensions/${result.ext}`);
     const res = (await getEntry(result)) as T | undefined;
     if (res) {
       if (entry) {
@@ -21,10 +21,10 @@ export default function Entry() {
         entry.episodes = entry.episodes.concat(
           res.episodes.splice(entry.episodes.length, res.episodes.length),
         );
-        electron.send('store-set', `entries.${key}`, entry);
+        store.set(`entries.${key}`, entry);
         setEntry(structuredClone(entry));
       } else {
-        electron.send('store-set', `entries.${key}`, res);
+        store.set(`entries.${key}`, res);
         setEntry(res);
       }
     }
@@ -33,9 +33,7 @@ export default function Entry() {
   useEffect(() => {
     (async () => {
       try {
-        const res = (await electron.send('store-get', `entries.${key}`)) as
-          | T
-          | undefined;
+        const res = (await store.get(`entries.${key}`)) as T | undefined;
         if (res) setEntry(res);
         else getAndSetEntry();
       } catch (err) {
@@ -49,10 +47,10 @@ export default function Entry() {
   const watchURL = `/watch?ext=${result.ext}&path=${result.path}`;
 
   function addToLibary() {
-    electron.send('store-push', 'libary', result);
+    store.push('libary', result);
     if (entry) {
       entry.isInLibary = true;
-      electron.send('store-set', `entries.${key}.isInLibary`, true);
+      store.set(`entries.${key}.isInLibary`, true);
       setEntry(structuredClone(entry));
     }
   }
@@ -61,7 +59,7 @@ export default function Entry() {
       const toggle = !entry.episodes[i].isSeen;
       const isSeenKey = `entries.${key}.episodes.${i}.isSeen`;
       entry.episodes[i].isSeen = toggle;
-      electron.send('store-set', isSeenKey, toggle);
+      store.set(isSeenKey, toggle);
       setEntry(structuredClone(entry));
     }
   }
