@@ -91,7 +91,7 @@ export default function Watch() {
       </ul>
       <h1>episode: {episode + 1}</h1>
       {video ? (
-        <Player video={video} entryKey={entry.key} episode={episode} />
+        <Player video={video} entry={entry} episode={episode} />
       ) : (
         <h1>loading video...</h1>
       )}

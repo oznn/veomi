@@ -19,6 +19,7 @@ export type Entry = {
   episodes: Episode[];
   isInLibary: boolean;
   key: string;
+  isSkip: { intro: boolean; outro: boolean };
 };
 
 export type Server = Required<{
