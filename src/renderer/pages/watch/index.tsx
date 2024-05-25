@@ -1,18 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Player from './Player';
-import { Server, Entry } from '../../types';
+import { Server, Entry, Result } from '../../types';
 
 const {
   electron: { store },
 } = window;
 
-let isFullscreen = false;
 export default function Watch() {
   const [searchParams] = useSearchParams();
   const startAt = searchParams.get('startAt') || '';
-  const ext = searchParams.get('ext') || '';
-  const path = searchParams.get('path') || '';
+  const resultString = searchParams.get('result') || '{}';
+  const result = JSON.parse(resultString) as Result;
   const [entry, setEntry] = useState<Entry | null>(null);
   const [servers, setServers] = useState<Server[] | null>(null);
   const [server, setServer] = useState<number>(0);
@@ -21,7 +20,7 @@ export default function Watch() {
     startAt ? Number(startAt) : -1,
   );
   const container = useRef<HTMLDivElement>(null);
-  const entryKey = (ext + path).replace(/\./g, ' ');
+  const entryKey = (result.ext + result.path).replace(/\./g, ' ');
 
   useEffect(() => {
     (async () => {
@@ -34,7 +33,7 @@ export default function Watch() {
     (async () => {
       if (!entry) return;
       try {
-        const { getServers } = await import(`../../extensions/${ext}`);
+        const { getServers } = await import(`../../extensions/${result.ext}`);
         if (episode === -1)
           setEpisode(entry.episodes.map(({ isSeen }) => isSeen).indexOf(false));
         if (episode > -1) {
@@ -49,13 +48,12 @@ export default function Watch() {
 
   useEffect(() => {
     if (!entry || !servers || servers.length === 0 || video) return;
-    if (container.current && !isFullscreen) {
+    if (container.current && !document.fullscreenElement) {
       container.current.requestFullscreen();
-      isFullscreen = true;
     }
     (async () => {
       try {
-        const { getVideo } = await import(`../../extensions/${ext}`);
+        const { getVideo } = await import(`../../extensions/${result.ext}`);
         const res = await getVideo(servers[server]);
 
         setVideo(res);
@@ -80,7 +78,7 @@ export default function Watch() {
   if (servers.length === 0) return <h1>0 servers.</h1>;
   return (
     <div ref={container}>
-      <h2>episode: {episode + 1}</h2>
+      <h3>{entry.episodes[episode].title}</h3>
       <ul>
         {servers.map(({ name }, i) => (
           <li key={name}>

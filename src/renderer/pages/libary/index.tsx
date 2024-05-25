@@ -34,6 +34,7 @@ export default function Libary() {
       setResults(structuredClone(results));
     }
   }
+
   return (
     <ul>
       {results.map((result, i) => (
@@ -46,7 +47,9 @@ export default function Libary() {
           <button type="button" onClick={() => deleteFromLibary(i)}>
             delete
           </button>
-          <Link to={`/watch?ext=${result.ext}&path=${result.path}`}>
+          <Link
+            to={`/watch?result=${encodeURIComponent(JSON.stringify(result))}`}
+          >
             resume
           </Link>
         </li>

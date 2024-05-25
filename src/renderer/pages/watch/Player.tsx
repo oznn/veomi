@@ -56,6 +56,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
         videoRef.current.volume =
           typeof storedVolume === 'number' ? storedVolume * 0.1 : 0.5;
         videoRef.current.currentTime = storedProgress;
+        videoRef.current.focus();
         videoRef.current.play();
       }
     })();
@@ -87,20 +88,18 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
   }
   function update() {
     if (videoRef.current && seekerRef.current) {
-      const { currentTime, duration, ended } = videoRef.current;
-      const time = Math.floor(currentTime);
+      const { currentTime, duration } = videoRef.current;
       const progressPercent = Math.floor((currentTime / duration) * 100);
 
-      if (ended) next();
-      if (time % 60 === 0) store.set(`${episodeKey}.progress`, time);
-      if (entry.isSkip.intro) skip('intro', time);
-      if (entry.isSkip.outro) skip('outro', time);
+      if (Math.floor(currentTime) % 60 === 0)
+        store.set(`${episodeKey}.progress`, currentTime);
+      if (entry.isSkip.intro) skip('intro', currentTime);
+      if (entry.isSkip.outro) skip('outro', currentTime);
       if (!entry.episodes[episode].isSeen && progressPercent >= 85)
         store.set(`${episodeKey}.isSeen`, true);
 
       seekerRef.current.value = `${progressPercent}`;
-      setProgress(time);
-      if (isVideoLoading) setIsVideoLoading(false);
+      setProgress(currentTime);
     }
   }
   function changeVolume(v: number) {
@@ -112,20 +111,53 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
     }
   }
   function navigate(target: HTMLVideoElement, x: number) {
-    if (target.getBoundingClientRect().width / 2 > x) prev();
-    else next();
+    const { width } = target.getBoundingClientRect();
+    if (width / 2 > x && episode > 0) prev();
+    if (width / 2 < x && episode < entry.episodes.length - 1) next();
+  }
+  function handleKeyEvents(key: string) {
+    if (videoRef.current)
+      switch (key) {
+        case 'ArrowRight':
+          videoRef.current.currentTime = Math.min(
+            videoRef.current.duration,
+            videoRef.current.currentTime + 5,
+          );
+          break;
+        case 'ArrowLeft':
+          videoRef.current.currentTime = Math.max(
+            0,
+            videoRef.current.currentTime - 5,
+          );
+          break;
+        case 'ArrowUp':
+          changeVolume(1);
+          break;
+        case 'ArrowDown':
+          changeVolume(-1);
+          break;
+        case ' ':
+          playAndPause();
+          break;
+        default:
+        // no default
+      }
   }
 
   return (
     <div>
       {isVideoLoading && <h3>loading...</h3>}
       <video
+        tabIndex={0}
+        width={1000}
         ref={videoRef}
         onClick={playAndPause}
         onTimeUpdate={update}
+        onEnded={next}
         onWaiting={() => setIsVideoLoading(true)}
-        width={1000}
+        onPlaying={() => setIsVideoLoading(false)}
         onWheel={({ deltaY }) => changeVolume(deltaY * -0.01)}
+        onKeyDown={({ key }) => handleKeyEvents(key)}
         onAuxClick={({ target, clientX }) =>
           navigate(target as HTMLVideoElement, clientX)
         }
@@ -141,7 +173,9 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
         )}
       </video>
       <br />
-      {formatTime(progress)}
+      {videoRef.current && videoRef.current.duration
+        ? formatTime(Math.floor(videoRef.current.duration - progress))
+        : '0:00'}
       <input
         type="range"
         defaultValue={0}
@@ -149,16 +183,6 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
         step={1}
         onChange={seek}
       />
-      <button type="button" onClick={prev} disabled={episode === 0}>
-        prev
-      </button>
-      <button
-        type="button"
-        onClick={next}
-        disabled={episode === entry.episodes.length - 1}
-      >
-        next
-      </button>
       <h4>volume {volume * 10}%</h4>
       <Settings entry={entry} />
     </div>

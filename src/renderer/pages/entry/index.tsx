@@ -44,7 +44,9 @@ export default function Entry() {
 
   if (entry === null) return <h1>loading entry...</h1>;
 
-  const watchURL = `/watch?ext=${result.ext}&path=${result.path}`;
+  const watchURL = `/watch?result=${encodeURIComponent(
+    JSON.stringify(result),
+  )}`;
 
   function addToLibary() {
     store.push('libary', result);
