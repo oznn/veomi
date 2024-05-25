@@ -2,6 +2,7 @@
 import Hls from 'hls.js';
 import { useEffect, useRef, useState } from 'react';
 import { Entry, Video } from '../../types';
+import Settings from './Settings';
 
 const {
   electron: { store },
@@ -10,16 +11,27 @@ type Props = {
   video: Video;
   entry: Entry;
   episode: number;
+  next: () => void;
+  prev: () => void;
 };
-export default function Player({ video, entry, episode }: Props) {
+
+function formatTime(s: number) {
+  const seconds = s % 60 < 10 ? `0${s % 60}` : s % 60;
+  const minutes = `${Math.floor((s / 60) % 60)}:`;
+  const hours = s / 3600 >= 1 ? `${Math.floor(s / 3600)}:` : '';
+
+  return hours + minutes + seconds;
+}
+export default function Player({ video, entry, episode, next, prev }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const seekerRef = useRef<HTMLInputElement>(null);
   const src = video.sources[0].file;
   const track = video.tracks[0];
   const { skips } = video;
-  const [progress, setProgress] = useState(0);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
-  const progressKey = `entries.${entry.key}.episodes.${episode}.progress`;
+  const [progress, setProgress] = useState(0);
+  const [volume, setVolume] = useState(10);
+  const episodeKey = `entries.${entry.key}.episodes.${episode}`;
+  const seekerRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -37,20 +49,28 @@ export default function Player({ video, entry, episode }: Props) {
             console.log(err);
           });
         }
-        const storedProgress = await store.get(progressKey);
+        const storedProgress = await store.get(`${episodeKey}.progress`);
         videoRef.current.currentTime = storedProgress;
         videoRef.current.play();
       }
     })();
   }, [src]);
 
+  function seek() {
+    if (videoRef.current && seekerRef.current) {
+      const seekedProgress =
+        (Number(seekerRef.current.value) / 100) * videoRef.current.duration;
+      videoRef.current.currentTime = seekedProgress;
+      setProgress(Math.floor(seekedProgress));
+    }
+  }
   function playback() {
     if (videoRef.current) {
       if (videoRef.current.paused) videoRef.current.play();
       else {
         videoRef.current.pause();
         const { currentTime } = videoRef.current;
-        store.set(progressKey, currentTime);
+        store.set(`${episodeKey}.progress`, currentTime);
       }
     }
   }
@@ -60,35 +80,26 @@ export default function Player({ video, entry, episode }: Props) {
       if (isSkip) videoRef.current.currentTime = skips[part][1];// eslint-disable-line
     }
   }
-  function toggleIsSkip(part: 'intro' | 'outro', toggle: boolean) {
-    entry.isSkip[part] = toggle;
-    store.set(`entries.${entry.key}.isSkip.${part}`, toggle);
-  }
   function update() {
     if (videoRef.current && seekerRef.current) {
       const { currentTime, duration } = videoRef.current;
+      const progressPercent = Math.floor((currentTime / duration) * 100);
 
       if (entry.isSkip.intro) skip('intro', currentTime);
       if (entry.isSkip.outro) skip('outro', currentTime);
-      seekerRef.current.value = `${(currentTime / duration) * 100}`;
-      setProgress(currentTime);
+      if (!entry.episodes[episode].isSeen && progressPercent >= 85)
+        store.set(`${episodeKey}.isSeen`, true);
+      seekerRef.current.value = `${progressPercent}`;
+      setProgress(Math.floor(currentTime));
       if (isVideoLoading) setIsVideoLoading(false);
     }
   }
-  function seek() {
-    if (videoRef.current && seekerRef.current) {
-      const seekedProgress =
-        (Number(seekerRef.current.value) / 100) * videoRef.current.duration;
-      videoRef.current.currentTime = seekedProgress;
-      setProgress(Math.floor(seekedProgress));
+  function changeVolume(v: number) {
+    if (videoRef.current) {
+      v = Math.max(0, Math.min(volume + v, 10)); // eslint-disable-line
+      videoRef.current.volume = v * 0.1;
+      setVolume(v);
     }
-  }
-  function timeFormat(s: number) {
-    const seconds = s % 60 < 10 ? `0${s % 60}` : s % 60;
-    const minutes = `${Math.floor((s / 60) % 60)}:`;
-    const hours = s / 3600 >= 1 ? `${Math.floor(s / 3600)}:` : '';
-
-    return hours + minutes + seconds;
   }
   return (
     <div>
@@ -99,6 +110,7 @@ export default function Player({ video, entry, episode }: Props) {
         onTimeUpdate={update}
         onWaiting={() => setIsVideoLoading(true)}
         width={1000}
+        onWheel={({ deltaY }) => changeVolume(deltaY * -0.01)}
       >
         <source src={src} />
         {track && (
@@ -110,7 +122,8 @@ export default function Player({ video, entry, episode }: Props) {
           />
         )}
       </video>
-      <h3>{timeFormat(Math.floor(progress))}</h3>
+      <br />
+      {formatTime(progress)}
       <input
         type="range"
         defaultValue={0}
@@ -118,24 +131,18 @@ export default function Player({ video, entry, episode }: Props) {
         step={1}
         onChange={seek}
       />
-      <label htmlFor="skipIntro">
-        <input
-          type="checkbox"
-          onChange={({ target }) => toggleIsSkip('intro', target.checked)}
-          id="skipIntro"
-          defaultChecked={entry.isSkip.intro}
-        />
-        skip intro
-      </label>
-      <label htmlFor="skipOutro">
-        <input
-          type="checkbox"
-          onChange={({ target }) => toggleIsSkip('outro', target.checked)}
-          id="skipOutro"
-          defaultChecked={entry.isSkip.outro}
-        />
-        skip outro
-      </label>
+      <button type="button" onClick={prev} disabled={episode === 0}>
+        prev
+      </button>
+      <button
+        type="button"
+        onClick={next}
+        disabled={episode === entry.episodes.length - 1}
+      >
+        next
+      </button>
+      <h4>volume {volume * 10}%</h4>
+      <Settings entry={entry} />
     </div>
   );
 }

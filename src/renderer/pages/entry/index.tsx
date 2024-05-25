@@ -63,6 +63,14 @@ export default function Entry() {
       setEntry(structuredClone(entry));
     }
   }
+  function togglePrevIsSeen(i: number) {
+    for (let j = i; j > 0; j -= 1) {
+      console.log(j);
+      // if (entry) {
+      //   entry.episodes[j].isSeen = true;
+      // }
+    }
+  }
 
   return (
     <div>

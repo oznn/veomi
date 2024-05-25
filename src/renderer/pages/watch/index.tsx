@@ -76,6 +76,7 @@ export default function Watch() {
   if (servers.length === 0) return <h1>0 servers.</h1>;
   return (
     <div ref={container}>
+      <h2>episode: {episode + 1}</h2>
       <ul>
         {servers.map(({ name }, i) => (
           <li key={name}>
@@ -89,26 +90,17 @@ export default function Watch() {
           </li>
         ))}
       </ul>
-      <h1>episode: {episode + 1}</h1>
       {video ? (
-        <Player video={video} entry={entry} episode={episode} />
+        <Player
+          video={video}
+          entry={entry}
+          episode={episode}
+          next={() => changeEpisode(episode + 1)}
+          prev={() => changeEpisode(episode - 1)}
+        />
       ) : (
         <h1>loading video...</h1>
       )}
-      <button
-        type="button"
-        onClick={() => changeEpisode(episode - 1)}
-        disabled={episode === 0}
-      >
-        prev
-      </button>
-      <button
-        type="button"
-        onClick={() => changeEpisode(episode + 1)}
-        disabled={episode === entry.episodes.length - 1}
-      >
-        next
-      </button>
     </div>
   );
 }
