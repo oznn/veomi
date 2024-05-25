@@ -1,7 +1,7 @@
 import { vrfEncrypt, vrfDecrypt } from './utils';
 import vidsrcExtractor from '../../extractors/vidsrc';
 import mp4uploadExtractor from '../../extractors/mp4upload';
-import { Result, Entry, Episode, Server } from '../../../types';
+import { Result, Entry, Episode, Server } from '../../types';
 
 const baseURL = 'https://aniwave.to';
 const ext = 'aniwave';
@@ -73,6 +73,7 @@ export async function getEntry(result: Result): Promise<Entry> {
     episodes,
     isInLibary: false,
     isSkip: { intro: true, outro: true },
+    volume: 5,
     key: (result.ext + result.path).replace(/\./g, ' '),
   };
 }

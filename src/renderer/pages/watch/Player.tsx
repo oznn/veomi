@@ -27,11 +27,11 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
   const src = video.sources[0].file;
   const track = video.tracks[0];
   const { skips } = video;
-  const [isVideoLoading, setIsVideoLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [volume, setVolume] = useState(10);
   const episodeKey = `entries.${entry.key}.episodes.${episode}`;
   const seekerRef = useRef<HTMLInputElement>(null);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [volume, setVolume] = useState(5);
 
   useEffect(() => {
     (async () => {
@@ -49,7 +49,12 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
             console.log(err);
           });
         }
+        const storedVolume = await store.get(`entries.${entry.key}.volume`);
         const storedProgress = await store.get(`${episodeKey}.progress`);
+
+        setVolume(storedVolume ?? 5);
+        videoRef.current.volume =
+          typeof storedVolume === 'number' ? storedVolume * 0.1 : 0.5;
         videoRef.current.currentTime = storedProgress;
         videoRef.current.play();
       }
@@ -64,7 +69,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
       setProgress(Math.floor(seekedProgress));
     }
   }
-  function playback() {
+  function playAndPause() {
     if (videoRef.current) {
       if (videoRef.current.paused) videoRef.current.play();
       else {
@@ -76,21 +81,25 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
   }
   function skip(part: 'intro' | 'outro', time: number) {
     if (videoRef.current) {
-      const isSkip = time >= skips[part][0] && time <= skips[part][1];
+      const isSkip = time >= skips[part][0] && time < skips[part][1];
       if (isSkip) videoRef.current.currentTime = skips[part][1];// eslint-disable-line
     }
   }
   function update() {
     if (videoRef.current && seekerRef.current) {
-      const { currentTime, duration } = videoRef.current;
+      const { currentTime, duration, ended } = videoRef.current;
+      const time = Math.floor(currentTime);
       const progressPercent = Math.floor((currentTime / duration) * 100);
 
-      if (entry.isSkip.intro) skip('intro', currentTime);
-      if (entry.isSkip.outro) skip('outro', currentTime);
+      if (ended) next();
+      if (time % 60 === 0) store.set(`${episodeKey}.progress`, time);
+      if (entry.isSkip.intro) skip('intro', time);
+      if (entry.isSkip.outro) skip('outro', time);
       if (!entry.episodes[episode].isSeen && progressPercent >= 85)
         store.set(`${episodeKey}.isSeen`, true);
+
       seekerRef.current.value = `${progressPercent}`;
-      setProgress(Math.floor(currentTime));
+      setProgress(time);
       if (isVideoLoading) setIsVideoLoading(false);
     }
   }
@@ -98,19 +107,28 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
     if (videoRef.current) {
       v = Math.max(0, Math.min(volume + v, 10)); // eslint-disable-line
       videoRef.current.volume = v * 0.1;
+      store.set(`entries.${entry.key}.volume`, v);
       setVolume(v);
     }
   }
+  function navigate(target: HTMLVideoElement, x: number) {
+    if (target.getBoundingClientRect().width / 2 > x) prev();
+    else next();
+  }
+
   return (
     <div>
       {isVideoLoading && <h3>loading...</h3>}
       <video
         ref={videoRef}
-        onClick={playback}
+        onClick={playAndPause}
         onTimeUpdate={update}
         onWaiting={() => setIsVideoLoading(true)}
         width={1000}
         onWheel={({ deltaY }) => changeVolume(deltaY * -0.01)}
+        onAuxClick={({ target, clientX }) =>
+          navigate(target as HTMLVideoElement, clientX)
+        }
       >
         <source src={src} />
         {track && (

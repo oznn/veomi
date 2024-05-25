@@ -20,6 +20,7 @@ export type Entry = {
   isInLibary: boolean;
   key: string;
   isSkip: { intro: boolean; outro: boolean };
+  volume: number;
 };
 
 export type Server = Required<{

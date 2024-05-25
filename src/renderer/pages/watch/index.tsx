@@ -7,6 +7,7 @@ const {
   electron: { store },
 } = window;
 
+let isFullscreen = false;
 export default function Watch() {
   const [searchParams] = useSearchParams();
   const startAt = searchParams.get('startAt') || '';
@@ -48,7 +49,10 @@ export default function Watch() {
 
   useEffect(() => {
     if (!entry || !servers || servers.length === 0 || video) return;
-    if (container.current) container.current.requestFullscreen();
+    if (container.current && !isFullscreen) {
+      container.current.requestFullscreen();
+      isFullscreen = true;
+    }
     (async () => {
       try {
         const { getVideo } = await import(`../../extensions/${ext}`);
