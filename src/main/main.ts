@@ -89,6 +89,7 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
       webSecurity: false,
     },
+    autoHideMenuBar: true,
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));

@@ -1,0 +1,56 @@
+.container *{
+  padding:0;
+  margin:0;
+}
+.container video {
+  position: absolute;
+  inset:0;
+  z-index:-1;
+  outline:none;
+}
+.container .header{
+  display: flex;
+  justify-content:space-between;
+  align-items:center;
+  border:solid 1px red;
+  padding: 1em 5em;
+  opacity: 0;
+}
+.container .header:hover{
+  opacity: 1;
+}
+.container .header ul{
+  position: absolute;
+  list-style: none;
+}
+.container .header details{
+  cursor:pointer;
+}
+.container .footer{
+  border: solid 1px red;
+  position: absolute;
+  bottom:0em;
+  width:100%;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  height:2em;
+  opacity: 0;
+}
+.container .footer input[type='range']{
+  width:80%;
+}
+.container .footer:hover{
+  opacity:1;
+}
+.container .settings {
+  position: absolute;
+  bottom:2.1em;
+  right:0;
+}
+.container .loading{
+  position: absolute;
+  top:50%;
+  left:50%;
+  transform: translate(-50%,-50%);
+}

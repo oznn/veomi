@@ -40,18 +40,18 @@ export default function Libary() {
       {results.map((result, i) => (
         <li key={result.ext + result.path}>
           <Link
-            to={`/entry?result=${encodeURIComponent(JSON.stringify(result))}`}
+            to={`/watch?result=${encodeURIComponent(JSON.stringify(result))}`}
           >
             {result.title}
+          </Link>
+          <Link
+            to={`/entry?result=${encodeURIComponent(JSON.stringify(result))}`}
+          >
+            <b> i </b>
           </Link>
           <button type="button" onClick={() => deleteFromLibary(i)}>
             delete
           </button>
-          <Link
-            to={`/watch?result=${encodeURIComponent(JSON.stringify(result))}`}
-          >
-            resume
-          </Link>
         </li>
       ))}
     </ul>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Player from './Player';
 import { Server, Entry, Result } from '../../types';
+import styles from '../../styles/Watch.module.css';
 
 const {
   electron: { store },
@@ -77,21 +78,26 @@ export default function Watch() {
   if (!entry || !servers) return <h1>loading servers....</h1>;
   if (servers.length === 0) return <h1>0 servers.</h1>;
   return (
-    <div ref={container}>
-      <h3>{entry.episodes[episode].title}</h3>
-      <ul>
-        {servers.map(({ name }, i) => (
-          <li key={name}>
-            <button
-              type="button"
-              onClick={() => changeServer(i)}
-              disabled={server === i}
-            >
-              {name}
-            </button>
-          </li>
-        ))}
-      </ul>
+    <div className={styles.container} ref={container}>
+      <div className={styles.header}>
+        <h3>{entry.episodes[episode].title}</h3>
+        <details>
+          <summary>Servers</summary>
+          <ul>
+            {servers.map(({ name }, i) => (
+              <li key={name}>
+                <button
+                  type="button"
+                  onClick={() => changeServer(i)}
+                  disabled={server === i}
+                >
+                  {name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </details>
+      </div>
       {video ? (
         <Player
           video={video}

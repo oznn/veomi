@@ -3,6 +3,7 @@ import Hls from 'hls.js';
 import { useEffect, useRef, useState } from 'react';
 import { Entry, Video } from '../../types';
 import Settings from './Settings';
+import styles from '../../styles/Watch.module.css';
 
 const {
   electron: { store },
@@ -32,6 +33,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(5);
+  const [isShowSettings, setIsShowSettings] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -73,12 +75,13 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
   function playAndPause() {
     if (videoRef.current) {
       if (videoRef.current.paused) videoRef.current.play();
-      else {
-        videoRef.current.pause();
+      else if (!isShowSettings) {
         const { currentTime } = videoRef.current;
+        videoRef.current.pause();
         store.set(`${episodeKey}.progress`, currentTime);
       }
     }
+    setIsShowSettings(false);
   }
   function skip(part: 'intro' | 'outro', time: number) {
     if (videoRef.current) {
@@ -112,8 +115,8 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
   }
   function navigate(target: HTMLVideoElement, x: number) {
     const { width } = target.getBoundingClientRect();
-    if (width / 2 > x && episode > 0) prev();
     if (width / 2 < x && episode < entry.episodes.length - 1) next();
+    if (width / 2 > x && episode > 0) prev();
   }
   function handleKeyEvents(key: string) {
     if (videoRef.current)
@@ -146,10 +149,9 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
 
   return (
     <div>
-      {isVideoLoading && <h3>loading...</h3>}
+      {isVideoLoading && <h3 className={styles.loading}>loading...</h3>}
       <video
         tabIndex={0}
-        width={1000}
         ref={videoRef}
         onClick={playAndPause}
         onTimeUpdate={update}
@@ -172,19 +174,26 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
           />
         )}
       </video>
-      <br />
-      {videoRef.current && videoRef.current.duration
-        ? formatTime(Math.floor(videoRef.current.duration - progress))
-        : '0:00'}
-      <input
-        type="range"
-        defaultValue={0}
-        ref={seekerRef}
-        step={1}
-        onChange={seek}
-      />
-      <h4>volume {volume * 10}%</h4>
-      <Settings entry={entry} />
+
+      <Settings entry={entry} isShow={isShowSettings} />
+      <div className={styles.footer}>
+        {videoRef.current && videoRef.current.duration
+          ? formatTime(Math.floor(videoRef.current.duration - progress))
+          : '0:00'}
+        <input
+          type="range"
+          defaultValue={0}
+          ref={seekerRef}
+          step={1}
+          onChange={seek}
+        />
+        <button
+          type="button"
+          onClick={() => setIsShowSettings(!isShowSettings)}
+        >
+          Settings
+        </button>
+      </div>
     </div>
   );
 }

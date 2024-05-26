@@ -19,6 +19,12 @@ a {
   text-decoration: none;
   color: grey;
 }
+a:hover{
+  color:white;
+}
 button:disabled{
   color:grey;
+}
+nav button{
+  margin: 0 .5em;
 }

@@ -1,20 +1,25 @@
 import { Entry } from '../../types';
+import styles from '../../styles/Watch.module.css';
 
 type Props = {
   entry: Entry;
+  isShow: boolean;
 };
 const {
   electron: { store },
 } = window;
 
-export default function Settings({ entry }: Props) {
+export default function Settings({ entry, isShow }: Props) {
   function toggleIsSkip(part: 'intro' | 'outro', toggle: boolean) {
     entry.isSkip[part] = toggle;
     store.set(`entries.${entry.key}.isSkip.${part}`, toggle);
   }
 
   return (
-    <div>
+    <div
+      className={styles.settings}
+      style={{ display: isShow ? 'block' : 'none' }}
+    >
       <label htmlFor="skipIntro">
         <input
           type="checkbox"
@@ -24,6 +29,7 @@ export default function Settings({ entry }: Props) {
         />
         skip intro
       </label>
+      <br />
       <label htmlFor="skipOutro">
         <input
           type="checkbox"

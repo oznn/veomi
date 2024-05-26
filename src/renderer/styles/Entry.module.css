@@ -1,0 +1,6 @@
+.container li {
+  display:flex;
+  justify-content:space-between;
+  width:30em;
+  padding: .1em 0;
+}

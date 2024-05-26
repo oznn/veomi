@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Result, Entry as T } from '../../types';
+import styles from '../../styles/Entry.module.css';
 
 const {
   electron: { store },
@@ -67,20 +68,20 @@ export default function Entry() {
   }
 
   return (
-    <div>
+    <div className={styles.container}>
+      <br />
       <button type="button" onClick={getAndSetEntry}>
         refresh
       </button>
-      <br />
       <button type="button" onClick={addToLibary} disabled={entry.isInLibary}>
         add to libary
       </button>
-      <h1>details here</h1>
+      <h2>{result.title}</h2>
       <ul>
         {entry.episodes.map(({ title, info }, i) => (
           <li key={title}>
-            <Link to={`${watchURL}&startAt=${i}`}>
-              {title} <sub>{info.join(' ')}</sub>
+            <Link title={info.join(' • ')} to={`${watchURL}&startAt=${i}`}>
+              {`${title} `}
             </Link>
             <button type="button" onClick={() => toggleIsSeen(i)}>
               mark as {entry.episodes[i].isSeen ? 'unseen' : 'seen'}

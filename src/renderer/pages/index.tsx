@@ -15,19 +15,13 @@ import '../styles/App.css';
 function Links() {
   const nav = useNavigate();
   return (
-    <ul>
-      <li>
-        <button type="button" onClick={() => nav(-1)}>
-          go back
-        </button>
-      </li>
-      <li>
-        <Link to="/">Libary</Link>
-      </li>
-      <li>
-        <Link to="/extensions">Extensions</Link>
-      </li>
-    </ul>
+    <nav>
+      <button type="button" onClick={() => nav(-1)}>
+        {'<= '}
+      </button>
+      <Link to="/">Libary </Link>
+      <Link to="/extensions">Extensions</Link>
+    </nav>
   );
 }
 
