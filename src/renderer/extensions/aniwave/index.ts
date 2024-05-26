@@ -86,13 +86,15 @@ export async function getServers(episode: Episode) {
   const html = (await res.json()).result;
   const doc = parse(html);
   const servers: Server[] = [];
+  const supportedServers = ['Mp4upload', 'Vidplay', 'MyCloud'];
 
   doc.querySelectorAll('.type').forEach((server) => {
     const type = server.getAttribute('data-type');
     server.querySelectorAll('li').forEach((li) => {
       const id = li.getAttribute('data-link-id') || '';
-      const serverName = li.textContent;
-      servers.push({ name: `[${type}] ${serverName}`, id });
+      const serverName = li.textContent || '';
+      if (supportedServers.includes(serverName))
+        servers.push({ name: `[${type}] ${serverName}`, id });
     });
   });
 

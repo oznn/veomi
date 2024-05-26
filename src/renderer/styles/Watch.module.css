@@ -8,6 +8,8 @@
   z-index:-1;
   outline:none;
   cursor: none;
+  width:100%;
+  height:100%;
 }
 .container .header{
   display: flex;
@@ -16,7 +18,7 @@
   padding: .5em 5em;
   opacity: 0;
   transition: opacity 200ms;
-  background-color:rgba(0,0,0,.2);
+  background-color:rgba(0,0,0,.4);
 }
 .container .header:hover{
   opacity: 1;
@@ -38,7 +40,7 @@
   height:2em;
   opacity: 0;
   transition: opacity 200ms;
-  background-color:rgba(0,0,0,.2);
+  background-color:rgba(0,0,0,.4);
 }
 .container .footer input[type='range']{
   width:80%;
@@ -50,7 +52,7 @@
   position: absolute;
   bottom:2.2em;
   right:.2em;
-  background-color:rgba(0,0,0,.2);
+  background-color:rgba(0,0,0,.4);
   padding: .5em 1em;
 }
 .container .loading{

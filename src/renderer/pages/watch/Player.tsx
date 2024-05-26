@@ -25,7 +25,6 @@ function formatTime(s: number) {
 }
 export default function Player({ video, entry, episode, next, prev }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const src = video.sources[0].file;
   const track = video.tracks[0];
   const { skips } = video;
   const episodeKey = `entries.${entry.key}.episodes.${episode}`;
@@ -34,6 +33,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(5);
   const [isShowSettings, setIsShowSettings] = useState(false);
+  const [src, setSrc] = useState(video.sources[0]);
 
   useEffect(() => {
     (async () => {
@@ -41,11 +41,13 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
         debug: false,
       });
 
-      const fileType = src.slice(src.lastIndexOf('.') + 1, src.length);
+      const fileType = src.file.slice(
+        src.file.lastIndexOf('.') + 1,
+        src.file.length,
+      );
       if (videoRef.current) {
         if (Hls.isSupported() && fileType === 'm3u8') {
-          // hls.log = true;
-          hls.loadSource(src);
+          hls.loadSource(src.file);
           hls.attachMedia(videoRef.current);
           hls.on(Hls.Events.ERROR, (err) => {
             console.log(err);
@@ -97,7 +99,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
       const { currentTime, duration } = videoRef.current;
       const progressPercent = Math.floor((currentTime / duration) * 100);
 
-      if (Math.floor(currentTime) % 60 === 0)
+      if (currentTime > 0 && Math.floor(currentTime) % 60 === 0)
         store.set(`${episodeKey}.progress`, currentTime);
       if (entry.isSkip.intro) skip('intro', currentTime);
       if (entry.isSkip.outro) skip('outro', currentTime);
@@ -155,20 +157,21 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
       {isVideoLoading && <h3 className={styles.loading}>loading...</h3>}
       <video
         tabIndex={0}
+        style={{ cursor: videoRef?.current?.paused ? 'auto' : 'none' }}
         ref={videoRef}
         onClick={playPause}
         onTimeUpdate={update}
         onEnded={next}
+        onPause={handlePause}
         onWaiting={() => setIsVideoLoading(true)}
         onPlaying={() => setIsVideoLoading(false)}
-        onPause={handlePause}
         onWheel={({ deltaY }) => changeVolume(deltaY * -0.01)}
         onKeyDown={({ key }) => handleKeyEvents(key)}
         onAuxClick={({ target, clientX }) =>
           navigate(target as HTMLVideoElement, clientX)
         }
       >
-        <source src={src} />
+        <source src={src.file} />
         {track && (
           <track
             label={track.label}
@@ -179,7 +182,16 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
         )}
       </video>
 
-      <Settings entry={entry} isShow={isShowSettings} />
+      {videoRef && (
+        <Settings
+          entry={entry}
+          video={video}
+          videoRef={videoRef}
+          changeSrc={(i: number) => setSrc(video.sources[i])}
+          episodeKey={episodeKey}
+          isShow={isShowSettings}
+        />
+      )}
       <div className={styles.footer}>
         {videoRef.current && videoRef.current.duration
           ? formatTime(Math.floor(videoRef.current.duration - progress))

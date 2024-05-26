@@ -42,7 +42,7 @@ export default function Watch() {
           setEpisode(entry.episodes.map(({ isSeen }) => isSeen).indexOf(false));
         if (episode > -1) {
           const res = (await getServers(entry.episodes[episode])) as Server[];
-          setServers(res.filter(({ name }) => name.includes('Mp4upload')));
+          setServers(res);
         }
       } catch (err) {
         console.log(`failed to set servers ${err}`);
