@@ -7,14 +7,16 @@
   inset:0;
   z-index:-1;
   outline:none;
+  cursor: none;
 }
 .container .header{
   display: flex;
   justify-content:space-between;
   align-items:center;
-  border:solid 1px red;
-  padding: 1em 5em;
+  padding: .5em 5em;
   opacity: 0;
+  transition: opacity 200ms;
+  background-color:rgba(0,0,0,.2);
 }
 .container .header:hover{
   opacity: 1;
@@ -27,7 +29,6 @@
   cursor:pointer;
 }
 .container .footer{
-  border: solid 1px red;
   position: absolute;
   bottom:0em;
   width:100%;
@@ -36,6 +37,8 @@
   align-items:center;
   height:2em;
   opacity: 0;
+  transition: opacity 200ms;
+  background-color:rgba(0,0,0,.2);
 }
 .container .footer input[type='range']{
   width:80%;
@@ -45,8 +48,10 @@
 }
 .container .settings {
   position: absolute;
-  bottom:2.1em;
-  right:0;
+  bottom:2.2em;
+  right:.2em;
+  background-color:rgba(0,0,0,.2);
+  padding: .5em 1em;
 }
 .container .loading{
   position: absolute;

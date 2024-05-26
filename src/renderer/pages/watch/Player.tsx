@@ -72,16 +72,19 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
       setProgress(Math.floor(seekedProgress));
     }
   }
-  function playAndPause() {
+  function playPause() {
     if (videoRef.current) {
       if (videoRef.current.paused) videoRef.current.play();
-      else if (!isShowSettings) {
-        const { currentTime } = videoRef.current;
-        videoRef.current.pause();
-        store.set(`${episodeKey}.progress`, currentTime);
-      }
+      else if (!isShowSettings) videoRef.current.pause();
     }
     setIsShowSettings(false);
+  }
+  function handlePause() {
+    if (videoRef.current) {
+      const { currentTime } = videoRef.current;
+      store.set(`${episodeKey}.progress`, currentTime);
+      setIsVideoLoading(false);
+    }
   }
   function skip(part: 'intro' | 'outro', time: number) {
     if (videoRef.current) {
@@ -140,7 +143,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
           changeVolume(-1);
           break;
         case ' ':
-          playAndPause();
+          playPause();
           break;
         default:
         // no default
@@ -153,11 +156,12 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
       <video
         tabIndex={0}
         ref={videoRef}
-        onClick={playAndPause}
+        onClick={playPause}
         onTimeUpdate={update}
         onEnded={next}
         onWaiting={() => setIsVideoLoading(true)}
         onPlaying={() => setIsVideoLoading(false)}
+        onPause={handlePause}
         onWheel={({ deltaY }) => changeVolume(deltaY * -0.01)}
         onKeyDown={({ key }) => handleKeyEvents(key)}
         onAuxClick={({ target, clientX }) =>
@@ -184,7 +188,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
           type="range"
           defaultValue={0}
           ref={seekerRef}
-          step={1}
+          step={0.1}
           onChange={seek}
         />
         <button

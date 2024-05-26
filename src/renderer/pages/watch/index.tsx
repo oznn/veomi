@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Player from './Player';
 import { Server, Entry, Result } from '../../types';
 import styles from '../../styles/Watch.module.css';
@@ -22,10 +22,13 @@ export default function Watch() {
   );
   const container = useRef<HTMLDivElement>(null);
   const entryKey = (result.ext + result.path).replace(/\./g, ' ');
+  const nav = useNavigate();
 
   useEffect(() => {
     (async () => {
       const res = await store.get(`entries.${entryKey}`);
+      document.onfullscreenchange = () =>
+        !document.fullscreenElement && nav(-1);
       setEntry(res);
     })();
   }, []);
@@ -78,7 +81,11 @@ export default function Watch() {
   if (!entry || !servers) return <h1>loading servers....</h1>;
   if (servers.length === 0) return <h1>0 servers.</h1>;
   return (
-    <div className={styles.container} ref={container}>
+    // eslint-disable-next-line
+    <div
+      className={styles.container}
+      ref={container}
+    >
       <div className={styles.header}>
         <h3>{entry.episodes[episode].title}</h3>
         <details>
@@ -98,7 +105,7 @@ export default function Watch() {
           </ul>
         </details>
       </div>
-      {video ? (
+      {video && (
         <Player
           video={video}
           entry={entry}
@@ -106,8 +113,6 @@ export default function Watch() {
           next={() => changeEpisode(episode + 1)}
           prev={() => changeEpisode(episode - 1)}
         />
-      ) : (
-        <h1>loading video...</h1>
       )}
     </div>
   );
