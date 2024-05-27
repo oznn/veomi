@@ -25,15 +25,16 @@ function formatTime(s: number) {
 }
 export default function Player({ video, entry, episode, next, prev }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const track = video.tracks[0];
   const { skips } = video;
   const episodeKey = `entries.${entry.key}.episodes.${episode}`;
   const seekerRef = useRef<HTMLInputElement>(null);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const [progress, setProgress] = useState(0);
-  const [volume, setVolume] = useState(5);
+  const [volume, setVolume] = useState(10);
   const [isShowSettings, setIsShowSettings] = useState(false);
   const [src, setSrc] = useState(video.sources[0]);
+  const [track, setTrack] = useState(video.tracks[0]);
+  const [isShowVolume, setIsShowVolume] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -65,6 +66,12 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
       }
     })();
   }, [src]);
+  useEffect(() => {
+    setIsShowVolume(true);
+    const timeout = setTimeout(() => setIsShowVolume(false), 2000);
+
+    return () => clearTimeout(timeout);
+  }, [volume]);
 
   function seek() {
     if (videoRef.current && seekerRef.current) {
@@ -112,8 +119,8 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
   }
   function changeVolume(v: number) {
     if (videoRef.current) {
-      v = Math.max(0, Math.min(volume + v, 10)); // eslint-disable-line
-      videoRef.current.volume = v * 0.1;
+      v = Math.max(0, Math.min(volume + v, 20)); // eslint-disable-line
+      videoRef.current.volume = v * 0.05;
       store.set(`entries.${entry.key}.volume`, v);
       setVolume(v);
     }
@@ -126,22 +133,22 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
   function handleKeyEvents(key: string) {
     if (videoRef.current)
       switch (key) {
-        case 'ArrowRight':
+        case 'l':
           videoRef.current.currentTime = Math.min(
             videoRef.current.duration,
             videoRef.current.currentTime + 5,
           );
           break;
-        case 'ArrowLeft':
+        case 'h':
           videoRef.current.currentTime = Math.max(
             0,
             videoRef.current.currentTime - 5,
           );
           break;
-        case 'ArrowUp':
+        case 'k':
           changeVolume(1);
           break;
-        case 'ArrowDown':
+        case 'j':
           changeVolume(-1);
           break;
         case ' ':
@@ -181,15 +188,15 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
           />
         )}
       </video>
-
       {videoRef && (
         <Settings
           entry={entry}
           video={video}
           videoRef={videoRef}
-          changeSrc={(i: number) => setSrc(video.sources[i])}
           episodeKey={episodeKey}
           isShow={isShowSettings}
+          setSrc={(i: number) => setSrc(video.sources[i])}
+          setTrack={(i: number) => setTrack(video.tracks[i])}
         />
       )}
       <div className={styles.footer}>
@@ -209,6 +216,9 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
         >
           Settings
         </button>
+      </div>
+      <div className={styles.volume} style={{ opacity: isShowVolume ? 1 : 0 }}>
+        {volume * 5}%
       </div>
     </div>
   );
