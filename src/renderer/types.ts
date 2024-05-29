@@ -15,7 +15,7 @@ export type Episode = Required<{
   [key: string]: any;
 };
 export type Entry = {
-  details: { title: string; poster: string };
+  details: { title: string; poster: string; isCompleted: boolean };
   episodes: Episode[];
   isInLibary: boolean;
   key: string;

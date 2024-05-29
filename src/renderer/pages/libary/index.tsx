@@ -47,7 +47,9 @@ export default function Libary() {
           <Link
             to={`/entry?result=${encodeURIComponent(JSON.stringify(result))}`}
           >
-            <b> i </b>
+            <i>
+              <b> entry page </b>
+            </i>
           </Link>
           <button type="button" onClick={() => deleteFromLibary(i)}>
             delete

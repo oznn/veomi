@@ -110,8 +110,10 @@ export default function Watch() {
           video={video}
           entry={entry}
           episode={episode}
-          next={() => changeEpisode(episode + 1)}
-          prev={() => changeEpisode(episode - 1)}
+          next={() =>
+            episode < entry.episodes.length - 1 && changeEpisode(episode + 1)
+          }
+          prev={() => episode > 0 && changeEpisode(episode - 1)}
         />
       )}
     </div>

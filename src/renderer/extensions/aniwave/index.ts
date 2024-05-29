@@ -64,8 +64,20 @@ async function getEpisodes(dataId: string) {
   return episodes;
 }
 
+async function getDetails(result: Result) {
+  const res = await fetch(baseURL + result.path);
+  const doc = parse(await res.text());
+  const meta = doc.querySelectorAll('.bmeta > .meta > div');
+  let isCompleted = false;
+
+  meta.forEach((div) => {
+    if (div.textContent?.includes('Status'))
+      isCompleted = div.querySelector('span')?.textContent === 'Completed';
+  });
+  return { title: result.title, poster: result.poster, isCompleted };
+}
 export async function getEntry(result: Result): Promise<Entry> {
-  const details = { title: result.title, poster: result.poster };
+  const details = await getDetails(result);
   const episodes = await getEpisodes(result.id);
 
   return {
@@ -74,6 +86,7 @@ export async function getEntry(result: Result): Promise<Entry> {
     isInLibary: false,
     isSkip: { intro: true, outro: true },
     volume: 5,
+    isCompleted: false,
     key: (result.ext + result.path).replace(/\./g, ' '),
   };
 }

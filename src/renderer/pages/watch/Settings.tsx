@@ -31,21 +31,23 @@ export default function Settings({
 
   return (
     <div className={styles.settings} style={{ opacity: isShow ? 1 : 0 }}>
-      <div>
-        {video.tracks.map((track, i) => (
-          <label key={track.label} htmlFor={`track${i}`}>
-            <input
-              type="radio"
-              id={`track${i}`}
-              name="track"
-              defaultChecked={i === 0}
-              onClick={() => setTrack(i)}
-            />
-            {track.label}
-            <br />
-          </label>
-        ))}
-      </div>
+      {video.tracks.length > 0 && (
+        <div>
+          {video.tracks.map((track, i) => (
+            <label key={track.label} htmlFor={`track${i}`}>
+              <input
+                type="radio"
+                id={`track${i}`}
+                name="track"
+                defaultChecked={i === 0}
+                onClick={() => setTrack(i)}
+              />
+              {` ${track.label}`}
+              <br />
+            </label>
+          ))}
+        </div>
+      )}
       <div>
         {video.sources.map(({ qual }, i) => (
           <label key={qual} htmlFor={`qual${i}`}>
@@ -62,7 +64,7 @@ export default function Settings({
                 }
               }}
             />
-            {qual}
+            {` ${qual}`}
             <br />
           </label>
         ))}
@@ -75,7 +77,7 @@ export default function Settings({
             id="skipIntro"
             defaultChecked={entry.isSkip.intro}
           />
-          skip intro
+          {` skip intro`}
         </label>
         <br />
         <label htmlFor="skipOutro">
@@ -85,7 +87,7 @@ export default function Settings({
             id="skipOutro"
             defaultChecked={entry.isSkip.outro}
           />
-          skip outro
+          {` skip outro`}
         </label>
       </div>
     </div>

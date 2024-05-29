@@ -19,6 +19,7 @@ export default function Entry() {
     if (res) {
       if (entry) {
         entry.details.poster = res.details.poster;
+        entry.details.isCompleted = res.details.isCompleted;
         entry.episodes = entry.episodes.concat(
           res.episodes.splice(entry.episodes.length, res.episodes.length),
         );
@@ -76,7 +77,8 @@ export default function Entry() {
       <button type="button" onClick={addToLibary} disabled={entry.isInLibary}>
         add to libary
       </button>
-      <h2>{result.title}</h2>
+      <h2>{entry.details.title}</h2>
+      <h4>{entry.details.isCompleted ? 'Completed' : 'Ongoin'}</h4>
       <ul>
         {entry.episodes.map(({ title, info }, i) => (
           <li key={title}>
