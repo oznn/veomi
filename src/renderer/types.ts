@@ -1,10 +1,8 @@
-export type Result = Required<{
+export type Result = {
   ext: string;
   path: string;
   title: string;
   poster: string;
-}> & {
-  [key: string]: any;
 };
 export type Episode = Required<{
   title: string;
@@ -15,20 +13,25 @@ export type Episode = Required<{
   [key: string]: any;
 };
 export type Entry = {
-  details: { title: string; poster: string; isCompleted: boolean };
+  details: {
+    title: string;
+    poster: string;
+    isCompleted: boolean;
+    dataId?: string;
+  };
   episodes: Episode[];
   isInLibary: boolean;
-  key: string;
   isSkip: { intro: boolean; outro: boolean };
   volume: number;
+  ext: string;
+  path: string;
+  key: string;
 };
-
 export type Server = Required<{
   name: string;
 }> & {
   [key: string]: any;
 };
-
 export type Source = { file: string; qual: string };
 export type Track = {
   file: string;

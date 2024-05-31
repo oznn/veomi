@@ -57,7 +57,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
         const storedVolume = await store.get(`entries.${entry.key}.volume`);
         const storedProgress = await store.get(`${episodeKey}.progress`);
 
-        setVolume(storedVolume ?? 5);
+        setVolume(storedVolume ?? 10);
         videoRef.current.volume =
           typeof storedVolume === 'number' ? storedVolume * 0.05 : 0.5;
         videoRef.current.currentTime = storedProgress;

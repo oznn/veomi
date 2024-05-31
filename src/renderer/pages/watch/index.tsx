@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Player from './Player';
-import { Server, Entry, Result } from '../../types';
+import { Server, Entry } from '../../types';
 import styles from '../../styles/Watch.module.css';
 
 const {
@@ -11,8 +11,8 @@ const {
 export default function Watch() {
   const [searchParams] = useSearchParams();
   const startAt = searchParams.get('startAt') || '';
-  const resultString = searchParams.get('result') || '{}';
-  const result = JSON.parse(resultString) as Result;
+  const ext = searchParams.get('ext') || '';
+  const path = searchParams.get('path') || '';
   const [entry, setEntry] = useState<Entry | null>(null);
   const [servers, setServers] = useState<Server[] | null>(null);
   const [server, setServer] = useState<number>(0);
@@ -21,7 +21,7 @@ export default function Watch() {
     startAt ? Number(startAt) : -1,
   );
   const container = useRef<HTMLDivElement>(null);
-  const entryKey = (result.ext + result.path).replace(/\./g, ' ');
+  const entryKey = (ext + path).replace(/\./g, ' ');
   const nav = useNavigate();
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function Watch() {
     (async () => {
       if (!entry) return;
       try {
-        const { getServers } = await import(`../../extensions/${result.ext}`);
+        const { getServers } = await import(`../../extensions/${ext}`);
         if (episode === -1)
           setEpisode(entry.episodes.map(({ isSeen }) => isSeen).indexOf(false));
         if (episode > -1) {
@@ -57,7 +57,7 @@ export default function Watch() {
     }
     (async () => {
       try {
-        const { getVideo } = await import(`../../extensions/${result.ext}`);
+        const { getVideo } = await import(`../../extensions/${ext}`);
         const res = await getVideo(servers[server]);
 
         setVideo(res);

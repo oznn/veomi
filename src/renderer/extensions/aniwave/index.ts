@@ -19,10 +19,8 @@ export async function getResults(query: string) {
     const path = item.querySelector('a.name')?.getAttribute('href') || '';
     const title = item.querySelector('a.name')?.textContent || '';
     const poster = item.querySelector('img')?.getAttribute('src') || '';
-    let id = item.querySelector('.ani.poster')?.getAttribute('data-tip') || '';
-    id = id.slice(0, id?.indexOf('?'));
 
-    results.push({ title, poster, path, ext, id });
+    results.push({ title, poster, path, ext });
   });
 
   return results;
@@ -64,8 +62,8 @@ async function getEpisodes(dataId: string) {
   return episodes;
 }
 
-async function getDetails(result: Result) {
-  const res = await fetch(baseURL + result.path);
+async function getDetails(path: string) {
+  const res = await fetch(baseURL + path);
   const doc = parse(await res.text());
   const meta = doc.querySelectorAll('.bmeta > .meta > div');
   let isCompleted = false;
@@ -74,11 +72,14 @@ async function getDetails(result: Result) {
     if (div.textContent?.includes('Status'))
       isCompleted = div.querySelector('span')?.textContent === 'Completed';
   });
-  return { title: result.title, poster: result.poster, isCompleted };
+  const dataId =
+    doc.querySelector('#watch-main')?.getAttribute('data-id') || '';
+
+  return { title: 'Title', poster: '', isCompleted, dataId };
 }
-export async function getEntry(result: Result): Promise<Entry> {
-  const details = await getDetails(result);
-  const episodes = await getEpisodes(result.id);
+export async function getEntry(path: string): Promise<Entry> {
+  const details = await getDetails(path);
+  const episodes = await getEpisodes(details.dataId);
 
   return {
     details,
@@ -86,8 +87,9 @@ export async function getEntry(result: Result): Promise<Entry> {
     isInLibary: false,
     isSkip: { intro: true, outro: true },
     volume: 5,
-    isCompleted: false,
-    key: (result.ext + result.path).replace(/\./g, ' '),
+    ext: 'aniwave',
+    path,
+    key: `aniwave${path}`.replace(/\./g, ' '),
   };
 }
 
@@ -99,7 +101,7 @@ export async function getServers(episode: Episode) {
   const html = (await res.json()).result;
   const doc = parse(html);
   const servers: Server[] = [];
-  const supportedServers = ['Mp4upload', 'Vidplay', 'MyCloud'];
+  const supportedServers = ['Mp4upload'];
 
   doc.querySelectorAll('.type').forEach((server) => {
     const type = server.getAttribute('data-type');

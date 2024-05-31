@@ -8,9 +8,7 @@ function Results({ results }: { results: Result[] }) {
     <ul>
       {results.map((result) => (
         <li key={result.title}>
-          <Link
-            to={`/entry?result=${encodeURIComponent(JSON.stringify(result))}`}
-          >
+          <Link to={`/entry?ext=${result.ext}&path=${result.path}`}>
             {result.title}
           </Link>
         </li>

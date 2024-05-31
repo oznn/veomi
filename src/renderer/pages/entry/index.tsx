@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Result, Entry as T } from '../../types';
+import { Entry as T } from '../../types';
 import styles from '../../styles/Entry.module.css';
 
 const {
@@ -9,13 +9,14 @@ const {
 export default function Entry() {
   const [entry, setEntry] = useState<T | null>(null);
   const [searchParams] = useSearchParams();
-  const resultString = searchParams.get('result') || '{}';
-  const result = JSON.parse(resultString) as Result;
-  const key = (result.ext + result.path).replace(/\./g, ' ');
+  const ext = searchParams.get('ext') || '';
+  const path = searchParams.get('path') || '';
+  const key = (ext + path).replace(/\./g, ' ');
+  const watchURL = `/watch?ext=${ext}&path=${path}`;
 
   async function getAndSetEntry() {
-    const { getEntry } = await import(`../../extensions/${result.ext}`);
-    const res = (await getEntry(result)) as T | undefined;
+    const { getEntry } = await import(`../../extensions/${ext}`);
+    const res = (await getEntry(path)) as T | undefined;
     if (res) {
       if (entry) {
         entry.details.poster = res.details.poster;
@@ -46,12 +47,7 @@ export default function Entry() {
 
   if (entry === null) return <h1>loading entry...</h1>;
 
-  const watchURL = `/watch?result=${encodeURIComponent(
-    JSON.stringify(result),
-  )}`;
-
   function addToLibary() {
-    store.push('libary', result);
     if (entry) {
       entry.isInLibary = true;
       store.set(`entries.${key}.isInLibary`, true);
