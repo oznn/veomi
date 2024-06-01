@@ -34,7 +34,7 @@ async function getEpisodes(dataId: string) {
   const doc = parse(result);
 
   const episodes: Episode[] = [];
-  doc.querySelectorAll('a').forEach((a, i) => {
+  doc.querySelectorAll('a').forEach((a) => {
     const info: string[] = [];
     const id = a.getAttribute('data-ids') || '';
     const infoString = a.parentElement?.getAttribute('title') || '';
@@ -45,13 +45,14 @@ async function getEpisodes(dataId: string) {
     ['Sub', 'Softsub', 'Dub'].forEach((type) => {
       if (infoString.includes(type)) types.push(type);
     });
+    const epNum = a.getAttribute('data-num');
 
     if (isFiller) info.push('Filler');
     info.push(releaseDate);
     info.push(types.join(','));
 
     episodes.push({
-      title: `E${i + 1}. ${epTitle}`,
+      title: `E${epNum}. ${epTitle}`,
       info,
       isSeen: false,
       progress: 0,
@@ -74,8 +75,9 @@ async function getDetails(path: string) {
   });
   const dataId =
     doc.querySelector('#watch-main')?.getAttribute('data-id') || '';
+  const title = doc.querySelector('.title.d-title')?.textContent || '';
 
-  return { title: 'Title', poster: '', isCompleted, dataId };
+  return { title, poster: '', isCompleted, dataId };
 }
 export async function getEntry(path: string): Promise<Entry> {
   const details = await getDetails(path);

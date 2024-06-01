@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { Entry } from '../../types';
 
 const {
@@ -9,12 +9,15 @@ const {
 let entries: Entry[] | null = null;
 export default function Libary() {
   const [, rerender] = useReducer((n) => n + 1, 0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const res = Object.values(await store.get('entries')) as Entry[];
-        entries = res.filter((e) => e.isInLibary);
+        const res = await store.get('entries');
+        const allEntries = Object.values(res || {}) as Entry[];
+
+        entries = allEntries.filter((e) => e.isInLibary);
         rerender();
       } catch (err) {
         console.log(`${err}`);
@@ -31,24 +34,55 @@ export default function Libary() {
       rerender();
     }
   }
+  async function refreshLibary() {
+    setIsRefreshing(true);
+    if (entries) {
+      const targetedEntries = entries.filter((e) => {
+        const isAllSeen = e.episodes.every((ep) => ep.isSeen);
+        return e.details.isCompleted && isAllSeen;
+      });
+
+      for (const entry of targetedEntries) { // eslint-disable-line
+        const { getEntry } = await import(`../../extensions/${entry.ext}`);// eslint-disable-line
+        const res = (await getEntry(entry.path)) as Entry | undefined;// eslint-disable-line
+
+        if (res) {
+          entry.details.poster = res.details.poster;
+          entry.details.isCompleted = res.details.isCompleted;
+          entry.episodes = entry.episodes.concat(
+            res.episodes.splice(entry.episodes.length, res.episodes.length),
+          );
+          store.set(`entries.${entry.key}`, entry);
+          setIsRefreshing(false);
+        }
+      }
+    }
+  }
 
   return (
-    <ul>
-      {entries.map((entry, i) => (
-        <li key={entry.ext + entry.path}>
-          <Link to={`/watch?ext=${entry.ext}&path=${entry.path}`}>
-            {entry.details.title}
-          </Link>
-          <Link to={`/entry?ext=${entry.ext}&path=${entry.path}`}>
-            <i>
-              <b> entry page </b>
-            </i>
-          </Link>
-          <button type="button" onClick={() => deleteFromLibary(i)}>
-            delete
-          </button>
-        </li>
-      ))}
-    </ul>
+    <div>
+      <button type="button" onClick={refreshLibary} disabled={isRefreshing}>
+        refresh libary
+      </button>
+      <ul>
+        {entries.map((entry, i) => (
+          <li key={entry.ext + entry.path}>
+            <p>{entry.details.poster || 'no poster'}</p>
+            <Link to={`/watch?ext=${entry.ext}&path=${entry.path}`}>
+              {entry.details.title}
+            </Link>
+            <sup>{entry.episodes.filter((e) => !e.isSeen).length}</sup>
+            <Link to={`/entry?ext=${entry.ext}&path=${entry.path}`}>
+              <i>
+                <b> entry page </b>
+              </i>
+            </Link>
+            <button type="button" onClick={() => deleteFromLibary(i)}>
+              delete
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

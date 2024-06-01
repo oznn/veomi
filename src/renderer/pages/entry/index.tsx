@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Entry as T } from '../../types';
 import styles from '../../styles/Entry.module.css';
@@ -7,6 +7,7 @@ const {
   electron: { store },
 } = window;
 export default function Entry() {
+  const [, rerender] = useReducer((n) => n + 1, 0);
   const [entry, setEntry] = useState<T | null>(null);
   const [searchParams] = useSearchParams();
   const ext = searchParams.get('ext') || '';
@@ -25,7 +26,7 @@ export default function Entry() {
           res.episodes.splice(entry.episodes.length, res.episodes.length),
         );
         store.set(`entries.${key}`, entry);
-        setEntry(structuredClone(entry));
+        rerender();
       } else {
         store.set(`entries.${key}`, res);
         setEntry(res);
@@ -51,16 +52,17 @@ export default function Entry() {
     if (entry) {
       entry.isInLibary = true;
       store.set(`entries.${key}.isInLibary`, true);
-      setEntry(structuredClone(entry));
+      rerender();
     }
   }
   function toggleIsSeen(i: number) {
     if (entry) {
       const toggle = !entry.episodes[i].isSeen;
       const isSeenKey = `entries.${key}.episodes.${i}.isSeen`;
+
       entry.episodes[i].isSeen = toggle;
       store.set(isSeenKey, toggle);
-      setEntry(structuredClone(entry));
+      rerender();
     }
   }
 
