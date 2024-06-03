@@ -7,7 +7,7 @@ function Results({ results }: { results: Result[] }) {
   return (
     <ul>
       {results.map((result) => (
-        <li key={result.title}>
+        <li key={result.path}>
           <Link to={`/entry?ext=${result.ext}&path=${result.path}`}>
             {result.title}
           </Link>

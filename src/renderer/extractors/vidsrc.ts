@@ -49,7 +49,6 @@ export default async function extractor(embedUrl: string) {
   const url = `https://${hostname}/${mediainfo}?${urlParams}`;
   const res = await fetch(url, { referrer: `https://${hostname}` });
   const { result } = await res.json();
-  console.log('vidsrc result', result);
   const sources = await getSources(result.sources[0].file, hostname);
   const tracks = (result.tracks as Track[]).filter((t) => t.label);
 

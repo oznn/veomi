@@ -6,6 +6,7 @@ type Props = {
   entry: Entry;
   video: Video;
   videoRef: RefObject<HTMLVideoElement>;
+  episode: number;
   episodeKey: string;
   isShow: boolean;
   setSrc: (i: number) => void;
@@ -20,6 +21,7 @@ export default function Settings({
   video,
   videoRef,
   episodeKey,
+  episode,
   isShow,
   setSrc,
   setTrack,

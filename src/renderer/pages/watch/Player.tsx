@@ -29,11 +29,12 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
   const episodeKey = `entries.${entry.key}.episodes.${episode}`;
   const seekerRef = useRef<HTMLInputElement>(null);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [volume, setVolume] = useState(10);
   const [isShowSettings, setIsShowSettings] = useState(false);
   const [src, setSrc] = useState(video.sources[0]);
   const [track, setTrack] = useState(video.tracks[0]);
+  console.log(track);
+  const [progress, setProgress] = useState(entry.episodes[episode].progress);
+  const [volume, setVolume] = useState(entry.volume);
   const [isShowVolume, setIsShowVolume] = useState(false);
 
   useEffect(() => {
@@ -54,16 +55,19 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
             console.log(err);
           });
         }
-        const storedVolume = await store.get(`entries.${entry.key}.volume`);
-        const storedProgress = await store.get(`${episodeKey}.progress`);
-
-        setVolume(storedVolume ?? 10);
-        videoRef.current.volume =
-          typeof storedVolume === 'number' ? storedVolume * 0.05 : 0.5;
-        videoRef.current.currentTime = storedProgress;
+        videoRef.current.currentTime = progress;
+        videoRef.current.volume = volume * 0.05;
         videoRef.current.focus();
         videoRef.current.play();
       }
+    })();
+  }, []);
+  useEffect(() => {
+    (async () => {
+      if (videoRef.current)
+        videoRef.current.currentTime = await store.get(
+          `${episodeKey}.progress`,
+        );
     })();
   }, [src]);
   useEffect(() => {
@@ -104,7 +108,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
   function update() {
     if (videoRef.current && seekerRef.current) {
       const { currentTime, duration } = videoRef.current;
-      const progressPercent = Math.floor((currentTime / duration) * 100);
+      const progressPercent = (currentTime / duration) * 100;
 
       if (currentTime > 0 && Math.floor(currentTime) % 60 === 0)
         store.set(`${episodeKey}.progress`, currentTime);
@@ -222,6 +226,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
           videoRef={videoRef}
           episodeKey={episodeKey}
           isShow={isShowSettings}
+          episode={episode}
           setSrc={(i: number) => setSrc(video.sources[i])}
           setTrack={(i: number) => setTrack(video.tracks[i])}
         />

@@ -88,9 +88,9 @@ export async function getEntry(path: string): Promise<Entry> {
     episodes,
     isInLibary: false,
     isSkip: { intro: true, outro: true },
-    volume: 5,
-    ext: 'aniwave',
+    volume: 10,
     path,
+    ext: 'aniwave',
     key: `aniwave${path}`.replace(/\./g, ' '),
   };
 }
@@ -103,7 +103,7 @@ export async function getServers(episode: Episode) {
   const html = (await res.json()).result;
   const doc = parse(html);
   const servers: Server[] = [];
-  const supportedServers = ['Mp4upload'];
+  const supportedServers = ['Mp4upload', 'Vidplay', 'MyCloud'];
 
   doc.querySelectorAll('.type').forEach((server) => {
     const type = server.getAttribute('data-type');

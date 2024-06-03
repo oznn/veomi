@@ -9,6 +9,7 @@ const {
 export default function Entry() {
   const [, rerender] = useReducer((n) => n + 1, 0);
   const [entry, setEntry] = useState<T | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchParams] = useSearchParams();
   const ext = searchParams.get('ext') || '';
   const path = searchParams.get('path') || '';
@@ -16,8 +17,10 @@ export default function Entry() {
   const watchURL = `/watch?ext=${ext}&path=${path}`;
 
   async function getAndSetEntry() {
+    setIsRefreshing(true);
     const { getEntry } = await import(`../../extensions/${ext}`);
     const res = (await getEntry(path)) as T | undefined;
+
     if (res) {
       if (entry) {
         entry.details.poster = res.details.poster;
@@ -26,7 +29,7 @@ export default function Entry() {
           res.episodes.splice(entry.episodes.length, res.episodes.length),
         );
         store.set(`entries.${key}`, entry);
-        rerender();
+        setIsRefreshing(false);
       } else {
         store.set(`entries.${key}`, res);
         setEntry(res);
@@ -68,8 +71,7 @@ export default function Entry() {
 
   return (
     <div className={styles.container}>
-      <br />
-      <button type="button" onClick={getAndSetEntry}>
+      <button type="button" onClick={getAndSetEntry} disabled={isRefreshing}>
         refresh
       </button>
       <button type="button" onClick={addToLibary} disabled={entry.isInLibary}>
