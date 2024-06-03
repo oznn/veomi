@@ -1,13 +1,8 @@
 {
   "name": "veomi",
-  "version": "0.1.1",
+  "version": "0.0.1",
   "description": "watch anythin",
   "license": "MIT",
-  "author": {
-    "name": "oznn",
-    "email": "ozzen0001@gmail.com",
-    "url": "https://github.com/oznn"
-  },
   "main": "./dist/main/main.js",
   "scripts": {
     "rebuild": "node -r ts-node/register ../../.erb/scripts/electron-rebuild.js",

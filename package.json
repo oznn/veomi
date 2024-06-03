@@ -206,7 +206,7 @@
     "publish": {
       "provider": "github",
       "owner": "oznn",
-      "repo": "veomi-releases"
+      "repo": "veomi"
     }
   },
   "devEngines": {
