@@ -32,7 +32,6 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
   const [isShowSettings, setIsShowSettings] = useState(false);
   const [src, setSrc] = useState(video.sources[0]);
   const [track, setTrack] = useState(video.tracks[0]);
-  console.log(track);
   const [progress, setProgress] = useState(entry.episodes[episode].progress);
   const [volume, setVolume] = useState(entry.volume);
   const [isShowVolume, setIsShowVolume] = useState(false);
@@ -226,7 +225,6 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
           videoRef={videoRef}
           episodeKey={episodeKey}
           isShow={isShowSettings}
-          episode={episode}
           setSrc={(i: number) => setSrc(video.sources[i])}
           setTrack={(i: number) => setTrack(video.tracks[i])}
         />

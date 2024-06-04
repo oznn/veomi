@@ -37,7 +37,8 @@ export default function Watch() {
     (async () => {
       if (!entry) return;
       try {
-        const { getServers } = await import(`../../extensions/${ext}`);
+        // getVideo wont work in prod if its not imported here
+        const { getServers, getVideo } = await import(`../../extensions/${ext}`);//eslint-disable-line
         if (episode === -1)
           setEpisode(entry.episodes.map(({ isSeen }) => isSeen).indexOf(false));
         if (episode > -1) {

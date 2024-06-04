@@ -27,14 +27,14 @@ export default function Libary() {
 
   if (!entries || !entries.length) return <h1>libary is empty.</h1>;
 
-  function deleteFromLibary(i: number) {
+  function remove(i: number) {
     if (entries) {
       store.set(`entries.${entries[i].key}.isInLibary`, false);
       entries.splice(i, 1);
       rerender();
     }
   }
-  async function refreshLibary() {
+  async function refresh() {
     setIsRefreshing(true);
     if (entries) {
       const targetedEntries = entries.filter((e) => {
@@ -61,7 +61,7 @@ export default function Libary() {
 
   return (
     <div>
-      <button type="button" onClick={refreshLibary} disabled={isRefreshing}>
+      <button type="button" onClick={refresh} disabled={isRefreshing}>
         refresh libary
       </button>
       <ul>
@@ -74,8 +74,8 @@ export default function Libary() {
             <Link to={`/watch?ext=${entry.ext}&path=${entry.path}`}>
               <b> resume </b>
             </Link>
-            <button type="button" onClick={() => deleteFromLibary(i)}>
-              delete
+            <button type="button" onClick={() => remove(i)}>
+              remove from libary
             </button>
           </li>
         ))}
