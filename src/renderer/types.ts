@@ -16,7 +16,7 @@ export type Entry = {
   details: {
     title: string;
     poster: string;
-    isCompleted: boolean;
+    isCompleted?: boolean;
     dataId?: string;
   };
   episodes: Episode[];

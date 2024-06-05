@@ -17,7 +17,7 @@ export default function Libary() {
         const res = await store.get('entries');
         const allEntries = Object.values(res || {}) as Entry[];
 
-        entries = allEntries.filter((e) => e.isInLibary);
+        entries = allEntries.filter((entry) => entry.isInLibary);
         rerender();
       } catch (err) {
         console.log(`${err}`);
@@ -37,9 +37,9 @@ export default function Libary() {
   async function refresh() {
     setIsRefreshing(true);
     if (entries) {
-      const targetedEntries = entries.filter((e) => {
-        const isAllSeen = e.episodes.every((ep) => ep.isSeen);
-        return e.details.isCompleted && isAllSeen;
+      const targetedEntries = entries.filter((entry) => {
+        const isAllSeen = entry.episodes.every((ep) => ep.isSeen);
+        return entry.details.isCompleted && isAllSeen;
       });
 
       for (const entry of targetedEntries) { // eslint-disable-line

@@ -54,19 +54,13 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
             console.log(err);
           });
         }
-        videoRef.current.currentTime = progress;
+        const storedProgress =
+          (await store.get(`${episodeKey}.progress`)) || progress;
+        videoRef.current.currentTime = storedProgress;
         videoRef.current.volume = volume * 0.05;
         videoRef.current.focus();
         videoRef.current.play();
       }
-    })();
-  }, []);
-  useEffect(() => {
-    (async () => {
-      if (videoRef.current)
-        videoRef.current.currentTime = await store.get(
-          `${episodeKey}.progress`,
-        );
     })();
   }, [src]);
   useEffect(() => {

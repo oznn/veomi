@@ -24,7 +24,9 @@ export default function Entry() {
     if (res) {
       if (entry) {
         entry.details.poster = res.details.poster;
-        entry.details.isCompleted = res.details.isCompleted;
+        if (Object.hasOwn(res.details, 'isCompleted')) {
+          entry.details.isCompleted = res.details.isCompleted;
+        }
         entry.episodes = entry.episodes.concat(
           res.episodes.splice(entry.episodes.length, res.episodes.length),
         );
