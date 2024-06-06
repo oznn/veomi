@@ -69,7 +69,6 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
 
     return () => clearTimeout(timeout);
   }, [volume]);
-
   function seek() {
     if (videoRef.current && seekerRef.current) {
       const seekedProgress =
@@ -160,7 +159,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
   }
 
   return (
-    <div>
+    <>
       {isVideoLoading && <h3 className={styles.loading}>LOADING</h3>}
       <video
         tabIndex={0}
@@ -191,7 +190,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
           />
         )}
       </video>
-      <div className={styles.footer}>
+      <div className={styles.controls}>
         {videoRef.current && videoRef.current.duration
           ? formatTime(Math.floor(videoRef.current.duration - progress))
           : '0:00'}
@@ -223,6 +222,6 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
           setTrack={(i: number) => setTrack(video.tracks[i])}
         />
       )}
-    </div>
+    </>
   );
 }

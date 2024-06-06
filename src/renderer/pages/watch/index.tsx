@@ -10,16 +10,14 @@ const {
 
 export default function Watch() {
   const [searchParams] = useSearchParams();
-  const startAt = searchParams.get('startAt') || '';
+  const startAt = searchParams.get('startAt');
   const ext = searchParams.get('ext') || '';
   const path = searchParams.get('path') || '';
   const [entry, setEntry] = useState<Entry | null>(null);
   const [servers, setServers] = useState<Server[] | null>(null);
   const [server, setServer] = useState<number>(0);
   const [video, setVideo] = useState(null);
-  const [episode, setEpisode] = useState<number>(
-    startAt ? Number(startAt) : -1,
-  );
+  const [episode, setEpisode] = useState(startAt ? Number(startAt) : NaN);
   const container = useRef<HTMLDivElement>(null);
   const entryKey = (ext + path).replace(/\./g, ' ');
   const nav = useNavigate();
@@ -39,9 +37,13 @@ export default function Watch() {
       try {
         // getVideo wont work in prod if its not imported here
         const { getServers, getVideo } = await import(`../../extensions/${ext}`);//eslint-disable-line
-        if (episode === -1) console.log(entry);
-        // setEpisode(entry.episodes.map(({ isSeen }) => isSeen).indexOf(false));
-        if (episode > -1) {
+        if (Number.isNaN(episode)) {
+          const n = (() => { // eslint-disable-line
+            for (let i = 0; i < entry.episodes.length; i += 1)
+              if (!entry.episodes[i].isSeen) return i;
+          })();
+          setEpisode(n ?? 0);
+        } else {
           const res = (await getServers(entry.episodes[episode])) as Server[];
           setServers(res);
         }
@@ -87,8 +89,14 @@ export default function Watch() {
       className={styles.container}
       ref={container}
     >
-      <div className={styles.header}>
-        <h3>{entry.episodes[episode].title}</h3>
+      <header>
+        <span>
+          <button
+            type="button"
+            onClick={() => document.exitFullscreen()}
+          >{` <= `}</button>
+          {entry.episodes[episode].title}
+        </span>
         <details>
           <summary>Servers</summary>
           <ul>
@@ -105,7 +113,7 @@ export default function Watch() {
             ))}
           </ul>
         </details>
-      </div>
+      </header>
       {video && (
         <Player
           video={video}

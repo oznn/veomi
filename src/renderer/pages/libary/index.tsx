@@ -39,30 +39,32 @@ export default function Libary() {
     if (entries) {
       const targetedEntries = entries.filter((entry) => {
         const isAllSeen = entry.episodes.every((ep) => ep.isSeen);
-        return entry.details.isCompleted && isAllSeen;
+        return !entry.details.isCompleted && isAllSeen;
       });
 
-      for (const entry of targetedEntries) { // eslint-disable-line
-        const { getEntry } = await import(`../../extensions/${entry.ext}`);// eslint-disable-line
-        const res = (await getEntry(entry.path)) as Entry | undefined;// eslint-disable-line
+      const isRefreshed = await Promise.all(
+        targetedEntries.map(async (entry) => {
+          const { getEntry } = await import(`../../extensions/${entry.ext}`);
+          const res = (await getEntry(entry.path)) as Entry | undefined;
 
-        if (res) {
-          entry.details.poster = res.details.poster;
-          entry.details.isCompleted = res.details.isCompleted;
-          entry.episodes = entry.episodes.concat(
-            res.episodes.splice(entry.episodes.length, res.episodes.length),
-          );
-          store.set(`entries.${entry.key}`, entry);
-          setIsRefreshing(false);
-        }
-      }
+          if (res) {
+            entry.details.poster = res.details.poster;
+            entry.details.isCompleted = res.details.isCompleted;
+            entry.episodes = entry.episodes.concat(
+              res.episodes.splice(entry.episodes.length, res.episodes.length),
+            );
+            store.set(`entries.${entry.key}`, entry);
+          }
+        }),
+      );
+      if (isRefreshed) setIsRefreshing(false);
     }
   }
 
   return (
     <div>
       <button type="button" onClick={refresh} disabled={isRefreshing}>
-        refresh libary
+        refresh
       </button>
       <ul>
         {entries.map((entry, i) => (
@@ -75,7 +77,7 @@ export default function Libary() {
               <b> resume </b>
             </Link>
             <button type="button" onClick={() => remove(i)}>
-              remove from libary
+              remove
             </button>
           </li>
         ))}

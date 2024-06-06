@@ -33,13 +33,23 @@ export default function Settings({
     <div className={styles.settings} style={{ opacity: isShow ? 1 : 0 }}>
       {video.tracks.length > 0 && (
         <div>
+          <label htmlFor="notrack">
+            <input
+              type="radio"
+              id="notrack"
+              name="track"
+              defaultChecked
+              onClick={() => setTrack(-1)}
+            />
+            {` off `}
+            <br />
+          </label>
           {video.tracks.map((track, i) => (
             <label key={track.label} htmlFor={`track${i}`}>
               <input
                 type="radio"
                 id={`track${i}`}
                 name="track"
-                defaultChecked={i === 0}
                 onClick={() => setTrack(i)}
               />
               {` ${track.label}`}
