@@ -8,6 +8,9 @@
   src: url('/assets/baloo2.ttf');
 }
 
+*{
+  box-sizing:border-box;
+}
 body, input,button {
   font-size: 32px;
   background-color: black;

@@ -81,7 +81,7 @@ export default function Watch() {
     }
   }
 
-  if (!entry || !servers) return <h1>loading servers....</h1>;
+  if (!entry || !servers) return '';
   if (servers.length === 0) return <h1>0 servers.</h1>;
   return (
     // eslint-disable-next-line
@@ -122,7 +122,6 @@ export default function Watch() {
           next={() =>
             episode < entry.episodes.length - 1 && changeEpisode(episode + 1)
           }
-          prev={() => episode > 0 && changeEpisode(episode - 1)}
         />
       )}
     </div>

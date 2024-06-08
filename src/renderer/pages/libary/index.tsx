@@ -48,8 +48,9 @@ export default function Libary() {
           const res = (await getEntry(entry.path)) as Entry | undefined;
 
           if (res) {
+            if (Object.hasOwn(res.details, 'isCompleted'))
+              entry.details.isCompleted = res.details.isCompleted;
             entry.details.poster = res.details.poster;
-            entry.details.isCompleted = res.details.isCompleted;
             entry.episodes = entry.episodes.concat(
               res.episodes.splice(entry.episodes.length, res.episodes.length),
             );

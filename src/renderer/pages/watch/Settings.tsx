@@ -1,15 +1,13 @@
-import { RefObject } from 'react';
 import { Entry, Video } from '../../types';
 import styles from '../../styles/Watch.module.css';
 
 type Props = {
   entry: Entry;
   video: Video;
-  videoRef: RefObject<HTMLVideoElement>;
-  episodeKey: string;
-  isShow: boolean;
-  setSrc: (i: number) => void;
-  setTrack: (i: number) => void;
+  srcIdx: number;
+  trackIdx: number;
+  setSrcIdx: (i: number) => void;
+  setTrackIdx: (i: number) => void;
 };
 const {
   electron: { store },
@@ -18,11 +16,10 @@ const {
 export default function Settings({
   entry,
   video,
-  videoRef,
-  episodeKey,
-  isShow,
-  setSrc,
-  setTrack,
+  srcIdx,
+  trackIdx,
+  setSrcIdx,
+  setTrackIdx,
 }: Props) {
   function toggleIsSkip(part: 'intro' | 'outro', toggle: boolean) {
     entry.isSkip[part] = toggle;
@@ -30,7 +27,7 @@ export default function Settings({
   }
 
   return (
-    <div className={styles.settings} style={{ opacity: isShow ? 1 : 0 }}>
+    <div className={styles.settings}>
       {video.tracks.length > 0 && (
         <div>
           <label htmlFor="notrack">
@@ -38,8 +35,8 @@ export default function Settings({
               type="radio"
               id="notrack"
               name="track"
-              defaultChecked
-              onClick={() => setTrack(-1)}
+              defaultChecked={trackIdx === -1}
+              onClick={() => setTrackIdx(-1)}
             />
             {` off `}
             <br />
@@ -50,7 +47,8 @@ export default function Settings({
                 type="radio"
                 id={`track${i}`}
                 name="track"
-                onClick={() => setTrack(i)}
+                defaultChecked={trackIdx === i}
+                onClick={() => setTrackIdx(i)}
               />
               {` ${track.label}`}
               <br />
@@ -65,14 +63,8 @@ export default function Settings({
               type="radio"
               id={`qual${i}`}
               name="qual"
-              defaultChecked={i === 0}
-              onClick={() => {
-                if (videoRef.current) {
-                  const { currentTime } = videoRef.current;
-                  store.set(`${episodeKey}.progress`, currentTime);
-                  setSrc(i);
-                }
-              }}
+              defaultChecked={srcIdx === i}
+              onClick={() => setSrcIdx(i)}
             />
             {` ${qual}`}
             <br />

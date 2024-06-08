@@ -23,10 +23,9 @@ export default function Entry() {
 
     if (res) {
       if (entry) {
-        entry.details.poster = res.details.poster;
-        if (Object.hasOwn(res.details, 'isCompleted')) {
+        if (Object.hasOwn(res.details, 'isCompleted'))
           entry.details.isCompleted = res.details.isCompleted;
-        }
+        entry.details.poster = res.details.poster;
         entry.episodes = entry.episodes.concat(
           res.episodes.splice(entry.episodes.length, res.episodes.length),
         );
@@ -80,7 +79,9 @@ export default function Entry() {
         add to libary
       </button>
       <h2>{entry.details.title}</h2>
-      <h4>{entry.details.isCompleted ? 'Completed' : 'Ongoin'}</h4>
+      {Object.hasOwn(entry.details, 'isCompleted') && (
+        <h4>{entry.details.isCompleted ? 'Completed' : 'Ongoin'}</h4>
+      )}
       <ul>
         {entry.episodes.map(({ title, info }, i) => (
           <li key={title}>

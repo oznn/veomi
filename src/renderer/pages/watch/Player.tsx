@@ -13,7 +13,6 @@ type Props = {
   entry: Entry;
   episode: number;
   next: () => void;
-  prev: () => void;
 };
 
 function formatTime(s: number) {
@@ -23,15 +22,17 @@ function formatTime(s: number) {
 
   return hours + minutes + seconds;
 }
-export default function Player({ video, entry, episode, next, prev }: Props) {
+export default function Player({ video, entry, episode, next }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { skips } = video;
   const episodeKey = `entries.${entry.key}.episodes.${episode}`;
   const seekerRef = useRef<HTMLInputElement>(null);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const [isShowSettings, setIsShowSettings] = useState(false);
-  const [src, setSrc] = useState(video.sources[0]);
-  const [track, setTrack] = useState(video.tracks[0]);
+  const [srcIdx, setSrcIdx] = useState(0);
+  const [trackIdx, setTrackIdx] = useState(-1);
+  const src = video.sources[srcIdx];
+  const track = video.tracks[trackIdx];
   const [progress, setProgress] = useState(entry.episodes[episode].progress);
   const [volume, setVolume] = useState(entry.volume);
   const [isShowVolume, setIsShowVolume] = useState(false);
@@ -46,7 +47,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
         src.file.lastIndexOf('.') + 1,
         src.file.length,
       );
-      if (videoRef.current) {
+      if (videoRef.current && seekerRef.current) {
         if (Hls.isSupported() && fileType === 'm3u8') {
           hls.loadSource(src.file);
           hls.attachMedia(videoRef.current);
@@ -54,9 +55,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
             console.log(err);
           });
         }
-        const storedProgress =
-          (await store.get(`${episodeKey}.progress`)) || progress;
-        videoRef.current.currentTime = storedProgress;
+        videoRef.current.currentTime = progress;
         videoRef.current.volume = volume * 0.05;
         videoRef.current.focus();
         videoRef.current.play();
@@ -64,15 +63,19 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
     })();
   }, [src]);
   useEffect(() => {
+    entry.volume = volume;
     setIsShowVolume(true);
     const timeout = setTimeout(() => setIsShowVolume(false), 2000);
 
     return () => clearTimeout(timeout);
   }, [volume]);
+  useEffect(() => {
+    entry.episodes[episode].progress = progress;
+  }, [progress]);
   function seek() {
     if (videoRef.current && seekerRef.current) {
-      const seekedProgress =
-        (Number(seekerRef.current.value) / 100) * videoRef.current.duration;
+      const { value } = seekerRef.current;
+      const seekedProgress = (Number(value) / 100) * videoRef.current.duration;
       videoRef.current.currentTime = seekedProgress;
       setProgress(Math.floor(seekedProgress));
     }
@@ -102,7 +105,7 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
       const { currentTime, duration } = videoRef.current;
       const progressPercent = (currentTime / duration) * 100;
 
-      if (currentTime > 0 && Math.floor(currentTime) % 60 === 0)
+      if (currentTime > 0 && Math.floor(currentTime) % 15 === 0)
         store.set(`${episodeKey}.progress`, currentTime);
       if (entry.isSkip.intro) skip('intro', currentTime);
       if (entry.isSkip.outro) skip('outro', currentTime);
@@ -120,10 +123,6 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
       store.set(`entries.${entry.key}.volume`, v);
       setVolume(v);
     }
-  }
-  function navigate(target: HTMLVideoElement, x: number) {
-    if (target.getBoundingClientRect().width / 2 < x) next();
-    else prev();
   }
   function handleKeyEvents(key: string) {
     if (videoRef.current)
@@ -168,13 +167,11 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
         onClick={playPause}
         onTimeUpdate={update}
         onPause={handlePause}
+        onKeyDown={({ key }) => handleKeyEvents(key)}
+        onAuxClick={next}
         onWaiting={() => setIsVideoLoading(true)}
         onPlaying={() => setIsVideoLoading(false)}
         onWheel={({ deltaY }) => changeVolume(deltaY * -0.01)}
-        onKeyDown={({ key }) => handleKeyEvents(key)}
-        onAuxClick={({ target, clientX }) =>
-          navigate(target as HTMLVideoElement, clientX)
-        }
         onEnded={() => {
           store.set(`${episodeKey}.progress`, 0);
           next();
@@ -191,16 +188,12 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
         )}
       </video>
       <div className={styles.controls}>
-        {videoRef.current && videoRef.current.duration
-          ? formatTime(Math.floor(videoRef.current.duration - progress))
-          : '0:00'}
-        <input
-          type="range"
-          defaultValue={0}
-          ref={seekerRef}
-          step={0.1}
-          onChange={seek}
-        />
+        <span>
+          {videoRef.current && videoRef.current.duration
+            ? formatTime(Math.floor(videoRef.current.duration - progress))
+            : '0:00'}
+        </span>
+        <input type="range" ref={seekerRef} step={0.1} onChange={seek} />
         <button
           type="button"
           onClick={() => setIsShowSettings(!isShowSettings)}
@@ -211,15 +204,14 @@ export default function Player({ video, entry, episode, next, prev }: Props) {
       <div className={styles.volume} style={{ opacity: isShowVolume ? 1 : 0 }}>
         {volume * 5}%
       </div>
-      {videoRef && (
+      {videoRef && isShowSettings && (
         <Settings
           entry={entry}
           video={video}
-          videoRef={videoRef}
-          episodeKey={episodeKey}
-          isShow={isShowSettings}
-          setSrc={(i: number) => setSrc(video.sources[i])}
-          setTrack={(i: number) => setTrack(video.tracks[i])}
+          srcIdx={srcIdx}
+          trackIdx={trackIdx}
+          setSrcIdx={(i: number) => setSrcIdx(i)}
+          setTrackIdx={(i: number) => setTrackIdx(i)}
         />
       )}
     </>
