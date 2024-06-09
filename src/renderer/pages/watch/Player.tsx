@@ -168,7 +168,10 @@ export default function Player({ video, entry, episode, next }: Props) {
         onTimeUpdate={update}
         onPause={handlePause}
         onKeyDown={({ key }) => handleKeyEvents(key)}
-        onAuxClick={next}
+        onAuxClick={({ button }) => {
+          if (button === 2) next();
+          else document.exitFullscreen();
+        }}
         onWaiting={() => setIsVideoLoading(true)}
         onPlaying={() => setIsVideoLoading(false)}
         onWheel={({ deltaY }) => changeVolume(deltaY * -0.01)}

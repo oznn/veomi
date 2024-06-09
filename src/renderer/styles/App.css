@@ -30,7 +30,7 @@ button{
   background-color: grey;
   padding: 0 .2em;
   color:black;
-  font-weight: bold;
+  font-weight: 500;
   border-radius: 9px;
   transition: transform 1s ease;
   margin: .1em .2em;
@@ -48,4 +48,9 @@ input{
   border:solid 2px grey;
   padding: 0 .4em;
 }
-
+nav {
+  margin: 0 0 1em 0;
+}
+nav button{
+  padding: 0 .5em;
+}

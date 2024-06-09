@@ -11,7 +11,7 @@
   display: flex;
   justify-content:space-between;
   align-items:center;
-  padding: 0 10em;
+  padding: 0 8em;
   opacity: 0;
   transition: opacity 200ms;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
@@ -30,6 +30,10 @@
 .container header details{
   cursor:pointer;
 }
+.container header details ul{
+  margin: 0;
+  padding: 0;
+}
 .controls{
   position: absolute;
   bottom:0em;
@@ -38,7 +42,7 @@
   justify-content:space-between;
   align-items:center;
   height:2em;
-  opacity: 1;
+  opacity: 0;
   transition: opacity 200ms;
   gap: .5em;
   padding:.5em;
@@ -55,11 +59,12 @@
   bottom:2em;
   right:.3em;
   animation: fade 200ms ease 1;
-}
-.settings div{
   background-color:rgba(0,0,0,.4);
-  padding: .5em 1em;
-  margin: .2em 0;
+  padding: .2em .5em;
+  min-width: 20%;
+}
+.settings button{
+  width: 100%;
 }
 @keyframes fade{
 0% {opacity:0}

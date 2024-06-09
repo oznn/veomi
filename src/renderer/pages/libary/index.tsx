@@ -51,6 +51,10 @@ export default function Libary() {
             if (Object.hasOwn(res.details, 'isCompleted'))
               entry.details.isCompleted = res.details.isCompleted;
             entry.details.poster = res.details.poster;
+            res.episodes.forEach((ep, i) => {
+              entry.episodes[i].title = ep.title;
+              entry.episodes[i].info = ep.info;
+            });
             entry.episodes = entry.episodes.concat(
               res.episodes.splice(entry.episodes.length, res.episodes.length),
             );

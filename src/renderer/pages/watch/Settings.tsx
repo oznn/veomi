@@ -1,4 +1,5 @@
-import { Entry, Video } from '../../types';
+import { useState } from 'react';
+import { Entry, Video, Source, Track } from '../../types';
 import styles from '../../styles/Watch.module.css';
 
 type Props = {
@@ -13,6 +14,73 @@ const {
   electron: { store },
 } = window;
 
+function Subs({
+  tracks,
+  trackIdx,
+  setTrackIdx,
+}: {
+  tracks: Track[];
+  trackIdx: number;
+  setTrackIdx: (i: number) => void;
+}) {
+  return (
+    <>
+      <label htmlFor="notrack">
+        <input
+          type="radio"
+          id="notrack"
+          name="track"
+          defaultChecked={trackIdx === -1}
+          onClick={() => setTrackIdx(-1)}
+        />
+        {` off `}
+        <br />
+      </label>
+      {tracks.map((track, i) => (
+        <label key={track.label} htmlFor={`track${i}`}>
+          <input
+            type="radio"
+            id={`track${i}`}
+            name="track"
+            defaultChecked={trackIdx === i}
+            onClick={() => setTrackIdx(i)}
+          />
+          {` ${track.label}`}
+          <br />
+        </label>
+      ))}
+    </>
+  );
+}
+
+function Quals({
+  sources,
+  srcIdx,
+  setSrcIdx,
+}: {
+  sources: Source[];
+  srcIdx: number;
+  setSrcIdx: (i: number) => void;
+}) {
+  return (
+    <>
+      {sources.map(({ qual }, i) => (
+        <label key={qual} htmlFor={`qual${i}`}>
+          <input
+            type="radio"
+            id={`qual${i}`}
+            name="qual"
+            defaultChecked={srcIdx === i}
+            onClick={() => setSrcIdx(i)}
+          />
+          {` ${qual}`}
+          <br />
+        </label>
+      ))}
+    </>
+  );
+}
+
 export default function Settings({
   entry,
   video,
@@ -21,6 +89,34 @@ export default function Settings({
   setSrcIdx,
   setTrackIdx,
 }: Props) {
+  const [isShowQuals, setIsShowQuals] = useState(false);
+  const [isShowSubs, setIsShowSubs] = useState(false);
+
+  if (isShowQuals)
+    return (
+      <div className={styles.settings}>
+        <button type="button" onClick={() => setIsShowQuals(false)}>
+          {'<'}
+        </button>
+        <br />
+        <Quals sources={video.sources} srcIdx={srcIdx} setSrcIdx={setSrcIdx} />
+      </div>
+    );
+  if (isShowSubs)
+    return (
+      <div className={styles.settings}>
+        <button type="button" onClick={() => setIsShowSubs(false)}>
+          {'<'}
+        </button>
+        <br />
+        <Subs
+          tracks={video.tracks}
+          trackIdx={trackIdx}
+          setTrackIdx={setTrackIdx}
+        />
+      </div>
+    );
+
   function toggleIsSkip(part: 'intro' | 'outro', toggle: boolean) {
     entry.isSkip[part] = toggle;
     store.set(`entries.${entry.key}.isSkip.${part}`, toggle);
@@ -28,49 +124,6 @@ export default function Settings({
 
   return (
     <div className={styles.settings}>
-      {video.tracks.length > 0 && (
-        <div>
-          <label htmlFor="notrack">
-            <input
-              type="radio"
-              id="notrack"
-              name="track"
-              defaultChecked={trackIdx === -1}
-              onClick={() => setTrackIdx(-1)}
-            />
-            {` off `}
-            <br />
-          </label>
-          {video.tracks.map((track, i) => (
-            <label key={track.label} htmlFor={`track${i}`}>
-              <input
-                type="radio"
-                id={`track${i}`}
-                name="track"
-                defaultChecked={trackIdx === i}
-                onClick={() => setTrackIdx(i)}
-              />
-              {` ${track.label}`}
-              <br />
-            </label>
-          ))}
-        </div>
-      )}
-      <div>
-        {video.sources.map(({ qual }, i) => (
-          <label key={qual} htmlFor={`qual${i}`}>
-            <input
-              type="radio"
-              id={`qual${i}`}
-              name="qual"
-              defaultChecked={srcIdx === i}
-              onClick={() => setSrcIdx(i)}
-            />
-            {` ${qual}`}
-            <br />
-          </label>
-        ))}
-      </div>
       <div>
         <label htmlFor="skipIntro">
           <input
@@ -91,6 +144,16 @@ export default function Settings({
           />
           {` skip outro`}
         </label>
+      </div>
+      <div>
+        <button type="button" onClick={() => setIsShowQuals(true)}>
+          qual: {video.sources[srcIdx].qual}
+        </button>
+      </div>
+      <div>
+        <button type="button" onClick={() => setIsShowSubs(true)}>
+          subs: {trackIdx > -1 ? video.tracks[trackIdx].label : 'off'}
+        </button>
       </div>
     </div>
   );

@@ -26,6 +26,10 @@ export default function Entry() {
         if (Object.hasOwn(res.details, 'isCompleted'))
           entry.details.isCompleted = res.details.isCompleted;
         entry.details.poster = res.details.poster;
+        res.episodes.forEach((ep, i) => {
+          entry.episodes[i].title = ep.title;
+          entry.episodes[i].info = ep.info;
+        });
         entry.episodes = entry.episodes.concat(
           res.episodes.splice(entry.episodes.length, res.episodes.length),
         );
@@ -50,7 +54,7 @@ export default function Entry() {
     })();
   }, []);
 
-  if (entry === null) return <h1>loading entry...</h1>;
+  if (!entry) return <h1>loading entry...</h1>;
 
   function addToLibary() {
     if (entry) {
@@ -79,9 +83,6 @@ export default function Entry() {
         add to libary
       </button>
       <h2>{entry.details.title}</h2>
-      {Object.hasOwn(entry.details, 'isCompleted') && (
-        <h4>{entry.details.isCompleted ? 'Completed' : 'Ongoin'}</h4>
-      )}
       <ul>
         {entry.episodes.map(({ title, info }, i) => (
           <li key={title}>

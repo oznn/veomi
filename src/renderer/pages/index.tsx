@@ -15,8 +15,8 @@ import '../styles/App.css';
 function Links() {
   const nav = useNavigate();
   return (
-    <nav style={{ margin: '0 0 1em 0' }}>
-      <button type="button" onClick={() => nav(-1)}>
+    <nav>
+      <button className="goback" type="button" onClick={() => nav(-1)}>
         {'<= '}
       </button>
       <Link to="/">Libary </Link>

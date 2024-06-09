@@ -90,13 +90,7 @@ export default function Watch() {
       ref={container}
     >
       <header>
-        <span>
-          <button
-            type="button"
-            onClick={() => document.exitFullscreen()}
-          >{` <= `}</button>
-          {entry.episodes[episode].title}
-        </span>
+        <span>{entry.episodes[episode].title}</span>
         <details>
           <summary>Servers</summary>
           <ul>
