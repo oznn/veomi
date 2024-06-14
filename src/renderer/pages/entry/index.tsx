@@ -39,6 +39,7 @@ export default function Entry() {
         store.set(`entries.${key}`, res);
         setEntry(res);
       }
+      setIsRefreshing(false);
     }
   }
 
@@ -86,12 +87,12 @@ export default function Entry() {
       <ul>
         {entry.episodes.map(({ title, info }, i) => (
           <li key={title}>
-            <Link title={info.join(' • ')} to={`${watchURL}&startAt=${i}`}>
-              {`${title} `}
-            </Link>
             <button type="button" onClick={() => toggleIsSeen(i)}>
               mark as {entry.episodes[i].isSeen ? 'unseen' : 'seen'}
             </button>
+            <Link title={info.join(' • ')} to={`${watchURL}&startAt=${i}`}>
+              {`${title} `}
+            </Link>
           </li>
         ))}
       </ul>

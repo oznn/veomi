@@ -62,6 +62,8 @@
   background-color:rgba(0,0,0,.4);
   padding: .2em .5em;
   min-width: 20%;
+  max-height: 40%;
+  overflow: scroll;
 }
 .settings button{
   width: 100%;

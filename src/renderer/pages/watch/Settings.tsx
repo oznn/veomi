@@ -96,7 +96,7 @@ export default function Settings({
     return (
       <div className={styles.settings}>
         <button type="button" onClick={() => setIsShowQuals(false)}>
-          {'<'}
+          {'<='}
         </button>
         <br />
         <Quals sources={video.sources} srcIdx={srcIdx} setSrcIdx={setSrcIdx} />
@@ -106,7 +106,7 @@ export default function Settings({
     return (
       <div className={styles.settings}>
         <button type="button" onClick={() => setIsShowSubs(false)}>
-          {'<'}
+          {'<='}
         </button>
         <br />
         <Subs
@@ -150,11 +150,13 @@ export default function Settings({
           qual: {video.sources[srcIdx].qual}
         </button>
       </div>
-      <div>
-        <button type="button" onClick={() => setIsShowSubs(true)}>
-          subs: {trackIdx > -1 ? video.tracks[trackIdx].label : 'off'}
-        </button>
-      </div>
+      {video.tracks.length > 0 && (
+        <div>
+          <button type="button" onClick={() => setIsShowSubs(true)}>
+            subs: {trackIdx > -1 ? video.tracks[trackIdx].label : 'off'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
