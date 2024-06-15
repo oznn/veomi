@@ -16,7 +16,7 @@ export type Entry = {
   details: {
     title: string;
     poster: string;
-    isCompleted?: boolean;
+    isCompleted: boolean | null;
     dataId?: string;
   };
   episodes: Episode[];
@@ -26,6 +26,9 @@ export type Entry = {
   ext: string;
   path: string;
   key: string;
+  preferredSubs: string;
+  preferredQual: string;
+  preferredServ: string;
 };
 export type Server = Required<{
   name: string;

@@ -9,7 +9,7 @@ const {
 export default function Entry() {
   const [, rerender] = useReducer((n) => n + 1, 0);
   const [entry, setEntry] = useState<T | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const ext = searchParams.get('ext') || '';
   const path = searchParams.get('path') || '';
@@ -17,29 +17,30 @@ export default function Entry() {
   const watchURL = `/watch?ext=${ext}&path=${path}`;
 
   async function getAndSetEntry() {
-    setIsRefreshing(true);
+    setIsLoading(true);
+
     const { getEntry } = await import(`../../extensions/${ext}`);
     const res = (await getEntry(path)) as T | undefined;
 
     if (res) {
       if (entry) {
-        if (Object.hasOwn(res.details, 'isCompleted'))
-          entry.details.isCompleted = res.details.isCompleted;
         entry.details.poster = res.details.poster;
-        res.episodes.forEach((ep, i) => {
-          entry.episodes[i].title = ep.title;
-          entry.episodes[i].info = ep.info;
-        });
-        entry.episodes = entry.episodes.concat(
-          res.episodes.splice(entry.episodes.length, res.episodes.length),
-        );
-        store.set(`entries.${key}`, entry);
-        setIsRefreshing(false);
+        if (res.details.isCompleted !== null)
+          entry.details.isCompleted = res.details.isCompleted;
+        for (let i = 0; i < entry.episodes.length; i += 1) {
+          entry.episodes[i].title = res.episodes[i].title;
+          entry.episodes[i].info = res.episodes[i].info;
+        }
+        for (let i = entry.episodes.length; i < res.episodes.length; i += 1)
+          entry.episodes.push(res.episodes[i]);
+        store.set(`entries.${entry.key}`, entry);
+
+        setIsLoading(false);
       } else {
         store.set(`entries.${key}`, res);
         setEntry(res);
       }
-      setIsRefreshing(false);
+      setIsLoading(false);
     }
   }
 
@@ -55,7 +56,8 @@ export default function Entry() {
     })();
   }, []);
 
-  if (!entry) return <h1>loading entry...</h1>;
+  if (isLoading) return <h1>loading entry...</h1>;
+  if (!entry) return '';
 
   function addToLibary() {
     if (entry) {
@@ -77,8 +79,8 @@ export default function Entry() {
 
   return (
     <div className={styles.container}>
-      <button type="button" onClick={getAndSetEntry} disabled={isRefreshing}>
-        refresh
+      <button type="button" onClick={getAndSetEntry} disabled={isLoading}>
+        update
       </button>
       <button type="button" onClick={addToLibary} disabled={entry.isInLibary}>
         add to libary

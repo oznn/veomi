@@ -56,7 +56,7 @@ async function getDetails(path: string) {
   const dataId = doc.querySelector('.watch')?.getAttribute('data-id') || '';
   const title = doc.querySelector('h1.name')?.textContent || '';
 
-  return { title, poster: '', dataId };
+  return { title, poster: '', isCompleted: null, dataId };
 }
 export async function getEntry(path: string): Promise<Entry> {
   const details = await getDetails(path);
@@ -71,6 +71,9 @@ export async function getEntry(path: string): Promise<Entry> {
     path,
     ext: 'fmovies',
     key: `fmovies${path}`.replace(/\./g, ' '),
+    preferredSubs: 'off',
+    preferredQual: '1080p',
+    preferredServ: '[sub] Vidplay',
   };
 }
 

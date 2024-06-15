@@ -24,15 +24,20 @@ function formatTime(s: number) {
 }
 export default function Player({ video, entry, episode, next }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { skips } = video;
+  const { sources, tracks, skips } = video;
   const episodeKey = `entries.${entry.key}.episodes.${episode}`;
   const seekerRef = useRef<HTMLInputElement>(null);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const [isShowSettings, setIsShowSettings] = useState(false);
-  const [srcIdx, setSrcIdx] = useState(0);
+  const preferredSrcIdx = sources.findIndex(
+    ({ qual }) => qual === entry.preferredQual,
+  );
+  const [srcIdx, setSrcIdx] = useState(
+    preferredSrcIdx !== -1 ? preferredSrcIdx : 0,
+  );
   const [trackIdx, setTrackIdx] = useState(-1);
-  const src = video.sources[srcIdx];
-  const track = video.tracks[trackIdx];
+  const src = sources[srcIdx];
+  const track = tracks[trackIdx];
   const [progress, setProgress] = useState(entry.episodes[episode].progress);
   const [volume, setVolume] = useState(entry.volume);
   const [isShowVolume, setIsShowVolume] = useState(false);
@@ -55,6 +60,10 @@ export default function Player({ video, entry, episode, next }: Props) {
             console.log(err);
           });
         }
+        const preferredTrackIdx = tracks.findIndex(
+          ({ label }) => label === entry.preferredSubs,
+        );
+        setTrackIdx(preferredTrackIdx);
         videoRef.current.currentTime = progress;
         videoRef.current.volume = volume * 0.05;
         videoRef.current.focus();
@@ -70,8 +79,16 @@ export default function Player({ video, entry, episode, next }: Props) {
     return () => clearTimeout(timeout);
   }, [volume]);
   useEffect(() => {
-    entry.episodes[episode].progress = progress;
-  }, [progress]);
+    entry.preferredQual = sources[srcIdx].qual;
+    store.set(`entries.${entry.key}.preferredQual`, sources[srcIdx].qual);
+  }, [srcIdx]);
+  useEffect(() => {
+    if (trackIdx > -1) {
+      entry.preferredSubs = tracks[trackIdx].label;
+      store.set(`entries.${entry.key}.preferredSubs`, tracks[trackIdx].label);
+    }
+  }, [trackIdx]);
+
   function seek() {
     if (videoRef.current && seekerRef.current) {
       const { value } = seekerRef.current;
@@ -90,6 +107,7 @@ export default function Player({ video, entry, episode, next }: Props) {
   function handlePause() {
     if (videoRef.current) {
       const { currentTime } = videoRef.current;
+      entry.episodes[episode].progress = currentTime;
       store.set(`${episodeKey}.progress`, currentTime);
       setIsVideoLoading(false);
     }
@@ -105,7 +123,7 @@ export default function Player({ video, entry, episode, next }: Props) {
       const { currentTime, duration } = videoRef.current;
       const progressPercent = (currentTime / duration) * 100;
 
-      if (currentTime > 0 && Math.floor(currentTime) % 15 === 0)
+      if (currentTime > 0 && Math.floor(currentTime) % 10 === 0)
         store.set(`${episodeKey}.progress`, currentTime);
       if (entry.isSkip.intro) skip('intro', currentTime);
       if (entry.isSkip.outro) skip('outro', currentTime);
@@ -113,6 +131,7 @@ export default function Player({ video, entry, episode, next }: Props) {
         store.set(`${episodeKey}.isSeen`, true);
 
       seekerRef.current.value = `${progressPercent}`;
+      entry.episodes[episode].progress = progress;
       setProgress(currentTime);
     }
   }

@@ -9,7 +9,7 @@ const {
 let entries: Entry[] | null = null;
 export default function Libary() {
   const [, rerender] = useReducer((n) => n + 1, 0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -25,7 +25,8 @@ export default function Libary() {
     })();
   }, []);
 
-  if (!entries || !entries.length) return <h1>libary is empty.</h1>;
+  if (!entries) return '';
+  if (!entries.length) return <h1>libary is empty.</h1>;
 
   function remove(i: number) {
     if (entries) {
@@ -34,42 +35,41 @@ export default function Libary() {
       rerender();
     }
   }
-  async function refresh() {
-    setIsRefreshing(true);
+  async function update() {
+    setIsLoading(true);
     if (entries) {
       const targetedEntries = entries.filter((entry) => {
         const isAllSeen = entry.episodes.every((ep) => ep.isSeen);
         return !entry.details.isCompleted && isAllSeen;
       });
 
-      const isRefreshed = await Promise.all(
+      const isUpdated = await Promise.all(
         targetedEntries.map(async (entry) => {
           const { getEntry } = await import(`../../extensions/${entry.ext}`);
           const res = (await getEntry(entry.path)) as Entry | undefined;
 
           if (res) {
-            if (Object.hasOwn(res.details, 'isCompleted'))
-              entry.details.isCompleted = res.details.isCompleted;
             entry.details.poster = res.details.poster;
-            res.episodes.forEach((ep, i) => {
-              entry.episodes[i].title = ep.title;
-              entry.episodes[i].info = ep.info;
-            });
-            entry.episodes = entry.episodes.concat(
-              res.episodes.splice(entry.episodes.length, res.episodes.length),
-            );
+            if (res.details.isCompleted !== null)
+              entry.details.isCompleted = res.details.isCompleted;
+            for (let i = 0; i < entry.episodes.length; i += 1) {
+              entry.episodes[i].title = res.episodes[i].title;
+              entry.episodes[i].info = res.episodes[i].info;
+            }
+            for (let i = entry.episodes.length; i < res.episodes.length; i += 1)
+              entry.episodes.push(res.episodes[i]);
             store.set(`entries.${entry.key}`, entry);
           }
         }),
       );
-      if (isRefreshed) setIsRefreshing(false);
+      if (isUpdated) setIsLoading(false);
     }
   }
 
   return (
     <div>
-      <button type="button" onClick={refresh} disabled={isRefreshing}>
-        refresh
+      <button type="button" onClick={update} disabled={isLoading}>
+        update
       </button>
       <ul>
         {entries.map((entry, i) => (

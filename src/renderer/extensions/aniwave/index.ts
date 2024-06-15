@@ -92,6 +92,9 @@ export async function getEntry(path: string): Promise<Entry> {
     path,
     ext: 'aniwave',
     key: `aniwave${path}`.replace(/\./g, ' '),
+    preferredSubs: 'off',
+    preferredQual: '1080p',
+    preferredServ: '[sub] Vidplay',
   };
 }
 

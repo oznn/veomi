@@ -15,7 +15,7 @@ export default function Watch() {
   const path = searchParams.get('path') || '';
   const [entry, setEntry] = useState<Entry | null>(null);
   const [servers, setServers] = useState<Server[] | null>(null);
-  const [server, setServer] = useState<number>(0);
+  const [server, setServer] = useState<number | null>(null);
   const [video, setVideo] = useState(null);
   const [episode, setEpisode] = useState(startAt ? Number(startAt) : NaN);
   const container = useRef<HTMLDivElement>(null);
@@ -45,7 +45,11 @@ export default function Watch() {
           setEpisode(n ?? 0);
         } else {
           const res = (await getServers(entry.episodes[episode])) as Server[];
+          const preferredServ = res.findIndex(
+            ({ name }) => name === entry.preferredServ,
+          );
           setServers(res);
+          setServer(preferredServ);
         }
       } catch (err) {
         console.log(`failed to set servers ${err}`);
@@ -54,7 +58,7 @@ export default function Watch() {
   }, [entry, episode]);
 
   useEffect(() => {
-    if (!entry || !servers || servers.length === 0 || video) return;
+    if (!servers || server === null || video) return;
     if (container.current && !document.fullscreenElement) {
       container.current.requestFullscreen();
     }
@@ -72,7 +76,11 @@ export default function Watch() {
 
   function changeServer(i: number) {
     setVideo(null);
-    setServer(i);
+    if (servers && entry) {
+      entry.preferredServ = servers[i].name;
+      store.set(`entries.${entryKey}.preferredServ`, servers[i].name);
+      setServer(i);
+    }
   }
   function changeEpisode(i: number) {
     if (entry) {
