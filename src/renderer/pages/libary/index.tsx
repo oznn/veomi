@@ -74,16 +74,16 @@ export default function Libary() {
       <ul>
         {entries.map((entry, i) => (
           <li key={entry.ext + entry.path}>
+            <button type="button" onClick={() => remove(i)}>
+              remove
+            </button>
+            <Link to={`/watch?ext=${entry.ext}&path=${entry.path}`}>
+              <b> resume </b>
+            </Link>
             <Link to={`/entry?ext=${entry.ext}&path=${entry.path}`}>
               {entry.details.title}
             </Link>
             <sup>{entry.episodes.filter((e) => !e.isSeen).length}</sup>
-            <Link to={`/watch?ext=${entry.ext}&path=${entry.path}`}>
-              <b> resume </b>
-            </Link>
-            <button type="button" onClick={() => remove(i)}>
-              remove
-            </button>
           </li>
         ))}
       </ul>

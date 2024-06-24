@@ -11,7 +11,7 @@
 *{
   box-sizing:border-box;
 }
-body, input,button {
+body, input,button,select {
   font-size: 32px;
   background-color: black;
   color:white;

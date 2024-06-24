@@ -15,9 +15,9 @@ export default function Watch() {
   const path = searchParams.get('path') || '';
   const [entry, setEntry] = useState<Entry | null>(null);
   const [servers, setServers] = useState<Server[] | null>(null);
-  const [server, setServer] = useState<number | null>(null);
+  const [serverIdx, setServerIdx] = useState(-1);
   const [video, setVideo] = useState(null);
-  const [episode, setEpisode] = useState(startAt ? Number(startAt) : NaN);
+  const [episode, setEpisode] = useState(startAt ? Number(startAt) : -1);
   const container = useRef<HTMLDivElement>(null);
   const entryKey = (ext + path).replace(/\./g, ' ');
   const nav = useNavigate();
@@ -34,52 +34,44 @@ export default function Watch() {
   useEffect(() => {
     (async () => {
       if (!entry) return;
-      try {
-        // getVideo wont work in prod if its not imported here
-        const { getServers, getVideo } = await import(`../../extensions/${ext}`);//eslint-disable-line
-        if (Number.isNaN(episode)) {
-          const n = (() => { // eslint-disable-line
-            for (let i = 0; i < entry.episodes.length; i += 1)
-              if (!entry.episodes[i].isSeen) return i;
-          })();
-          setEpisode(n ?? 0);
-        } else {
-          const res = (await getServers(entry.episodes[episode])) as Server[];
-          const preferredServ = res.findIndex(
-            ({ name }) => name === entry.preferredServ,
-          );
-          setServers(res);
-          setServer(preferredServ);
-        }
-      } catch (err) {
-        console.log(`failed to set servers ${err}`);
+      // getVideo wont work in prod if its not imported here
+      const { getServers, getVideo } = await import(`../../extensions/${ext}`);//eslint-disable-line
+      if (episode === -1) {
+        const n = (() => { // eslint-disable-line
+          for (let i = 0; i < entry.episodes.length; i += 1)
+            if (!entry.episodes[i].isSeen) return i;
+        })();
+        setEpisode(n ?? 0);
+      } else {
+        const res = (await getServers(entry.episodes[episode])) as Server[];
+        const preferredServ = res.findIndex(
+          ({ name }) => name === entry.preferredServ,
+        );
+        setServers(res);
+        setServerIdx(Math.max(0, preferredServ));
       }
     })();
   }, [entry, episode]);
 
   useEffect(() => {
-    if (!servers || server === null || video) return;
-    if (container.current && !document.fullscreenElement) {
+    if (serverIdx === -1 || !servers || video) return;
+    if (container.current && !document.fullscreenElement)
       container.current.requestFullscreen();
-    }
-    (async () => {
-      try {
-        const { getVideo } = await import(`../../extensions/${ext}`);
-        const res = await getVideo(servers[server]);
 
-        setVideo(res);
-      } catch (err) {
-        console.log(`failed to set video ${err}`);
-      }
+    (async () => {
+      const { getVideo } = await import(`../../extensions/${ext}`);
+      const res = await getVideo(servers[serverIdx]);
+
+      setVideo(res);
     })();
-  }, [servers, server]);
+  }, [serverIdx]);
 
   function changeServer(i: number) {
     setVideo(null);
     if (servers && entry) {
       entry.preferredServ = servers[i].name;
       store.set(`entries.${entryKey}.preferredServ`, servers[i].name);
-      setServer(i);
+      setServerIdx(i);
     }
   }
   function changeEpisode(i: number) {
@@ -91,6 +83,7 @@ export default function Watch() {
 
   if (!entry || !servers) return '';
   if (servers.length === 0) return <h1>0 servers.</h1>;
+
   return (
     // eslint-disable-next-line
     <div
@@ -99,22 +92,16 @@ export default function Watch() {
     >
       <header>
         <span>{entry.episodes[episode].title}</span>
-        <details>
-          <summary>Servers</summary>
-          <ul>
-            {servers.map(({ name }, i) => (
-              <li key={name}>
-                <button
-                  type="button"
-                  onClick={() => changeServer(i)}
-                  disabled={server === i}
-                >
-                  {name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </details>
+        <select
+          defaultValue={servers[0].name}
+          onChange={({ target }) => changeServer(target.selectedIndex)}
+        >
+          {servers.map(({ name }) => (
+            <option value={name} key={name}>
+              {name}
+            </option>
+          ))}
+        </select>
       </header>
       {video && (
         <Player

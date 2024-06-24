@@ -15,10 +15,13 @@ type Props = {
   next: () => void;
 };
 
-function formatTime(s: number) {
-  const seconds = s % 60 < 10 ? `0${s % 60}` : s % 60;
-  const minutes = `${Math.floor((s / 60) % 60)}:`;
-  const hours = s / 3600 >= 1 ? `${Math.floor(s / 3600)}:` : '';
+function formatTime(t: number) {
+  const s = t % 60;
+  const m = Math.floor((t / 60) % 60);
+  const h = Math.floor(t / 3600);
+  const seconds = s < 10 ? `0${s}` : s;
+  const minutes = h > 0 && m < 10 ? `0${m}:` : `${m}:`;
+  const hours = h > 0 ? `${h}:` : '';
 
   return hours + minutes + seconds;
 }

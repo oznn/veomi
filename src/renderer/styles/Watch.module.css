@@ -11,17 +11,13 @@
   display: flex;
   justify-content:space-between;
   align-items:center;
-  padding: 0 8em;
+  padding: 0 1em;
   opacity: 0;
   transition: opacity 200ms;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
 }
 .container header:hover{
   opacity: 1;
-}
-.container header span{
-  font-size:1.2em;
-  padding: .2em 0;
 }
 .container header ul{
   position: absolute;

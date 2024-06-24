@@ -106,7 +106,7 @@ export async function getServers(episode: Episode) {
   const html = (await res.json()).result;
   const doc = parse(html);
   const servers: Server[] = [];
-  const supportedServers = ['Mp4upload', 'Vidplay', 'MyCloud'];
+  const supportedServers = ['Mp4upload', 'Vidstream', 'MegaF'];
 
   doc.querySelectorAll('.type').forEach((server) => {
     const type = server.getAttribute('data-type');
@@ -136,8 +136,8 @@ export async function getVideo(server: Server) {
   electron.ipcRenderer.sendMessage('change-origin', origin);
 
   switch (serverName) {
-    case 'Vidplay':
-    case 'MyCloud':
+    case 'Vidstream':
+    case 'MegaF':
       sourcesAndTracks = await vidsrcExtractor(embedUrl);
       break;
     case 'Mp4upload':
