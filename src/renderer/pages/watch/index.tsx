@@ -64,7 +64,7 @@ export default function Watch() {
 
       setVideo(res);
     })();
-  }, [serverIdx]);
+  }, [servers, serverIdx]);
 
   function changeServer(i: number) {
     setVideo(null);
@@ -93,7 +93,7 @@ export default function Watch() {
       <header>
         <span>{entry.episodes[episode].title}</span>
         <select
-          defaultValue={servers[0].name}
+          defaultValue={servers[serverIdx].name}
           onChange={({ target }) => changeServer(target.selectedIndex)}
         >
           {servers.map(({ name }) => (

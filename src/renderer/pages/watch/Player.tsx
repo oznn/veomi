@@ -1,6 +1,6 @@
 /* eslint jsx-a11y/media-has-caption: off */
 import Hls from 'hls.js';
-import { useEffect, useRef, useState } from 'react';
+import { MouseEvent, useEffect, useRef, useState } from 'react';
 import { Entry, Video } from '../../types';
 import Settings from './Settings';
 import styles from '../../styles/Watch.module.css';
@@ -15,10 +15,15 @@ type Props = {
   next: () => void;
 };
 
+const { floor, max, min } = Math;
+let timestampX = 0;
+let progressPercent = 0;
+let seekerBoundingClient: any;
+
 function formatTime(t: number) {
   const s = t % 60;
-  const m = Math.floor((t / 60) % 60);
-  const h = Math.floor(t / 3600);
+  const m = floor((t / 60) % 60);
+  const h = floor(t / 3600);
   const seconds = s < 10 ? `0${s}` : s;
   const minutes = h > 0 && m < 10 ? `0${m}:` : `${m}:`;
   const hours = h > 0 ? `${h}:` : '';
@@ -29,7 +34,6 @@ export default function Player({ video, entry, episode, next }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { sources, tracks, skips } = video;
   const episodeKey = `entries.${entry.key}.episodes.${episode}`;
-  const seekerRef = useRef<HTMLInputElement>(null);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const [isShowSettings, setIsShowSettings] = useState(false);
   const preferredSrcIdx = sources.findIndex(
@@ -44,6 +48,8 @@ export default function Player({ video, entry, episode, next }: Props) {
   const [progress, setProgress] = useState(entry.episodes[episode].progress);
   const [volume, setVolume] = useState(entry.volume);
   const [isShowVolume, setIsShowVolume] = useState(false);
+  const [isShowCursor, setIsShowCursor] = useState(false);
+  const [hoveredTimestamp, setHoveredTimestamp] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -55,7 +61,7 @@ export default function Player({ video, entry, episode, next }: Props) {
         src.file.lastIndexOf('.') + 1,
         src.file.length,
       );
-      if (videoRef.current && seekerRef.current) {
+      if (videoRef.current) {
         if (Hls.isSupported() && fileType === 'm3u8') {
           hls.loadSource(src.file);
           hls.attachMedia(videoRef.current);
@@ -93,11 +99,9 @@ export default function Player({ video, entry, episode, next }: Props) {
   }, [trackIdx]);
 
   function seek() {
-    if (videoRef.current && seekerRef.current) {
-      const { value } = seekerRef.current;
-      const seekedProgress = (Number(value) / 100) * videoRef.current.duration;
-      videoRef.current.currentTime = seekedProgress;
-      setProgress(Math.floor(seekedProgress));
+    if (videoRef.current) {
+      videoRef.current.currentTime = hoveredTimestamp;
+      setProgress(hoveredTimestamp);
     }
   }
   function playPause() {
@@ -122,25 +126,24 @@ export default function Player({ video, entry, episode, next }: Props) {
     }
   }
   function update() {
-    if (videoRef.current && seekerRef.current) {
+    if (videoRef.current) {
       const { currentTime, duration } = videoRef.current;
       const progressPercent = (currentTime / duration) * 100;
 
-      if (currentTime > 0 && Math.floor(currentTime) % 10 === 0)
+      if (currentTime > 0 && floor(currentTime) % 10 === 0)
         store.set(`${episodeKey}.progress`, currentTime);
       if (entry.isSkip.intro) skip('intro', currentTime);
       if (entry.isSkip.outro) skip('outro', currentTime);
       if (!entry.episodes[episode].isSeen && progressPercent >= 85)
         store.set(`${episodeKey}.isSeen`, true);
 
-      seekerRef.current.value = `${progressPercent}`;
       entry.episodes[episode].progress = progress;
       setProgress(currentTime);
     }
   }
   function changeVolume(v: number) {
     if (videoRef.current) {
-      v = Math.max(0, Math.min(volume + v, 20)); // eslint-disable-line
+      v = max(0, min(volume + v, 20)); // eslint-disable-line
       videoRef.current.volume = v * 0.05;
       store.set(`entries.${entry.key}.volume`, v);
       setVolume(v);
@@ -151,14 +154,14 @@ export default function Player({ video, entry, episode, next }: Props) {
       switch (key) {
         case 'l':
         case 'ArrowRight':
-          videoRef.current.currentTime = Math.min(
+          videoRef.current.currentTime = min(
             videoRef.current.duration,
             videoRef.current.currentTime + 5,
           );
           break;
         case 'h':
         case 'ArrowLeft':
-          videoRef.current.currentTime = Math.max(
+          videoRef.current.currentTime = max(
             0,
             videoRef.current.currentTime - 5,
           );
@@ -179,13 +182,40 @@ export default function Player({ video, entry, episode, next }: Props) {
       }
   }
 
+  useEffect(() => {
+    let timeout: any;
+    if (isShowCursor) timeout = setTimeout(() => setIsShowCursor(false), 3000);
+
+    return () => clearTimeout(timeout);
+  }, [isShowCursor]);
+
+  if (videoRef.current)
+    progressPercent =
+      (videoRef.current.currentTime / videoRef.current.duration) * 100;
+
+  function updateHoveredTimestamp(e: MouseEvent) {
+    if (!seekerBoundingClient)
+      seekerBoundingClient = (
+        e.target as HTMLSpanElement
+      ).getBoundingClientRect();
+
+    if (videoRef.current) {
+      const { left, right } = seekerBoundingClient;
+      const { duration } = videoRef.current;
+      const normalizer = (e.clientX - left) / (right - left);
+
+      timestampX = e.clientX - left;
+      setHoveredTimestamp(floor(duration * max(0, min(normalizer, 1))));
+    }
+  }
+
   return (
     <>
       {isVideoLoading && <h3 className={styles.loading}>LOADING</h3>}
       <video
         tabIndex={0}
-        style={{ cursor: videoRef?.current?.paused ? 'auto' : 'none' }}
         ref={videoRef}
+        style={{ cursor: isShowCursor ? 'auto' : 'none' }}
         onClick={playPause}
         onTimeUpdate={update}
         onPause={handlePause}
@@ -201,6 +231,7 @@ export default function Player({ video, entry, episode, next }: Props) {
           store.set(`${episodeKey}.progress`, 0);
           next();
         }}
+        onMouseMove={() => setIsShowCursor(true)}
       >
         <source src={src.file} />
         {track && (
@@ -215,10 +246,26 @@ export default function Player({ video, entry, episode, next }: Props) {
       <div className={styles.controls}>
         <span>
           {videoRef.current && videoRef.current.duration
-            ? formatTime(Math.floor(videoRef.current.duration - progress))
+            ? formatTime(floor(videoRef.current.duration - progress))
             : '0:00'}
         </span>
-        <input type="range" ref={seekerRef} step={0.1} onChange={seek} />
+        <div // eslint-disable-line
+          className={styles.seeker}
+          onMouseMove={(e) => updateHoveredTimestamp(e)}
+          onClick={seek}
+        >
+          <span>
+            <span
+              style={{
+                width: `${progressPercent}%`,
+              }}
+            />
+          </span>
+          <span style={{ left: `${progressPercent}%` }} />
+          <span style={{ left: `${timestampX}px` }}>
+            {formatTime(hoveredTimestamp)}
+          </span>
+        </div>
         <button
           type="button"
           onClick={() => setIsShowSettings(!isShowSettings)}

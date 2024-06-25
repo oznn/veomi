@@ -11,10 +11,10 @@
   display: flex;
   justify-content:space-between;
   align-items:center;
-  padding: 0 1em;
   opacity: 0;
   transition: opacity 200ms;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+  padding:.2em .5em 2em .5em;
 }
 .container header:hover{
   opacity: 1;
@@ -38,17 +38,67 @@
   justify-content:space-between;
   align-items:center;
   height:2em;
-  opacity: 0;
+  opacity: 1;
   transition: opacity 200ms;
   gap: .5em;
-  padding:.5em;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 80%);
-}
-.controls input[type='range'] {
-  width:100%;
+  /* background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 80%); */
+  padding:2em .5em 1.2em .5em;
 }
 .controls:hover {
   opacity:1;
+}
+.seeker{
+  height: .6em;
+  width:100%;
+  position: relative;
+  cursor: pointer;
+  margin-bottom:.4em;
+}
+.seeker > span:nth-child(1){
+  background-color: white;
+  height: .2em;
+  width: 100%;
+  position: absolute;
+  bottom:0;
+  border-radius: .1em;
+  overflow:hidden;
+}
+.seeker > span:nth-child(1) > span{
+  background-color: grey;
+  height:.2em;
+  position: absolute;
+  bottom:0;
+  z-index:1;
+}
+.seeker > span:nth-child(2){
+  background-color:grey;
+  width:.2em;
+  height:.2em;
+  position:absolute;
+  border-radius:50%;
+  transition: scale 200ms ease,opacity 200ms ease;
+  opacity: 0;
+  bottom:0;
+  z-index:1;
+}
+.seeker:hover > span:nth-child(2){
+  scale: 3;
+  opacity: 1;
+}
+.seeker > span:nth-child(3){
+  position: relative;
+  display: inline-block;
+  inset:0;
+  translate:-50% -2em;
+  background-color: rgba(0,0,0,.2);
+  padding: 0 .5em;
+  border-radius:.5em;
+  font-size: .8em;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.seeker:hover > span:nth-child(3){
+  opacity: 1;
 }
 .settings {
   position: absolute;
