@@ -39,6 +39,7 @@ async function getEpisodes(dataId: string) {
     const id = a.getAttribute('data-ids') || '';
     const infoString = a.parentElement?.getAttribute('title') || '';
     const epTitle = a.querySelector('.d-title')?.textContent || '';
+    const isNoEpTitle = /[Episode]\s\d/.test(epTitle);
     const [releaseDate] = /\d{4}\/\d{2}\/\d{2}/.exec(infoString) || [''];
     const types: string[] = [];
     const isFiller = infoString.includes('Filler');
@@ -52,7 +53,7 @@ async function getEpisodes(dataId: string) {
     info.push(types.join(','));
 
     episodes.push({
-      title: `E${epNum}. ${epTitle}`,
+      title: isNoEpTitle ? `Episode ${epNum}` : `E${epNum}. ${epTitle}`,
       info,
       isSeen: false,
       progress: 0,

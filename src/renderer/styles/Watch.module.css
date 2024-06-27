@@ -13,7 +13,7 @@
   align-items:center;
   opacity: 0;
   transition: opacity 200ms;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 50%);
   padding:.2em .5em 2em .5em;
 }
 .container header:hover{
@@ -38,10 +38,10 @@
   justify-content:space-between;
   align-items:center;
   height:2em;
-  opacity: 1;
+  opacity: 0;
   transition: opacity 200ms;
-  gap: .5em;
-  /* background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 80%); */
+  gap: .8em;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%);
   padding:2em .5em 1.2em .5em;
 }
 .controls:hover {
@@ -55,7 +55,7 @@
   margin-bottom:.4em;
 }
 .seeker > span:nth-child(1){
-  background-color: white;
+  background-color: rgba(127,127,127,.2);
   height: .2em;
   width: 100%;
   position: absolute;
@@ -63,29 +63,31 @@
   border-radius: .1em;
   overflow:hidden;
 }
-.seeker > span:nth-child(1) > span{
+.seeker > .progress > span {
   background-color: grey;
   height:.2em;
   position: absolute;
   bottom:0;
   z-index:1;
+  width:100%;
+  scale:0;
+  transform-origin: left;
 }
-.seeker > span:nth-child(2){
+.seeker > .thumb {
   background-color:grey;
   width:.2em;
   height:.2em;
   position:absolute;
-  border-radius:50%;
   transition: scale 200ms ease,opacity 200ms ease;
   opacity: 0;
   bottom:0;
-  z-index:1;
+  border-radius:50%;
 }
-.seeker:hover > span:nth-child(2){
+.seeker:hover > .thumb {
   scale: 3;
   opacity: 1;
 }
-.seeker > span:nth-child(3){
+.seeker > .timestamp {
   position: relative;
   display: inline-block;
   inset:0;
@@ -96,9 +98,17 @@
   font-size: .8em;
   opacity: 0;
   transition: opacity 200ms ease;
+  pointer-events: none;
 }
-.seeker:hover > span:nth-child(3){
+.seeker:hover > .timestamp{
   opacity: 1;
+}
+.cog{
+  cursor:pointer;
+  opacity:.8;
+}
+.cog:hover{
+  opacity:1;
 }
 .settings {
   position: absolute;
@@ -142,7 +152,7 @@
 }
 .container input[type='radio'],
 .container input[type='checkbox']{
-  scale: 1.5;
+  scale: 1.7;
 }
 .container input{
   accent-color:grey;

@@ -1,0 +1,85 @@
+import { MouseEvent, useState, useRef, useEffect, RefObject } from 'react';
+import { formatTime } from './utils';
+import styles from '../../styles/Watch.module.css';
+
+let timestampPercent = 0;
+let seekerBoundingClient: any;
+let isMouseDown = false;
+const { floor, min, max } = Math;
+
+type Props = {
+  videoRef: RefObject<HTMLVideoElement>;
+  progressPercent: number;
+  setProgress: (n: number) => void;
+  skips: { intro: number[]; outro: number[] };
+};
+export default function ProgressBar({
+  videoRef,
+  progressPercent,
+  setProgress,
+  skips,
+}: Props) {
+  const [hoveredTimestamp, setHoveredTimestamp] = useState(0);
+  const seekerRef = useRef<HTMLDivElement>(null);
+
+  function seek() {
+    if (videoRef.current) {
+      videoRef.current.currentTime = hoveredTimestamp;
+      setProgress(hoveredTimestamp);
+    }
+  }
+  function updateHoveredTimestamp(e: MouseEvent) {
+    if (!seekerBoundingClient)
+      seekerBoundingClient = (
+        e.target as HTMLSpanElement
+      ).getBoundingClientRect();
+
+    if (videoRef.current) {
+      const { left, right } = seekerBoundingClient;
+      const { duration } = videoRef.current;
+      const normalizer = (e.clientX - left) / (right - left);
+
+      timestampPercent = normalizer * 100;
+      setHoveredTimestamp(floor(duration * max(0, min(normalizer, 1))));
+      if (isMouseDown) seek();
+    }
+  }
+  useEffect(() => {
+    window.onmousedown = () => isMouseDown = true;//eslint-disable-line
+    window.onmouseup = () => isMouseDown = false;//eslint-disable-line
+
+    if (!seekerRef.current) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (!seekerRef.current) return;
+      seekerBoundingClient = seekerRef.current.getBoundingClientRect();
+    });
+    resizeObserver.observe(seekerRef.current);
+    return () => resizeObserver.disconnect(); //eslint-disable-line
+  }, []);
+
+  return (
+    <div // eslint-disable-line
+      className={styles.seeker}
+      onMouseMove={(e) => updateHoveredTimestamp(e)}
+      onClick={seek}
+      ref={seekerRef}
+    >
+      <span className={styles.progress}>
+        <span
+          style={{
+            scale: `${progressPercent*0.01} 1`,
+          }}
+        />
+      </span>
+      <span className={styles.thumb} style={{ left: `${progressPercent}%` }} />
+      <span
+        className={styles.timestamp}
+        style={{ left: `${timestampPercent}%` }}
+      >
+        {formatTime(hoveredTimestamp)}
+      </span>
+      <span className={styles.intro} />
+    </div>
+  );
+}

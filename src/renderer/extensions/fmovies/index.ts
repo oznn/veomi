@@ -37,13 +37,22 @@ async function getEpisodes(dataId: string) {
     ul.querySelectorAll('a').forEach((a, j) => {
       const isTv = a.getAttribute('href')?.includes('/tv/') ? 1 : 0;
       const epTitle = a.querySelectorAll('span')[isTv].textContent || '';
-      const title = isTv ? `S${i + 1} E${j + 1}. ${epTitle}` : epTitle;
+      const isNoEpTitle = /[Episode]\s\d/.test(epTitle);
+      const title = isNoEpTitle
+        ? `S${i + 1} Episode${j + 1}`
+        : `S${i + 1} E${j + 1}. ${epTitle}`;
       const info: string[] = [];
       const releaseDate = a.getAttribute('title') || '';
       const id = a.getAttribute('data-id');
 
       info.push(releaseDate);
-      episodes.push({ title, info, isSeen: false, progress: 0, id });
+      episodes.push({
+        title: isTv ? title : 'Movie',
+        info,
+        isSeen: false,
+        progress: 0,
+        id,
+      });
     });
   });
 

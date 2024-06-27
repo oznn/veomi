@@ -132,7 +132,7 @@ export default function Settings({
             id="skipIntro"
             defaultChecked={entry.isSkip.intro}
           />
-          {` skip intro`}
+          {` Skip intro`}
         </label>
         <br />
         <label htmlFor="skipOutro">
@@ -142,18 +142,18 @@ export default function Settings({
             id="skipOutro"
             defaultChecked={entry.isSkip.outro}
           />
-          {` skip outro`}
+          {` Skip outro`}
         </label>
       </div>
       <div>
         <button type="button" onClick={() => setIsShowQuals(true)}>
-          qual: {video.sources[srcIdx].qual}
+          {video.sources[srcIdx].qual}
         </button>
       </div>
       {video.tracks.length > 0 && (
         <div>
           <button type="button" onClick={() => setIsShowSubs(true)}>
-            subs: {trackIdx > -1 ? video.tracks[trackIdx].label : 'off'}
+            {trackIdx > -1 ? video.tracks[trackIdx].label : 'Subtitles'}
           </button>
         </div>
       )}

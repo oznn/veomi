@@ -1,9 +1,12 @@
 /* eslint jsx-a11y/media-has-caption: off */
 import Hls from 'hls.js';
-import { MouseEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Entry, Video } from '../../types';
 import Settings from './Settings';
+import ProgressBar from './ProgressBar';
+import { formatTime } from './utils';
 import styles from '../../styles/Watch.module.css';
+import cog from '../../../../assets/cog.png';
 
 const {
   electron: { store },
@@ -16,20 +19,8 @@ type Props = {
 };
 
 const { floor, max, min } = Math;
-let timestampX = 0;
 let progressPercent = 0;
-let seekerBoundingClient: any;
 
-function formatTime(t: number) {
-  const s = t % 60;
-  const m = floor((t / 60) % 60);
-  const h = floor(t / 3600);
-  const seconds = s < 10 ? `0${s}` : s;
-  const minutes = h > 0 && m < 10 ? `0${m}:` : `${m}:`;
-  const hours = h > 0 ? `${h}:` : '';
-
-  return hours + minutes + seconds;
-}
 export default function Player({ video, entry, episode, next }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { sources, tracks, skips } = video;
@@ -49,7 +40,6 @@ export default function Player({ video, entry, episode, next }: Props) {
   const [volume, setVolume] = useState(entry.volume);
   const [isShowVolume, setIsShowVolume] = useState(false);
   const [isShowCursor, setIsShowCursor] = useState(false);
-  const [hoveredTimestamp, setHoveredTimestamp] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -98,12 +88,6 @@ export default function Player({ video, entry, episode, next }: Props) {
     }
   }, [trackIdx]);
 
-  function seek() {
-    if (videoRef.current) {
-      videoRef.current.currentTime = hoveredTimestamp;
-      setProgress(hoveredTimestamp);
-    }
-  }
   function playPause() {
     if (videoRef.current) {
       if (videoRef.current.paused) videoRef.current.play();
@@ -125,10 +109,13 @@ export default function Player({ video, entry, episode, next }: Props) {
       if (isSkip) videoRef.current.currentTime = skips[part][1];// eslint-disable-line
     }
   }
+  if (videoRef.current) {
+    const { currentTime, duration } = videoRef.current;
+    progressPercent = (currentTime / duration) * 100;
+  }
   function update() {
     if (videoRef.current) {
-      const { currentTime, duration } = videoRef.current;
-      const progressPercent = (currentTime / duration) * 100;
+      const { currentTime } = videoRef.current;
 
       if (currentTime > 0 && floor(currentTime) % 10 === 0)
         store.set(`${episodeKey}.progress`, currentTime);
@@ -182,32 +169,13 @@ export default function Player({ video, entry, episode, next }: Props) {
       }
   }
 
-  useEffect(() => {
-    let timeout: any;
-    if (isShowCursor) timeout = setTimeout(() => setIsShowCursor(false), 3000);
+  useEffect(() => {// eslint-disable-line
+    if (isShowCursor) {
+      const timeout = setTimeout(() => setIsShowCursor(false), 2000);
 
-    return () => clearTimeout(timeout);
-  }, [isShowCursor]);
-
-  if (videoRef.current)
-    progressPercent =
-      (videoRef.current.currentTime / videoRef.current.duration) * 100;
-
-  function updateHoveredTimestamp(e: MouseEvent) {
-    if (!seekerBoundingClient)
-      seekerBoundingClient = (
-        e.target as HTMLSpanElement
-      ).getBoundingClientRect();
-
-    if (videoRef.current) {
-      const { left, right } = seekerBoundingClient;
-      const { duration } = videoRef.current;
-      const normalizer = (e.clientX - left) / (right - left);
-
-      timestampX = e.clientX - left;
-      setHoveredTimestamp(floor(duration * max(0, min(normalizer, 1))));
+      return () => clearTimeout(timeout);
     }
-  }
+  }, [isShowCursor]);
 
   return (
     <>
@@ -249,29 +217,21 @@ export default function Player({ video, entry, episode, next }: Props) {
             ? formatTime(floor(videoRef.current.duration - progress))
             : '0:00'}
         </span>
-        <div // eslint-disable-line
-          className={styles.seeker}
-          onMouseMove={(e) => updateHoveredTimestamp(e)}
-          onClick={seek}
-        >
-          <span>
-            <span
-              style={{
-                width: `${progressPercent}%`,
-              }}
-            />
-          </span>
-          <span style={{ left: `${progressPercent}%` }} />
-          <span style={{ left: `${timestampX}px` }}>
-            {formatTime(hoveredTimestamp)}
-          </span>
-        </div>
-        <button
-          type="button"
+        {videoRef && (
+          <ProgressBar
+            videoRef={videoRef}
+            progressPercent={progressPercent}
+            setProgress={(n: number) => setProgress(n)}
+            skips={skips}
+          />
+        )}
+        <img // eslint-disable-line
+          className={styles.cog}
+          src={cog}
+          alt="settings"
           onClick={() => setIsShowSettings(!isShowSettings)}
-        >
-          Settings
-        </button>
+          width={40}
+        />
       </div>
       <div className={styles.volume} style={{ opacity: isShowVolume ? 1 : 0 }}>
         {volume * 5}%
