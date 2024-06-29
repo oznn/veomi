@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Player from './Player';
 import { Server, Entry } from '../../types';
 import styles from '../../styles/Watch.module.css';
+import cloud from '../../../../assets/cloud.png';
 
 const {
   electron: { store },
@@ -18,6 +19,7 @@ export default function Watch() {
   const [serverIdx, setServerIdx] = useState(-1);
   const [video, setVideo] = useState(null);
   const [episode, setEpisode] = useState(startAt ? Number(startAt) : -1);
+  const [isShowServers, setIsShowServers] = useState(false);
   const container = useRef<HTMLDivElement>(null);
   const entryKey = (ext + path).replace(/\./g, ' ');
   const nav = useNavigate();
@@ -92,22 +94,44 @@ export default function Watch() {
     >
       <header>
         <span>{entry.episodes[episode].title}</span>
-        <select
-          defaultValue={servers[serverIdx].name}
-          onChange={({ target }) => changeServer(target.selectedIndex)}
-        >
-          {servers.map(({ name }) => (
-            <option value={name} key={name}>
-              {name}
-            </option>
-          ))}
-        </select>
+        <img // eslint-disable-line
+          src={cloud}
+          alt="cloud"
+          onClick={() => setIsShowServers(!isShowServers)}
+        />
       </header>
+      {isShowServers && (
+        <div className={styles.servers}>
+          {servers.map(({ name }, i) => {
+            const isCurrent = serverIdx === i;
+            return (
+              <div key={name}>
+                <button
+                  type="button"
+                  onClick={() => changeServer(i)}
+                  disabled={isCurrent}
+                >
+                  <span
+                    style={{
+                      opacity: isCurrent ? 1 : 0,
+                      transform: `scale(${isCurrent ? 1 : 3})`,
+                      borderRadius: '50%',
+                    }}
+                  />
+                  {name}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
       {video && (
         <Player
           video={video}
           entry={entry}
           episode={episode}
+          isShowServers={isShowServers}
+          setIsShowServers={(b: boolean) => setIsShowServers(b)}
           next={() =>
             episode < entry.episodes.length - 1 && changeEpisode(episode + 1)
           }

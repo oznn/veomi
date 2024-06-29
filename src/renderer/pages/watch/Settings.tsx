@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 import { Entry, Video, Source, Track } from '../../types';
 import styles from '../../styles/Watch.module.css';
 
@@ -25,29 +25,35 @@ function Subs({
 }) {
   return (
     <>
-      <label htmlFor="notrack">
-        <input
-          type="radio"
-          id="notrack"
-          name="track"
-          defaultChecked={trackIdx === -1}
-          onClick={() => setTrackIdx(-1)}
+      <button
+        type="button"
+        onClick={() => setTrackIdx(-1)}
+        disabled={trackIdx === -1}
+      >
+        <span
+          style={{
+            opacity: trackIdx === -1 ? 1 : 0,
+            transform: `scale(${trackIdx === -1 ? 1 : 3})`,
+            borderRadius: '50%',
+          }}
         />
-        {` off `}
-        <br />
-      </label>
+        off
+      </button>
       {tracks.map((track, i) => (
-        <label key={track.label} htmlFor={`track${i}`}>
-          <input
-            type="radio"
-            id={`track${i}`}
-            name="track"
-            defaultChecked={trackIdx === i}
-            onClick={() => setTrackIdx(i)}
+        <button
+          type="button"
+          onClick={() => setTrackIdx(i)}
+          disabled={trackIdx === i}
+        >
+          <span
+            style={{
+              opacity: trackIdx === i ? 1 : 0,
+              transform: `scale(${trackIdx === i ? 1 : 3})`,
+              borderRadius: '50%',
+            }}
           />
-          {` ${track.label}`}
-          <br />
-        </label>
+          {track.label}
+        </button>
       ))}
     </>
   );
@@ -65,17 +71,21 @@ function Quals({
   return (
     <>
       {sources.map(({ qual }, i) => (
-        <label key={qual} htmlFor={`qual${i}`}>
-          <input
-            type="radio"
-            id={`qual${i}`}
-            name="qual"
-            defaultChecked={srcIdx === i}
-            onClick={() => setSrcIdx(i)}
+        <button
+          type="button"
+          key={qual}
+          onClick={() => setSrcIdx(i)}
+          disabled={srcIdx === i}
+        >
+          <span
+            style={{
+              opacity: srcIdx === i ? 1 : 0,
+              transform: `scale(${srcIdx === i ? 1 : 3})`,
+              borderRadius: '50%',
+            }}
           />
-          {` ${qual}`}
-          <br />
-        </label>
+          {qual}
+        </button>
       ))}
     </>
   );
@@ -91,6 +101,7 @@ export default function Settings({
 }: Props) {
   const [isShowQuals, setIsShowQuals] = useState(false);
   const [isShowSubs, setIsShowSubs] = useState(false);
+  const [, rerender] = useReducer((n) => n + 1, 0);
 
   if (isShowQuals)
     return (
@@ -98,7 +109,6 @@ export default function Settings({
         <button type="button" onClick={() => setIsShowQuals(false)}>
           {'<='}
         </button>
-        <br />
         <Quals sources={video.sources} srcIdx={srcIdx} setSrcIdx={setSrcIdx} />
       </div>
     );
@@ -108,7 +118,6 @@ export default function Settings({
         <button type="button" onClick={() => setIsShowSubs(false)}>
           {'<='}
         </button>
-        <br />
         <Subs
           tracks={video.tracks}
           trackIdx={trackIdx}
@@ -117,33 +126,35 @@ export default function Settings({
       </div>
     );
 
-  function toggleIsSkip(part: 'intro' | 'outro', toggle: boolean) {
+  function toggleIsSkip(part: 'intro' | 'outro') {
+    const toggle = !entry.isSkip[part];
+    console.log(toggle);
     entry.isSkip[part] = toggle;
     store.set(`entries.${entry.key}.isSkip.${part}`, toggle);
+    rerender();
   }
 
   return (
     <div className={styles.settings}>
       <div>
-        <label htmlFor="skipIntro">
-          <input
-            type="checkbox"
-            onChange={({ target }) => toggleIsSkip('intro', target.checked)}
-            id="skipIntro"
-            defaultChecked={entry.isSkip.intro}
+        <button type="button" onClick={() => toggleIsSkip('intro')}>
+          <span
+            style={{
+              opacity: entry.isSkip.intro ? 1 : 0,
+              transform: `scale(${entry.isSkip.intro ? 1 : 3})`,
+            }}
           />
-          {` Skip intro`}
-        </label>
-        <br />
-        <label htmlFor="skipOutro">
-          <input
-            type="checkbox"
-            onChange={({ target }) => toggleIsSkip('outro', target.checked)}
-            id="skipOutro"
-            defaultChecked={entry.isSkip.outro}
+          Skip intro
+        </button>
+        <button type="button" onClick={() => toggleIsSkip('outro')}>
+          <span
+            style={{
+              opacity: entry.isSkip.outro ? 1 : 0,
+              transform: `scale(${entry.isSkip.outro ? 1 : 3})`,
+            }}
           />
-          {` Skip outro`}
-        </label>
+          Skip outro
+        </button>
       </div>
       <div>
         <button type="button" onClick={() => setIsShowQuals(true)}>

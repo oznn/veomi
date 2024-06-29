@@ -1,3 +1,7 @@
+.container {
+  -webkit-user-select:none;
+  user-select: none;
+}
 .container video {
   position: absolute;
   inset:0;
@@ -13,8 +17,9 @@
   align-items:center;
   opacity: 0;
   transition: opacity 200ms;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 50%);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 70%);
   padding:.2em .5em 2em .5em;
+  position:relative;
 }
 .container header:hover{
   opacity: 1;
@@ -23,12 +28,51 @@
   position: absolute;
   list-style: none;
 }
-.container header details{
+.container img{
+  opacity: .8;
   cursor:pointer;
 }
-.container header details ul{
-  margin: 0;
-  padding: 0;
+.container img:hover{
+  opacity: 1;
+}
+.container button {
+  display:flex;
+  align-items:center;
+  gap:.4em;
+  cursor:pointer;
+  transition: color 200ms ease-in;
+  color:grey;
+  background:none;
+  width:100%;
+}
+.container button:hover{
+  color:white;
+  transition: 0s;
+}
+.container button:disabled{
+  pointer-events:none;
+}
+.container button > span{
+  background:grey;
+  width:.5em;
+  height:.5em;
+  transition:200ms;
+}
+.container input{
+  display:none;
+}
+.servers{
+  position:absolute;
+  top:2em;
+  right:.3em;
+  padding: .2em 0;
+  max-height: 15em;
+  border-radius: .5em;
+  animation: pop 100ms ease 1;
+  transform-origin: top right;
+  background-color:rgba(0,0,0,.8);
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 .controls{
   position: absolute;
@@ -41,7 +85,7 @@
   opacity: 0;
   transition: opacity 200ms;
   gap: .8em;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 70%);
   padding:2em .5em 1.2em .5em;
 }
 .controls:hover {
@@ -55,7 +99,7 @@
   margin-bottom:.4em;
 }
 .seeker > span:nth-child(1){
-  background-color: rgba(127,127,127,.2);
+  background-color: rgba(255,255,255,.2);
   height: .2em;
   width: 100%;
   position: absolute;
@@ -103,31 +147,26 @@
 .seeker:hover > .timestamp{
   opacity: 1;
 }
-.cog{
-  cursor:pointer;
-  opacity:.8;
-}
-.cog:hover{
-  opacity:1;
-}
 .settings {
   position: absolute;
   bottom:2em;
   right:.3em;
-  animation: fade 200ms ease 1;
-  background-color:rgba(0,0,0,.4);
-  padding: .2em .5em;
-  min-width: 20%;
+  animation: pop 100ms ease 1;
+  background-color:rgba(0,0,0,.8);
+  min-width: 15%;
+  padding: .4em 0;
   max-height: 40%;
   overflow: scroll;
+  border-radius: .5em;
+  transform-origin: bottom right;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
-.settings button{
-  width: 100%;
+@keyframes pop {
+0% {opacity:0;scale:0}
+100% {opacity:1;scale:1}
 }
-@keyframes fade{
-0% {opacity:0}
-100% {opacity:1;}
-}
+
 .loading{
   position: absolute;
   top:50%;
@@ -149,11 +188,4 @@
   padding: .2em 1em;
   margin-top: 1em;
   transition: opacity 200ms;
-}
-.container input[type='radio'],
-.container input[type='checkbox']{
-  scale: 1.7;
-}
-.container input{
-  accent-color:grey;
 }

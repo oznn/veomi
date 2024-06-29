@@ -39,10 +39,8 @@ button:enabled{
   cursor: pointer;
 }
 button:disabled{
-  opacity: .5;
-}
-button:enabled:active{
-  scale:.9;
+  opacity: .7;
+  pointer-events:none;
 }
 input{
   border:solid 2px grey;

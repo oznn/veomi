@@ -56,7 +56,7 @@ export default function Entry() {
     })();
   }, []);
 
-  if (isLoading) return <h1>loading entry...</h1>;
+  if (!entry && isLoading) return <h1>loading entry...</h1>;
   if (!entry) return '';
 
   function addToLibary() {
@@ -90,7 +90,7 @@ export default function Entry() {
         {entry.episodes.map(({ title, info }, i) => (
           <li key={title}>
             <button type="button" onClick={() => toggleIsSeen(i)}>
-              mark as {entry.episodes[i].isSeen ? 'unseen' : 'seen'}
+              {entry.episodes[i].isSeen ? 'unseen' : 'seen'}
             </button>
             <Link title={info.join(' • ')} to={`${watchURL}&startAt=${i}`}>
               {`${title} `}

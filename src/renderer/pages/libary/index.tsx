@@ -30,7 +30,7 @@ export default function Libary() {
 
   function remove(i: number) {
     if (entries) {
-      store.set(`entries.${entries[i].key}.isInLibary`, false);
+      store.delete(`entries.${entries[i].key}`);
       entries.splice(i, 1);
       rerender();
     }

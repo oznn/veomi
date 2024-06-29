@@ -9,18 +9,12 @@ const { floor, min, max } = Math;
 
 type Props = {
   videoRef: RefObject<HTMLVideoElement>;
-  progressPercent: number;
   setProgress: (n: number) => void;
   skips: { intro: number[]; outro: number[] };
 };
-export default function ProgressBar({
-  videoRef,
-  progressPercent,
-  setProgress,
-  skips,
-}: Props) {
-  const [hoveredTimestamp, setHoveredTimestamp] = useState(0);
+export default function ProgressBar({ videoRef, setProgress, skips }: Props) {
   const seekerRef = useRef<HTMLDivElement>(null);
+  const [hoveredTimestamp, setHoveredTimestamp] = useState(0);
 
   function seek() {
     if (videoRef.current) {
@@ -41,7 +35,7 @@ export default function ProgressBar({
 
       timestampPercent = normalizer * 100;
       setHoveredTimestamp(floor(duration * max(0, min(normalizer, 1))));
-      if (isMouseDown) seek();
+      console.log(isMouseDown);
     }
   }
   useEffect(() => {
@@ -58,6 +52,10 @@ export default function ProgressBar({
     return () => resizeObserver.disconnect(); //eslint-disable-line
   }, []);
 
+  if (!videoRef.current) return '';
+  const { currentTime, duration } = videoRef.current;
+  const progressPercent = (currentTime / duration) * 100;
+
   return (
     <div // eslint-disable-line
       className={styles.seeker}
@@ -68,7 +66,7 @@ export default function ProgressBar({
       <span className={styles.progress}>
         <span
           style={{
-            scale: `${progressPercent*0.01} 1`,
+            scale: `${progressPercent * 0.01} 1`,
           }}
         />
       </span>

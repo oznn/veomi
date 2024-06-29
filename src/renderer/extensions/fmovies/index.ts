@@ -39,7 +39,7 @@ async function getEpisodes(dataId: string) {
       const epTitle = a.querySelectorAll('span')[isTv].textContent || '';
       const isNoEpTitle = /[Episode]\s\d/.test(epTitle);
       const title = isNoEpTitle
-        ? `S${i + 1} Episode${j + 1}`
+        ? `S${i + 1} Episode ${j + 1}`
         : `S${i + 1} E${j + 1}. ${epTitle}`;
       const info: string[] = [];
       const releaseDate = a.getAttribute('title') || '';

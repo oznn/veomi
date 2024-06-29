@@ -15,13 +15,22 @@ type Props = {
   video: Video;
   entry: Entry;
   episode: number;
+  isShowServers: boolean;
+  setIsShowServers: (b: boolean) => void;
   next: () => void;
 };
 
 const { floor, max, min } = Math;
-let progressPercent = 0;
+let cursorTimer: any;
 
-export default function Player({ video, entry, episode, next }: Props) {
+export default function Player({
+  video,
+  entry,
+  episode,
+  isShowServers,
+  setIsShowServers,
+  next,
+}: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { sources, tracks, skips } = video;
   const episodeKey = `entries.${entry.key}.episodes.${episode}`;
@@ -91,8 +100,9 @@ export default function Player({ video, entry, episode, next }: Props) {
   function playPause() {
     if (videoRef.current) {
       if (videoRef.current.paused) videoRef.current.play();
-      else if (!isShowSettings) videoRef.current.pause();
+      else if (!isShowSettings && !isShowServers) videoRef.current.pause();
     }
+    setIsShowServers(false);
     setIsShowSettings(false);
   }
   function handlePause() {
@@ -109,13 +119,10 @@ export default function Player({ video, entry, episode, next }: Props) {
       if (isSkip) videoRef.current.currentTime = skips[part][1];// eslint-disable-line
     }
   }
-  if (videoRef.current) {
-    const { currentTime, duration } = videoRef.current;
-    progressPercent = (currentTime / duration) * 100;
-  }
   function update() {
     if (videoRef.current) {
-      const { currentTime } = videoRef.current;
+      const { currentTime, duration } = videoRef.current;
+      const progressPercent = (currentTime / duration) * 100;
 
       if (currentTime > 0 && floor(currentTime) % 10 === 0)
         store.set(`${episodeKey}.progress`, currentTime);
@@ -169,14 +176,6 @@ export default function Player({ video, entry, episode, next }: Props) {
       }
   }
 
-  useEffect(() => {// eslint-disable-line
-    if (isShowCursor) {
-      const timeout = setTimeout(() => setIsShowCursor(false), 2000);
-
-      return () => clearTimeout(timeout);
-    }
-  }, [isShowCursor]);
-
   return (
     <>
       {isVideoLoading && <h3 className={styles.loading}>LOADING</h3>}
@@ -199,7 +198,12 @@ export default function Player({ video, entry, episode, next }: Props) {
           store.set(`${episodeKey}.progress`, 0);
           next();
         }}
-        onMouseMove={() => setIsShowCursor(true)}
+        // onMouseMove={() => setIsShowCursor(true)}
+        onMouseMove={() => {
+          setIsShowCursor(true);
+          clearTimeout(cursorTimer);
+          cursorTimer = setTimeout(() => setIsShowCursor(false), 2000);
+        }}
       >
         <source src={src.file} />
         {track && (
@@ -220,7 +224,6 @@ export default function Player({ video, entry, episode, next }: Props) {
         {videoRef && (
           <ProgressBar
             videoRef={videoRef}
-            progressPercent={progressPercent}
             setProgress={(n: number) => setProgress(n)}
             skips={skips}
           />
