@@ -158,12 +158,14 @@ export default function Settings({
       </div>
       <div>
         <button type="button" onClick={() => setIsShowQuals(true)}>
+          <span className={styles.arrow} />
           {video.sources[srcIdx].qual}
         </button>
       </div>
       {video.tracks.length > 0 && (
         <div>
           <button type="button" onClick={() => setIsShowSubs(true)}>
+            <span className={styles.arrow} />
             {trackIdx > -1 ? video.tracks[trackIdx].label : 'Subtitles'}
           </button>
         </div>

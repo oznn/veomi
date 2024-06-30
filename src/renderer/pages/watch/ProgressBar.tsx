@@ -35,7 +35,6 @@ export default function ProgressBar({ videoRef, setProgress, skips }: Props) {
 
       timestampPercent = normalizer * 100;
       setHoveredTimestamp(floor(duration * max(0, min(normalizer, 1))));
-      console.log(isMouseDown);
     }
   }
   useEffect(() => {

@@ -58,6 +58,12 @@
   height:.5em;
   transition:200ms;
 }
+.container button > .arrow{
+  background:none;
+  border-right:solid 4px grey;
+  border-top:solid 4px grey;
+  rotate: 45deg;
+}
 .container input{
   display:none;
 }
@@ -136,7 +142,7 @@
   display: inline-block;
   inset:0;
   translate:-50% -2em;
-  background-color: rgba(0,0,0,.2);
+  background-color: rgba(0,0,0,.8);
   padding: 0 .5em;
   border-radius:.5em;
   font-size: .8em;
@@ -184,8 +190,11 @@
   position: absolute;
   left:50%;
   transform: translate(-50%);
-  background-color:rgba(0,0,0,.4);
-  padding: .2em 1em;
-  margin-top: 1em;
+  background-color:rgba(0,0,0,.8);
+  border-radius:.5em;
   transition: opacity 200ms;
+  pointer-events:none;
+  padding: 0 .5em;
+  border-radius:.5em;
+  opacity: 0;
 }

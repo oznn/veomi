@@ -92,6 +92,7 @@ const createWindow = async () => {
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
   mainWindow.setMenu(null);
+  mainWindow.maximize();
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -130,7 +131,14 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
-
+app.on('web-contents-created', (_, wc) => {
+  wc.on('before-input-event', (event, input) => {
+    if (input.key === 'F11' && mainWindow) {
+      mainWindow.setFullScreen(!mainWindow.isFullScreen());
+      event.preventDefault();
+    }
+  });
+});
 app
   .whenReady()
   .then(() => {

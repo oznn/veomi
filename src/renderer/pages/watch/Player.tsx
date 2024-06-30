@@ -22,6 +22,7 @@ type Props = {
 
 const { floor, max, min } = Math;
 let cursorTimer: any;
+let volumeTimer: any;
 
 export default function Player({
   video,
@@ -80,13 +81,6 @@ export default function Player({
     })();
   }, [src]);
   useEffect(() => {
-    entry.volume = volume;
-    setIsShowVolume(true);
-    const timeout = setTimeout(() => setIsShowVolume(false), 2000);
-
-    return () => clearTimeout(timeout);
-  }, [volume]);
-  useEffect(() => {
     entry.preferredQual = sources[srcIdx].qual;
     store.set(`entries.${entry.key}.preferredQual`, sources[srcIdx].qual);
   }, [srcIdx]);
@@ -141,6 +135,9 @@ export default function Player({
       videoRef.current.volume = v * 0.05;
       store.set(`entries.${entry.key}.volume`, v);
       setVolume(v);
+      setIsShowVolume(true);
+      clearTimeout(volumeTimer);
+      volumeTimer = setTimeout(() => setIsShowVolume(false), 1000);
     }
   }
   function handleKeyEvents(key: string) {
@@ -198,7 +195,6 @@ export default function Player({
           store.set(`${episodeKey}.progress`, 0);
           next();
         }}
-        // onMouseMove={() => setIsShowCursor(true)}
         onMouseMove={() => {
           setIsShowCursor(true);
           clearTimeout(cursorTimer);
