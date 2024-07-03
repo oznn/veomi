@@ -18,9 +18,15 @@ export async function getResults(query: string) {
   items.forEach((item) => {
     const path = item.querySelector('a.name')?.getAttribute('href') || '';
     const title = item.querySelector('a.name')?.textContent || '';
-    const poster = item.querySelector('img')?.getAttribute('src') || '';
+    const posterURL = item.querySelector('img')?.getAttribute('src') || '';
 
-    results.push({ title, poster, path, ext });
+    results.push({
+      title,
+      posterURL,
+      path,
+      ext,
+      key: `aniwave${path}`.replace(/\./g, ' '),
+    });
   });
 
   return results;
@@ -77,8 +83,9 @@ async function getDetails(path: string) {
   const dataId =
     doc.querySelector('#watch-main')?.getAttribute('data-id') || '';
   const title = doc.querySelector('.title.d-title')?.textContent || '';
+  const posterURL = doc.querySelector('#w-info img')?.getAttribute('src') || '';
 
-  return { title, poster: '', isCompleted, dataId };
+  return { title, posterURL, isCompleted, dataId };
 }
 export async function getEntry(path: string): Promise<Entry> {
   const details = await getDetails(path);
@@ -93,9 +100,9 @@ export async function getEntry(path: string): Promise<Entry> {
     path,
     ext: 'aniwave',
     key: `aniwave${path}`.replace(/\./g, ' '),
-    preferredSubs: 'off',
-    preferredQual: '1080p',
-    preferredServ: '[sub] Vidplay',
+    preferredSubs: '',
+    preferredQual: '',
+    preferredServ: '',
   };
 }
 

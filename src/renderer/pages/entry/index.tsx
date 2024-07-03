@@ -1,13 +1,14 @@
 import { useEffect, useReducer, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Entry as T } from '../../types';
 import styles from '../../styles/Entry.module.css';
 
 const {
-  electron: { store },
+  electron: { store, poster },
 } = window;
 export default function Entry() {
   const [, rerender] = useReducer((n) => n + 1, 0);
+  const nav = useNavigate();
   const [entry, setEntry] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchParams] = useSearchParams();
@@ -24,7 +25,6 @@ export default function Entry() {
 
     if (res) {
       if (entry) {
-        entry.details.poster = res.details.poster;
         if (res.details.isCompleted !== null)
           entry.details.isCompleted = res.details.isCompleted;
         for (let i = 0; i < entry.episodes.length; i += 1) {
@@ -63,6 +63,7 @@ export default function Entry() {
     if (entry) {
       entry.isInLibary = true;
       store.set(`entries.${key}.isInLibary`, true);
+      poster.download(entry.details.posterURL, entry.key);
       rerender();
     }
   }
@@ -79,6 +80,9 @@ export default function Entry() {
 
   return (
     <div className={styles.container}>
+      <button type="button" onClick={() => nav(-1)}>
+        {'<='}
+      </button>
       <button type="button" onClick={getAndSetEntry} disabled={isLoading}>
         update
       </button>

@@ -1,10 +1,4 @@
-import {
-  MemoryRouter as Router,
-  Routes,
-  Route,
-  Link,
-  useNavigate,
-} from 'react-router-dom';
+import { MemoryRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Extensions from './extensions';
 import Libary from './libary';
 import Browse from './browse';
@@ -13,12 +7,8 @@ import Entry from './entry';
 import '../styles/App.css';
 
 function Links() {
-  const nav = useNavigate();
   return (
     <nav>
-      <button className="goback" type="button" onClick={() => nav(-1)}>
-        {'<= '}
-      </button>
       <Link to="/">Libary </Link>
       <Link to="/extensions">Extensions</Link>
     </nav>

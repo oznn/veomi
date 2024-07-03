@@ -2,7 +2,8 @@ export type Result = {
   ext: string;
   path: string;
   title: string;
-  poster: string;
+  posterURL: string;
+  key: string;
 };
 export type Episode = Required<{
   title: string;
@@ -15,8 +16,9 @@ export type Episode = Required<{
 export type Entry = {
   details: {
     title: string;
-    poster: string;
+    posterURL: string;
     isCompleted: boolean | null;
+    posterPath?: string;
     dataId?: string;
   };
   episodes: Episode[];

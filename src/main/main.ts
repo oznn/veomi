@@ -14,6 +14,10 @@ import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import Store from 'electron-store';
+import { existsSync, createWriteStream, unlink } from 'fs';
+import { mkdir } from 'fs/promises';
+import { Readable } from 'stream';
+import { finished } from 'stream/promises';
 import { resolveHtmlPath } from './util';
 
 class AppUpdater {
@@ -40,6 +44,28 @@ ipcMain.handle('store-push', (_, k, v) => {
   a.push(v);
   store.set(k, a);
 });
+ipcMain.handle('poster-download', async (_, url, entryKey) => {
+  try {
+    const appDataDir = app.getPath('userData');
+    const postersDir = path.join(appDataDir, 'posters');
+    if (!existsSync(postersDir)) await mkdir(postersDir);
+    const filename = entryKey.replace(/\//g, ' '); //eslint-disable-line
+    const { body } = await fetch(url);
+    const fileType = url.slice(url.lastIndexOf('.'), url.length);
+    const posterPath = path.join(postersDir, filename) + fileType;
+    const stream = createWriteStream(posterPath);
+
+    if (body) await finished(Readable.fromWeb(body as any).pipe(stream));
+    store.set(`entries.${entryKey}.details.posterPath`, posterPath);
+  } catch (err) {
+    console.log('poster-download', err);
+  }
+});
+ipcMain.handle(
+  'poster-delete',
+  async (_, posterPath) =>
+    posterPath && unlink(posterPath, (e) => console.log(e)),
+);
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
@@ -143,17 +169,15 @@ app
   .whenReady()
   .then(() => {
     createWindow();
-
     session.defaultSession.webRequest.onBeforeSendHeaders(
       { urls: ['*://*/*'] },
       (details, callback) => {
         details.requestHeaders.Referer = details.url;
-        details.requestHeaders.Origin = origin || '*';
+        if (origin) details.requestHeaders.Origin = origin;
 
         callback({ cancel: false, requestHeaders: details.requestHeaders });
       },
     );
-
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.

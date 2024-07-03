@@ -1,55 +1,38 @@
-import { Link, useSearchParams } from 'react-router-dom';
-import { useReducer } from 'react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { Result } from '../../types';
 
 function Results({ results }: { results: Result[] }) {
   if (results.length === 0) return <h1>0 results.</h1>;
   return (
     <ul>
-      {results.map((result) => (
-        <li key={result.path}>
-          <Link to={`/entry?ext=${result.ext}&path=${result.path}`}>
-            {result.title}
-          </Link>
+      {results.map(({ path, ext, title, key, posterURL }) => (
+        <li key={key}>
+          <img src={posterURL} alt="poster" />
+          <Link to={`/entry?ext=${ext}&path=${path}`}>{title}</Link>
         </li>
       ))}
     </ul>
   );
 }
 
-let results: Result[] | null = null;
-let isLoading = false;
-let query = '';
+const { electron } = window;
 export default function Browse() {
-  console.log('results', results);
-  // const [results, setResults] = useState<Result[] | null>(null);
-  // const [query, setQuery] = useState('');
-  const [, rerender] = useReducer((n) => n + 1, 0);
+  const [results, setResults] = useState<Result[] | null>(null);
+  const nav = useNavigate();
   const [searchParams] = useSearchParams();
   const ext = searchParams.get('ext') || '';
+  const query = searchParams.get('query') || '';
 
-  // useEffect(() => {
-  //   if (!query) return;
-  //   (async () => {
-  //     try {
-  //       const { getResults } = await import(`../../extensions/${ext}`);
-  //
-  //       results = (await getResults(query)) as Result[];
-  //       rerender();
-  //     } catch (err) {
-  //       console.log(`${err}`);
-  //     }
-  //   })();
-  // }, [query]);
+  useEffect(() => {
+    if (!query) return;
+    (async () => {
+      electron.ipcRenderer.sendMessage('change-origin');
+      const { getResults } = await import(`../../extensions/${ext}`);
 
-  async function search(q: string) {
-    const { getResults } = await import(`../../extensions/${ext}`);
-
-    results = (await getResults(q)) as Result[];
-    query = q;
-    isLoading = false;
-    rerender();
-  }
+      setResults((await getResults(query)) as Result[]);
+    })();
+  }, [query]);
 
   return (
     <div>
@@ -59,20 +42,13 @@ export default function Browse() {
         placeholder="search"
         onKeyUp={({ key, target }) => {
           if (key === 'Enter') {
-            isLoading = true;
-            rerender();
-            search((target as HTMLInputElement).value);
+            setResults(null);
+            const q = (target as HTMLInputElement).value;
+            nav(`/browse?query=${q}&ext=${ext}`);
           }
         }}
       />
-      {/*
-      !isLoading && results ? (
-        <Results results={results} />
-      ) : (
-        <h1>loading results...</h1>
-      )
-      */}
-      {isLoading ? (
+      {query && !results ? (
         <h1>loading results...</h1>
       ) : (
         results && <Results results={results} />

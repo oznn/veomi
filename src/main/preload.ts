@@ -17,7 +17,12 @@ const electronHandler = {
       ipcRenderer.invoke('store-delete', k);
     },
   },
-
+  poster: {
+    download: (url: string, name: string) =>
+      ipcRenderer.invoke('poster-download', url, name),
+    delete: (path: string | undefined) =>
+      ipcRenderer.invoke('poster-delete', path),
+  },
   ipcRenderer: {
     sendMessage(channel: Channels, ...args: unknown[]) {
       ipcRenderer.send(channel, ...args);

@@ -3,7 +3,7 @@ import { useEffect, useReducer, useState } from 'react';
 import { Entry } from '../../types';
 
 const {
-  electron: { store },
+  electron: { store, poster },
 } = window;
 
 let entries: Entry[] | null = null;
@@ -31,6 +31,7 @@ export default function Libary() {
   function remove(i: number) {
     if (entries) {
       store.delete(`entries.${entries[i].key}`);
+      poster.delete(entries[i].details.posterPath);
       entries.splice(i, 1);
       rerender();
     }
@@ -49,7 +50,6 @@ export default function Libary() {
           const res = (await getEntry(entry.path)) as Entry | undefined;
 
           if (res) {
-            entry.details.poster = res.details.poster;
             if (res.details.isCompleted !== null)
               entry.details.isCompleted = res.details.isCompleted;
             for (let i = 0; i < entry.episodes.length; i += 1) {
@@ -68,9 +68,12 @@ export default function Libary() {
 
   return (
     <div>
-      <button type="button" onClick={update} disabled={isLoading}>
-        update
-      </button>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: '1.5em' }}>Libary</span>
+        <button type="button" onClick={update} disabled={isLoading}>
+          update
+        </button>
+      </div>
       <ul>
         {entries.map((entry, i) => (
           <li key={entry.ext + entry.path}>

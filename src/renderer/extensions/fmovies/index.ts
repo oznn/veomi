@@ -17,9 +17,15 @@ export async function getResults(query: string) {
   items.forEach((item) => {
     const path = item.querySelector('a')?.getAttribute('href') || '';
     const title = item.querySelector('.meta a')?.textContent || '';
-    const poster = item.querySelector('img')?.getAttribute('data-src') || '';
+    const posterURL = item.querySelector('img')?.getAttribute('data-src') || '';
 
-    results.push({ title, poster, path, ext });
+    results.push({
+      title,
+      posterURL,
+      path,
+      ext,
+      key: `fmovies${path}`.replace(/\./g, ' '),
+    });
   });
 
   return results;
@@ -65,7 +71,7 @@ async function getDetails(path: string) {
   const dataId = doc.querySelector('.watch')?.getAttribute('data-id') || '';
   const title = doc.querySelector('h1.name')?.textContent || '';
 
-  return { title, poster: '', isCompleted: null, dataId };
+  return { title, posterURL: '', isCompleted: null, dataId };
 }
 export async function getEntry(path: string): Promise<Entry> {
   const details = await getDetails(path);
