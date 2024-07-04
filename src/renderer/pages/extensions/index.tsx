@@ -1,16 +1,12 @@
 import { Link } from 'react-router-dom';
-
-const extensions = [
-  { ext: 'fmovies', name: 'Fmovies' },
-  { ext: 'aniwave', name: 'Aniwave' },
-];
+import extensions from '../ext';
 
 export default function Extensions() {
   return (
     <ul>
-      {extensions.map(({ ext, name }) => (
+      {Object.keys(extensions).map((ext) => (
         <li key={ext}>
-          <Link to={`/browse?ext=${ext}`}>{name}</Link>
+          <Link to={`/browse?ext=${ext}`}>{extensions[ext].name}</Link>
         </li>
       ))}
     </ul>

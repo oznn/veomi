@@ -2,6 +2,7 @@ import { useEffect, useReducer, useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Entry as T } from '../../types';
 import styles from '../../styles/Entry.module.css';
+import loadingStyles from '../../styles/Loading.module.css';
 
 const {
   electron: { store, poster },
@@ -56,7 +57,7 @@ export default function Entry() {
     })();
   }, []);
 
-  if (!entry && isLoading) return <h1>loading entry...</h1>;
+  if (!entry && isLoading) return <div className={loadingStyles.container} />
   if (!entry) return '';
 
   function addToLibary() {

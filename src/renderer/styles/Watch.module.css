@@ -115,7 +115,7 @@
 }
 .seeker > .progress > span {
   background-color: grey;
-  height:.2em;
+  height:.4em;
   position: absolute;
   bottom:0;
   z-index:1;

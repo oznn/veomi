@@ -1,6 +1,7 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useReducer, useState } from 'react';
 import { Entry } from '../../types';
+import resultsStyles from '../../styles/Results.module.css';
 
 const {
   electron: { store, poster },
@@ -8,6 +9,7 @@ const {
 
 let entries: Entry[] | null = null;
 export default function Libary() {
+  const nav = useNavigate();
   const [, rerender] = useReducer((n) => n + 1, 0);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,7 +28,17 @@ export default function Libary() {
   }, []);
 
   if (!entries) return '';
-  if (!entries.length) return <h1>libary is empty.</h1>;
+  if (!entries.length)
+    return (
+      <span
+        style={{
+          display: 'block',
+          textAlign: 'center',
+        }}
+      >
+        Libary is empty
+      </span>
+    );
 
   function remove(i: number) {
     if (entries) {
@@ -67,29 +79,27 @@ export default function Libary() {
   }
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: '1.5em' }}>Libary</span>
-        <button type="button" onClick={update} disabled={isLoading}>
-          update
-        </button>
-      </div>
-      <ul>
-        {entries.map((entry, i) => (
-          <li key={entry.ext + entry.path}>
-            <button type="button" onClick={() => remove(i)}>
-              remove
-            </button>
-            <Link to={`/watch?ext=${entry.ext}&path=${entry.path}`}>
-              <b> resume </b>
-            </Link>
-            <Link to={`/entry?ext=${entry.ext}&path=${entry.path}`}>
-              {entry.details.title}
-            </Link>
-            <sup>{entry.episodes.filter((e) => !e.isSeen).length}</sup>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <ul className={resultsStyles.container}>
+      {entries.map((entry, i) => (
+        <Link
+          key={entry.ext + entry.path}
+          to={`/entry?ext=${entry.ext}&path=${entry.path}`}
+          className={resultsStyles.link}
+          onAuxClick={({ button }) =>
+            button - 1
+              ? nav(`/watch?ext=${entry.ext}&path=${entry.path}`)
+              : remove(i)
+          }
+        >
+          <div>
+            <img src={entry.details.posterPath} alt="poster" />
+          </div>
+          <span title={entry.details.title}>{entry.details.title}</span>
+          <span className={resultsStyles.remaining}>
+            {entry.episodes.filter((e) => !e.isSeen).length}
+          </span>
+        </Link>
+      ))}
+    </ul>
   );
 }

@@ -128,7 +128,6 @@ export default function Settings({
 
   function toggleIsSkip(part: 'intro' | 'outro') {
     const toggle = !entry.isSkip[part];
-    console.log(toggle);
     entry.isSkip[part] = toggle;
     store.set(`entries.${entry.key}.isSkip.${part}`, toggle);
     rerender();

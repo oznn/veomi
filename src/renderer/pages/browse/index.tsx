@@ -1,16 +1,36 @@
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Result } from '../../types';
+import styles from '../../styles/Browse.module.css';
+import loadingStyles from '../../styles/Loading.module.css';
+import resultsStyles from '../../styles/Results.module.css';
+import extensions from '../ext';
 
 function Results({ results }: { results: Result[] }) {
-  if (results.length === 0) return <h1>0 results.</h1>;
+  if (results.length === 0)
+    return (
+      <span
+        style={{
+          display: 'block',
+          textAlign: 'center',
+        }}
+      >
+        No results found
+      </span>
+    );
   return (
-    <ul>
+    <ul className={resultsStyles.container}>
       {results.map(({ path, ext, title, key, posterURL }) => (
-        <li key={key}>
-          <img src={posterURL} alt="poster" />
-          <Link to={`/entry?ext=${ext}&path=${path}`}>{title}</Link>
-        </li>
+        <Link
+          key={key}
+          className={resultsStyles.link}
+          to={`/entry?ext=${ext}&path=${path}`}
+        >
+          <div>
+            <img src={posterURL} alt="poster" />
+          </div>
+          <span title={title}>{title}</span>
+        </Link>
       ))}
     </ul>
   );
@@ -35,11 +55,11 @@ export default function Browse() {
   }, [query]);
 
   return (
-    <div>
+    <div className={styles.container}>
       <input
-        type="search"
+        type="text"
         defaultValue={query}
-        placeholder="search"
+        placeholder={`Search ${extensions[ext].name}`}
         onKeyUp={({ key, target }) => {
           if (key === 'Enter') {
             setResults(null);
@@ -48,8 +68,10 @@ export default function Browse() {
           }
         }}
       />
+      <br />
+      <br />
       {query && !results ? (
-        <h1>loading results...</h1>
+        <div className={loadingStyles.container} />
       ) : (
         results && <Results results={results} />
       )}
