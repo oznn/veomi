@@ -70,8 +70,9 @@ async function getDetails(path: string) {
   const doc = parse(await res.text());
   const dataId = doc.querySelector('.watch')?.getAttribute('data-id') || '';
   const title = doc.querySelector('h1.name')?.textContent || '';
+  const posterURL = doc.querySelector('#w-info img')?.getAttribute('src') || '';
 
-  return { title, posterURL: '', isCompleted: null, dataId };
+  return { title, posterURL, isCompleted: null, dataId };
 }
 export async function getEntry(path: string): Promise<Entry> {
   const details = await getDetails(path);

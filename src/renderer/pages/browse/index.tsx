@@ -27,7 +27,7 @@ function Results({ results }: { results: Result[] }) {
           to={`/entry?ext=${ext}&path=${path}`}
         >
           <div>
-            <img src={posterURL} alt="poster" />
+            <img loading="lazy" src={posterURL} alt="poster" />
           </div>
           <span title={title}>{title}</span>
         </Link>

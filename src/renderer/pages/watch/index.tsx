@@ -23,6 +23,7 @@ export default function Watch() {
   const container = useRef<HTMLDivElement>(null);
   const entryKey = (ext + path).replace(/\./g, ' ');
   const nav = useNavigate();
+  const [isServerErr, setIsServerErr] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -56,15 +57,20 @@ export default function Watch() {
   }, [entry, episode]);
 
   useEffect(() => {
+    setIsServerErr(false);
     if (serverIdx === -1 || !servers || video) return;
     if (container.current && !document.fullscreenElement)
       container.current.requestFullscreen();
 
     (async () => {
       const { getVideo } = await import(`../../extensions/${ext}`);
-      const res = await getVideo(servers[serverIdx]);
+      try {
+        const res = await getVideo(servers[serverIdx]);
 
-      setVideo(res);
+        setVideo(res);
+      } catch (err) {
+        setIsServerErr(true);
+      }
     })();
   }, [servers, serverIdx]);
 
@@ -124,6 +130,9 @@ export default function Watch() {
             );
           })}
         </div>
+      )}
+      {isServerErr && (
+        <div className={styles.serverErr}>Selected server is not working</div>
       )}
       {video && (
         <Player

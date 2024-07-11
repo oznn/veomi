@@ -6,6 +6,7 @@ import Settings from './Settings';
 import ProgressBar from './ProgressBar';
 import { formatTime } from './utils';
 import styles from '../../styles/Watch.module.css';
+import loadingStyles from '../../styles/Loading.module.css';
 import cog from '../../../../assets/cog.png';
 
 const {
@@ -175,7 +176,9 @@ export default function Player({
 
   return (
     <>
-      {isVideoLoading && <h3 className={styles.loading}>LOADING</h3>}
+      {isVideoLoading && (
+        <div className={`${loadingStyles.container} ${styles.loading}`} />
+      )}
       <video
         tabIndex={0}
         ref={videoRef}

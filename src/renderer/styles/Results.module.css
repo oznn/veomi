@@ -7,19 +7,21 @@
   grid-gap: 1em;
   padding: 1em;
 }
-.container .link{
+.link{
   display:block;
   margin: auto;
   width:242px;
   height:100%;
   padding:10px;
-  transition: background 100ms ease;
+  transition: background 300ms ease;
   position:relative;
+  color:white;
 }
-.container .link:hover{
+.link:hover,.link:focus{
   background:rgba(255,255,255,.2);
+  transition: background 300ms ease;
 }
-.container .link span{
+.link span{
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;

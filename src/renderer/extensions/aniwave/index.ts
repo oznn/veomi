@@ -53,18 +53,20 @@ async function getEpisodes(dataId: string) {
       if (infoString.includes(type)) types.push(type);
     });
     const epNum = a.getAttribute('data-num');
+    const isValidEp = /^\d+$/.test(a.getAttribute('data-slug') || '');
 
     if (isFiller) info.push('Filler');
     info.push(releaseDate);
-    info.push(types.join(','));
+    info.push(types.join(', '));
 
-    episodes.push({
-      title: isNoEpTitle ? `Episode ${epNum}` : `E${epNum}. ${epTitle}`,
-      info,
-      isSeen: false,
-      progress: 0,
-      id,
-    });
+    if (isValidEp)
+      episodes.push({
+        title: isNoEpTitle ? `Episode ${epNum}` : `E${epNum}. ${epTitle}`,
+        info,
+        isSeen: false,
+        progress: 0,
+        id,
+      });
   });
 
   return episodes;

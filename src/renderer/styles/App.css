@@ -10,10 +10,11 @@
 
 *{
   box-sizing:border-box;
+  outline:none;
 }
 body, input,button,select {
   font-size: 32px;
-  background-color: black;
+  background-color: #111;
   color:white;
   font-family: baloo2;
   font-variant-numeric: tabular-nums;
@@ -21,19 +22,25 @@ body, input,button,select {
 a {
   text-decoration: none;
   color: grey;
+  transition: color 200ms ease-in;
 }
-a:hover{
+a:hover,a:focus{
   color:white;
+  transition: color 0s;
 }
 button{
   border:none;
-  background-color: grey;
+  background-color: #333;
   padding: 0 .2em;
-  color:black;
+  color:silver;
   font-weight: 500;
   border-radius: 9px;
   transition: transform 1s ease;
   margin: .1em .2em;
+  transition: background 100ms ease;
+}
+button:hover{
+  background-color: #444;
 }
 button:enabled{
   cursor: pointer;
