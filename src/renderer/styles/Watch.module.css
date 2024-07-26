@@ -44,6 +44,8 @@
   color:grey;
   background:none;
   width:100%;
+  margin:0 .4em;
+  font-weight:500;
 }
 .container button:hover,.container button:focus{
   color:white;
@@ -114,7 +116,7 @@
   overflow:hidden;
 }
 .seeker > .progress > span {
-  background-color: silver;
+  background-color: lightgrey;
   height:.4em;
   position: absolute;
   bottom:0;
@@ -124,7 +126,7 @@
   transform-origin: left;
 }
 .seeker > .thumb {
-  background-color:grey;
+  background-color:lightgrey;
   width:.2em;
   height:.2em;
   position:absolute;
@@ -187,7 +189,7 @@
   border-radius:.5em;
   transition: opacity 200ms;
   pointer-events:none;
-  padding: 0 .5em;
+  padding: 0 .8em;
   border-radius:.5em;
   opacity: 0;
 }

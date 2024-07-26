@@ -18,6 +18,9 @@ import { existsSync, createWriteStream, unlink } from 'fs';
 import { mkdir } from 'fs/promises';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
+import Ffmpeg from 'fluent-ffmpeg';
+import ffmpegPath from 'ffmpeg-static';
+import ffprobePath from 'ffprobe-static';
 import { resolveHtmlPath } from './util';
 
 class AppUpdater {
@@ -30,12 +33,65 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 let origin: string | null = null;
-
-ipcMain.on('change-origin', (_, newOrigin) => {
-  origin = newOrigin;
-});
-
 const store = new Store();
+
+if (ffmpegPath) {
+  Ffmpeg.setFfmpegPath(ffmpegPath.replace('app.asar', 'app.asar.unpacked'));
+  Ffmpeg.setFfprobePath(
+    ffprobePath.path.replace('app.asar', 'app.asar.unpacked'),
+  );
+}
+const videoDownloadQueue: { entryKey: string; episodeIdx: number }[] = [];
+let isDownloadingVideo = false;
+type Video = {
+  entryTitle: string;
+  episodeTitle: string;
+  folderName: string;
+  fileName: string;
+  episodeKey: string;
+  url: string;
+  progress: number;
+};
+
+let ffmpeg: null | Ffmpeg.FfmpegCommand = null;
+async function downloadVideo(video: Video) {
+  ffmpeg = Ffmpeg();
+  // if (!videoList[0]) return;
+  isDownloadingVideo = true;
+  const folder = `c:/users/l/desktop/${video.folderName}`;
+  if (!existsSync(folder)) await mkdir(folder);
+
+  console.log(video);
+  ffmpeg
+    .input(video.url)
+    .output(`${folder}/${video.episodeTitle}.mp4`)
+    // .addOption('-threads 1')
+    .on('error', (err) => console.log('download err', err))
+    .on('progress', (progress) => {
+      // video.progress = Math.floor(progress.percent);
+      console.log(video.episodeTitle, progress.percent);
+      // mainWindow?.webContents.send('video-progress', video);
+
+      // store.set(`${videoList[0].episodeKey}.download.progress`, videoList);
+    })
+    .on('end', () => {
+      videoDownloadQueue.shift();
+      const [v] = videoDownloadQueue;
+      if (v) mainWindow?.webContents.send('video-download', v);
+      else isDownloadingVideo = false;
+    })
+    .run();
+}
+ipcMain.handle('video-queue', (_, list) => {
+  videoDownloadQueue.push(...list);
+
+  if (!isDownloadingVideo)
+    mainWindow?.webContents.send('video-download', videoDownloadQueue[0]);
+});
+ipcMain.handle('video-download', (_, video: Video) => {
+  downloadVideo(video);
+});
+ipcMain.on('change-origin', (_, newOrigin) => (origin = newOrigin));//eslint-disable-line
 ipcMain.handle('store-get', (_, k) => store.get(k));
 ipcMain.handle('store-set', (_, k, v) => store.set(k, v));
 ipcMain.handle('store-delete', (_, k) => store.delete(k));
@@ -49,7 +105,7 @@ ipcMain.handle('poster-download', async (_, url, entryKey) => {
     const appDataDir = app.getPath('userData');
     const postersDir = path.join(appDataDir, 'posters');
     if (!existsSync(postersDir)) await mkdir(postersDir);
-    const filename = entryKey.replace(/\//g, ' '); //eslint-disable-line
+    const filename = entryKey.replace(/[<>:"/\\|?*]/g, ' '); //eslint-disable-line
     const { body } = await fetch(url);
     const fileType = url.slice(url.lastIndexOf('.'), url.length);
     const posterPath = path.join(postersDir, filename) + fileType;
@@ -99,9 +155,9 @@ const getAssetPath = (...paths: string[]): string => {
   return path.join(RESOURCES_PATH, ...paths);
 };
 const createWindow = async () => {
-  if (isDebug) {
-    await installExtensions();
-  }
+  // if (isDebug) {
+  //   await installExtensions();
+  // }
 
   mainWindow = new BrowserWindow({
     show: false,

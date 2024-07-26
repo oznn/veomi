@@ -41,6 +41,7 @@ function Subs({
       </button>
       {tracks.map((track, i) => (
         <button
+          key={track.label}
           type="button"
           onClick={() => setTrackIdx(i)}
           disabled={trackIdx === i}

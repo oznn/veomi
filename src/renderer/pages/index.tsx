@@ -5,12 +5,13 @@ import Browse from './browse';
 import Watch from './watch';
 import Entry from './entry';
 import '../styles/App.css';
+import Downloads from './downloads';
 
 function Links() {
   return (
     <nav>
       <Link to="/">Libary </Link>
-      <Link to="/extensions">Extensions</Link>
+      <Link to="/extensions">Extensions </Link>
     </nav>
   );
 }
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/browse" element={<Browse />} />
         <Route path="/entry" element={<Entry />} />
         <Route path="/watch" element={<Watch />} />
+        <Route path="/downloads" element={<Downloads />} />
       </Routes>
     </Router>
   );

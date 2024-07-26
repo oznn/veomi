@@ -20,9 +20,9 @@ function Results({ results }: { results: Result[] }) {
     );
   return (
     <ul className={resultsStyles.container}>
-      {results.map(({ path, ext, title, key, posterURL }) => (
+      {results.map(({ path, ext, title, posterURL }) => (
         <Link
-          key={key}
+          key={ext + path}
           className={resultsStyles.link}
           to={`/entry?ext=${ext}&path=${path}`}
         >

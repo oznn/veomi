@@ -94,9 +94,8 @@ export async function getEntry(path: string): Promise<Entry> {
 }
 
 export async function getServers(episode: Episode) {
-  const episodeId = episode.id || '';
-  const vrf = vrfEncrypt(episodeId);
-  const reqUrl = `${baseURL}/ajax/server/list/${episodeId}?vrf=${vrf}`;
+  const vrf = vrfEncrypt(episode.id);
+  const reqUrl = `${baseURL}/ajax/server/list/${episode.id}?vrf=${vrf}`;
   const res = await fetch(reqUrl, { referrer: baseURL });
   const html = (await res.json()).result;
   const doc = parse(html);

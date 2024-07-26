@@ -3,23 +3,29 @@ export type Result = {
   path: string;
   title: string;
   posterURL: string;
-  key: string;
 };
-export type Episode = Required<{
+export type Episode = {
+  id: string;
   title: string;
-  info: string[];
+  isFiller: boolean;
+  number: string;
   isSeen: boolean;
   progress: number;
-}> & {
-  [key: string]: any;
+  info?: string[];
+  download?: {
+    progress: number;
+    isPending: boolean;
+  };
 };
 export type Entry = {
   details: {
+    id: string;
     title: string;
     posterURL: string;
     isCompleted: boolean | null;
+    studio: string;
+    desc: string;
     posterPath?: string;
-    dataId?: string;
   };
   episodes: Episode[];
   isInLibary: boolean;
@@ -32,10 +38,9 @@ export type Entry = {
   preferredQual: string;
   preferredServ: string;
 };
-export type Server = Required<{
+export type Server = {
   name: string;
-}> & {
-  [key: string]: any;
+  id: string;
 };
 export type Source = { file: string; qual: string };
 export type Track = {

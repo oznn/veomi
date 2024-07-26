@@ -47,6 +47,7 @@ export default async function extractor(embedUrl: string) {
   const mediainfo = await futoken(await encodeID(id), hostname);
   const urlParams = embedUrl.slice(embedUrl.indexOf('?') + 1, embedUrl.length);
   const url = `https://${hostname}/${mediainfo}?${urlParams}`;
+  console.log('url', url);
   const res = await fetch(url, { referrer: `https://${hostname}` });
   const { result } = await res.json();
   const sources = await getSources(result.sources[0].file, hostname);

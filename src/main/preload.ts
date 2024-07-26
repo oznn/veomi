@@ -2,7 +2,16 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'change-origin';
+export type Channels = 'change-origin' | 'video-progress' | 'video-download';
+type Video = {
+  entryTitle: string;
+  episodeTitle: string;
+  folderName: string;
+  fileName: string;
+  episodeKey: string;
+  url: string;
+  progress: number;
+};
 
 const electronHandler = {
   store: {
@@ -22,6 +31,13 @@ const electronHandler = {
       ipcRenderer.invoke('poster-download', url, name),
     delete: (path: string | undefined) =>
       ipcRenderer.invoke('poster-delete', path),
+  },
+  video: {
+    download: (video: Video) => ipcRenderer.invoke('video-download', video),
+    delete: (path: string | undefined) =>
+      ipcRenderer.invoke('video-delete', path),
+    queue: (list: { entryKey: string; episodeIdx: number }[]) =>
+      ipcRenderer.invoke('video-queue', list),
   },
   ipcRenderer: {
     sendMessage(channel: Channels, ...args: unknown[]) {

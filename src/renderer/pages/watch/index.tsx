@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Player from './Player';
-import { Server, Entry } from '../../types';
+import { Server, Entry, Episode } from '../../types';
 import styles from '../../styles/Watch.module.css';
 import cloud from '../../../../assets/cloud.png';
 
