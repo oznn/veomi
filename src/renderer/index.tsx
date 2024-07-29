@@ -8,14 +8,24 @@ const root = createRoot(container);
 root.render(<App />);
 
 const {
-  electron: { store, video },
+  electron: { ffmpeg },
 } = window;
-window.electron.ipcRenderer.on('video-download', async (arg) => {
-  const { entryKey, episodeIdx } = arg as {
-    entryKey: string;
-    episodeIdx: number;
-  };
-  const entry = (await store.get(`entries.${entryKey}`)) as Entry;
+window.electron.ipcRenderer.on('ffmpeg-download', async () => {
+  const res = (await window.electron.store.get('entries')) as Entry[];
+  const entries = Object.values(res);
+  let episodeIdx: number = -1;
+  let entry: Entry | null = null;
+
+  for (let i = 0; i < entries.length; i += 1) {
+    const idx = entries[i].episodes.findIndex((e) => e.download.isPending);
+    if (idx !== -1) {
+      entry = entries[i];
+      episodeIdx = idx;
+      break;
+    }
+  }
+  if (!entry) return;
+
   const { getServers, getVideo } = await import(`./extensions/${entry.ext}`);
   const servers = (await getServers(entry.episodes[episodeIdx])) as Server[];
   const preferredServ = servers.findIndex(
@@ -28,14 +38,11 @@ window.electron.ipcRenderer.on('video-download', async (arg) => {
   const { name } = extensions[entry.ext];
   const { title } = entry.details;
   const v = {
-    entryTitle: title,
-    episodeTitle: entry.episodes[episodeIdx].title,
     folderName: `[${name}] ${title.replace(/[<>:"/\\|?*]/g, ' ')}`,
     fileName: entry.episodes[episodeIdx].title.replace(/[<>:"/\\|?*]/g, ' '),
+    episodeId: entry.episodes[episodeIdx].id,
     episodeKey: `entries.${entry.key}.episodes.${episodeIdx}`,
-    url: vid.sources[preferredQual].file,
-    progress: 0,
+    url: vid.sources[preferredQual === -1 ? 0 : preferredQual].file,
   };
-  console.log(v);
-  video.download(v);
+  ffmpeg.download(v);
 });

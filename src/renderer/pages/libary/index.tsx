@@ -1,5 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useReducer, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Entry } from '../../types';
 import resultsStyles from '../../styles/Results.module.css';
 

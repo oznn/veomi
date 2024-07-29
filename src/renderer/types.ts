@@ -11,11 +11,13 @@ export type Episode = {
   number: string;
   isSeen: boolean;
   progress: number;
-  info?: string[];
-  download?: {
+  download: {
     progress: number;
     isPending: boolean;
+    isCompleted: boolean;
+    path?: string;
   };
+  info?: string[];
 };
 export type Entry = {
   details: {

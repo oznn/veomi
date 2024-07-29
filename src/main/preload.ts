@@ -2,15 +2,18 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'change-origin' | 'video-progress' | 'video-download';
+export type Channels =
+  | 'change-origin'
+  | 'ffmpeg-progress'
+  | 'ffmpeg-ended'
+  | 'ffmpeg-download';
+
 type Video = {
-  entryTitle: string;
-  episodeTitle: string;
   folderName: string;
   fileName: string;
+  episodeId: string;
   episodeKey: string;
   url: string;
-  progress: number;
 };
 
 const electronHandler = {
@@ -32,12 +35,12 @@ const electronHandler = {
     delete: (path: string | undefined) =>
       ipcRenderer.invoke('poster-delete', path),
   },
-  video: {
-    download: (video: Video) => ipcRenderer.invoke('video-download', video),
-    delete: (path: string | undefined) =>
-      ipcRenderer.invoke('video-delete', path),
-    queue: (list: { entryKey: string; episodeIdx: number }[]) =>
-      ipcRenderer.invoke('video-queue', list),
+  ffmpeg: {
+    start: () => ipcRenderer.invoke('ffmpeg-start'),
+    stop: () => ipcRenderer.invoke('ffmpeg-stop'),
+    download: (video: Video) => ipcRenderer.invoke('ffmpeg-download', video),
+    // delete: (path: string | undefined) =>
+    //   ipcRenderer.invoke('ffmpeg-delete', path),
   },
   ipcRenderer: {
     sendMessage(channel: Channels, ...args: unknown[]) {

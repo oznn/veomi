@@ -4,14 +4,15 @@ import Libary from './libary';
 import Browse from './browse';
 import Watch from './watch';
 import Entry from './entry';
-import '../styles/App.css';
 import Downloads from './downloads';
+import '../styles/App.css';
 
 function Links() {
   return (
     <nav>
       <Link to="/">Libary </Link>
       <Link to="/extensions">Extensions </Link>
+      <Link to="/downloads">Downloads </Link>
     </nav>
   );
 }

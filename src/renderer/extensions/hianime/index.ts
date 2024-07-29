@@ -36,14 +36,20 @@ export async function getEpisodes(episodeId: string) {
     const number = e.getAttribute('data-number') || '';
     const className = e.getAttribute('class') || '';
     const isFiller = className.includes('filler');
+    const isNoTitle = /[Episode]\s\d/.test(title);
 
     episodes.push({
       id,
-      title: `E${number}. ${title}`,
+      title: isNoTitle ? `Episode ${number}` : `E${number}. ${title}`,
       isFiller,
       number,
       isSeen: false,
       progress: 0,
+      download: {
+        isPending: false,
+        isCompleted: false,
+        progress: 0,
+      },
     });
   });
   return episodes;
@@ -84,7 +90,7 @@ export async function getEntry(path: string): Promise<Entry> {
     ext,
     path,
     key: (ext + path).replace(/\./g, ' '),
-    preferredSubs: '',
+    preferredSubs: 'English',
     preferredQual: '',
     preferredServ: '',
   };
@@ -105,7 +111,7 @@ export async function getServers(episode: Episode) {
     const name = e.querySelector('a')?.innerHTML || '';
 
     if (supportedServers.includes(name))
-      servers.push({ id, name: `[${type}] ${name}` });
+      servers.push({ id, name: `[${type}]${name}` });
   });
   return servers;
 }

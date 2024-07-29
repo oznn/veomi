@@ -31,7 +31,7 @@ class AppUpdater {
   }
 }
 
-let mainWindow: BrowserWindow | null = null;
+let mw: BrowserWindow | null = null;
 let origin: string | null = null;
 const store = new Store();
 
@@ -41,55 +41,54 @@ if (ffmpegPath) {
     ffprobePath.path.replace('app.asar', 'app.asar.unpacked'),
   );
 }
-const videoDownloadQueue: { entryKey: string; episodeIdx: number }[] = [];
-let isDownloadingVideo = false;
 type Video = {
-  entryTitle: string;
-  episodeTitle: string;
   folderName: string;
   fileName: string;
+  episodeId: string;
   episodeKey: string;
   url: string;
-  progress: number;
 };
 
 let ffmpeg: null | Ffmpeg.FfmpegCommand = null;
-async function downloadVideo(video: Video) {
+ipcMain.handle('ffmpeg-start', () => mw?.webContents.send('ffmpeg-download'));
+ipcMain.handle('ffmpeg-stop', () => {
+  if (ffmpeg) {
+    ffmpeg.kill('SIGKILL');
+    store.set('ffmpegDownloading', '');
+    mw?.webContents.send('ffmpeg-download');
+  }
+});
+ipcMain.handle('ffmpeg-download', async (_, video: Video) => {
   ffmpeg = Ffmpeg();
-  // if (!videoList[0]) return;
-  isDownloadingVideo = true;
+
   const folder = `c:/users/l/desktop/${video.folderName}`;
   if (!existsSync(folder)) await mkdir(folder);
 
-  console.log(video);
+  console.log('video', video);
   ffmpeg
     .input(video.url)
-    .output(`${folder}/${video.episodeTitle}.mp4`)
+    .output(`${folder}/${video.fileName}.mp4`)
     // .addOption('-threads 1')
     .on('error', (err) => console.log('download err', err))
     .on('progress', (progress) => {
       // video.progress = Math.floor(progress.percent);
-      console.log(video.episodeTitle, progress.percent);
-      // mainWindow?.webContents.send('video-progress', video);
+      console.log(video.fileName, progress.percent);
+      mw?.webContents.send(
+        'ffmpeg-progress',
+        video.episodeId,
+        video.episodeKey,
+        progress.percent,
+      );
 
       // store.set(`${videoList[0].episodeKey}.download.progress`, videoList);
     })
-    .on('end', () => {
-      videoDownloadQueue.shift();
-      const [v] = videoDownloadQueue;
-      if (v) mainWindow?.webContents.send('video-download', v);
-      else isDownloadingVideo = false;
+    .on('end', async () => {
+      store.set('ffmpegDownloading', '');
+      mw?.webContents.send('ffmpeg-ended', video.episodeId, video.episodeKey);
+      mw?.webContents.send('ffmpeg-download');
     })
     .run();
-}
-ipcMain.handle('video-queue', (_, list) => {
-  videoDownloadQueue.push(...list);
-
-  if (!isDownloadingVideo)
-    mainWindow?.webContents.send('video-download', videoDownloadQueue[0]);
-});
-ipcMain.handle('video-download', (_, video: Video) => {
-  downloadVideo(video);
+  store.set('ffmpegDownloading', video.episodeKey);
 });
 ipcMain.on('change-origin', (_, newOrigin) => (origin = newOrigin));//eslint-disable-line
 ipcMain.handle('store-get', (_, k) => store.get(k));
@@ -134,18 +133,18 @@ if (isDebug) {
   require('electron-debug')();
 }
 
-const installExtensions = async () => {
-  const installer = require('electron-devtools-installer');
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = ['REACT_DEVELOPER_TOOLS'];
-
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
-      forceDownload,
-    )
-    .catch(console.log);
-};
+// const installExtensions = async () => {
+//   const installer = require('electron-devtools-installer');
+//   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+//   const extensions = ['REACT_DEVELOPER_TOOLS'];
+//
+//   return installer
+//     .default(
+//       extensions.map((name) => installer[name]),
+//       forceDownload,
+//     )
+//     .catch(console.log);
+// };
 
 const RESOURCES_PATH = app.isPackaged
   ? path.join(process.resourcesPath, 'assets')
@@ -159,7 +158,7 @@ const createWindow = async () => {
   //   await installExtensions();
   // }
 
-  mainWindow = new BrowserWindow({
+  mw = new BrowserWindow({
     show: false,
     width: 1024,
     height: 728,
@@ -172,27 +171,28 @@ const createWindow = async () => {
     },
   });
 
-  mainWindow.loadURL(resolveHtmlPath('index.html'));
-  mainWindow.setMenu(null);
-  mainWindow.maximize();
+  mw.loadURL(resolveHtmlPath('index.html'));
+  mw.setMenu(null);
+  mw.maximize();
 
-  mainWindow.on('ready-to-show', () => {
-    if (!mainWindow) {
-      throw new Error('"mainWindow" is not defined');
+  mw.on('ready-to-show', () => {
+    if (!mw) {
+      throw new Error('"mw" is not defined');
     }
     if (process.env.START_MINIMIZED) {
-      mainWindow.minimize();
+      mw.minimize();
     } else {
-      mainWindow.show();
+      mw.show();
     }
   });
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
+  mw.on('closed', () => {
+    store.set('ffmpegDownloading', '');
+    mw = null;
   });
 
   // Open urls in the user's browser
-  mainWindow.webContents.setWindowOpenHandler((edata) => {
+  mw.webContents.setWindowOpenHandler((edata) => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
@@ -215,8 +215,8 @@ app.on('window-all-closed', () => {
 });
 app.on('web-contents-created', (_, wc) => {
   wc.on('before-input-event', (event, input) => {
-    if (input.key === 'F11' && mainWindow) {
-      mainWindow.setFullScreen(!mainWindow.isFullScreen());
+    if (input.key === 'F11' && mw) {
+      mw.setFullScreen(!mw.isFullScreen());
       event.preventDefault();
     }
   });
@@ -237,7 +237,7 @@ app
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
-      if (mainWindow === null) createWindow();
+      if (mw === null) createWindow();
     });
   })
   .catch(console.log);
