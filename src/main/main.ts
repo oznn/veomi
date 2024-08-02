@@ -19,8 +19,6 @@ import { mkdir } from 'fs/promises';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
 import Ffmpeg from 'fluent-ffmpeg';
-import ffmpegPath from 'ffmpeg-static';
-import ffprobePath from 'ffprobe-static';
 import { resolveHtmlPath } from './util';
 
 class AppUpdater {
@@ -35,12 +33,6 @@ let mw: BrowserWindow | null = null;
 let origin: string | null = null;
 const store = new Store();
 
-if (ffmpegPath) {
-  Ffmpeg.setFfmpegPath(ffmpegPath.replace('app.asar', 'app.asar.unpacked'));
-  Ffmpeg.setFfprobePath(
-    ffprobePath.path.replace('app.asar', 'app.asar.unpacked'),
-  );
-}
 type Video = {
   folderName: string;
   fileName: string;
@@ -65,11 +57,12 @@ ipcMain.handle('ffmpeg-download', async (_, video: Video) => {
   if (!existsSync(folder)) await mkdir(folder);
 
   console.log('video', video);
+  // mw?.webContents.send('console-log', `ffmpeg path ${ffmpegPath}`);
   ffmpeg
     .input(video.url)
     .output(`${folder}/${video.fileName}.mp4`)
     // .addOption('-threads 1')
-    .on('error', (err) => console.log('download err', err))
+    .on('error', (err) => mw?.webContents.send('console-log', err))
     .on('progress', (progress) => {
       // video.progress = Math.floor(progress.percent);
       console.log(video.fileName, progress.percent);
@@ -153,6 +146,10 @@ const RESOURCES_PATH = app.isPackaged
 const getAssetPath = (...paths: string[]): string => {
   return path.join(RESOURCES_PATH, ...paths);
 };
+
+Ffmpeg.setFfmpegPath(getAssetPath('ffmpeg.exe'));
+Ffmpeg.setFfprobePath(getAssetPath('ffprobe.exe'));
+
 const createWindow = async () => {
   // if (isDebug) {
   //   await installExtensions();
@@ -187,7 +184,7 @@ const createWindow = async () => {
   });
 
   mw.on('closed', () => {
-    store.set('ffmpegDownloading', '');
+    // store.set('ffmpegDownloading', '');
     mw = null;
   });
 
@@ -201,10 +198,6 @@ const createWindow = async () => {
   // eslint-disable-next-line
   new AppUpdater();
 };
-
-/**
- * Add event listeners...
- */
 
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even

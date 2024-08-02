@@ -8,7 +8,7 @@ const root = createRoot(container);
 root.render(<App />);
 
 const {
-  electron: { ffmpeg },
+  electron: { store, ffmpeg },
 } = window;
 window.electron.ipcRenderer.on('ffmpeg-download', async () => {
   const res = (await window.electron.store.get('entries')) as Entry[];
@@ -46,3 +46,10 @@ window.electron.ipcRenderer.on('ffmpeg-download', async () => {
   };
   ffmpeg.download(v);
 });
+window.electron.ipcRenderer.on('console-log', (arg) => {
+  console.log(arg);
+});
+(async () => {
+  const res = await store.get('ffmpegDownloading');
+  if (res) ffmpeg.start();
+})();

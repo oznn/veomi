@@ -6,7 +6,8 @@ export type Channels =
   | 'change-origin'
   | 'ffmpeg-progress'
   | 'ffmpeg-ended'
-  | 'ffmpeg-download';
+  | 'ffmpeg-download'
+  | 'console-log';
 
 type Video = {
   folderName: string;

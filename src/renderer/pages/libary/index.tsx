@@ -78,6 +78,37 @@ export default function Libary() {
     }
   }
 
+  // async function f() {
+  //   const query = `
+  //           query ($id: Int, $search: String) {
+  //               Media (id: $id, search: $search, type: ANIME) {
+  //                 id
+  //                 title {
+  //                   english
+  //                 }
+  //               }
+  //           }
+  //   `;
+  //   const variables = {
+  //     perPage: 1,
+  //     page: 1,
+  //     search: 'love is war',
+  //   };
+  //   const url = 'https://graphql.anilist.co';
+  //   const body = JSON.stringify({ query, variables });
+  //   const options = {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body,
+  //   };
+  //   try {
+  //     const res = await fetch(url, options);
+  //     const { data } = await res.json();
+  //     console.log('data', data);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // }
   return (
     <ul className={resultsStyles.container}>
       {entries.map((entry, i) => (
@@ -87,7 +118,7 @@ export default function Libary() {
           className={resultsStyles.link}
           onAuxClick={({ button }) =>
             button - 1
-              ? nav(`/watch?ext=${entry.ext}&path=${entry.path}`)
+              ? nav(`/ watch ? ext = ${entry.ext}& path=${entry.path} `)
               : remove(i)
           }
         >

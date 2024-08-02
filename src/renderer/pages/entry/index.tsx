@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Entry as T } from '../../types';
 import styles from '../../styles/Entry.module.css';
 import loadingStyles from '../../styles/Loading.module.css';
+import checkmarkStyles from '../../styles/Checkmark.module.css';
 import extensions from '../ext';
 
 const {
@@ -217,8 +218,21 @@ export default function Entry() {
                 }}
               >
                 <span>
-                  {episode.download.isPending && 'Downloading... '}
-                  {episode.download.isCompleted && 'Downloaded '}
+                  {episode.download.isPending && (
+                    <span
+                      style={{
+                        width: '25px',
+                        height: '25px',
+                        borderWidth: '4px',
+                        marginRight: '.2em',
+                        display: 'inline-block',
+                      }}
+                      className={loadingStyles.container}
+                    />
+                  )}
+                  {episode.download.isCompleted && (
+                    <span className={checkmarkStyles.container} />
+                  )}
                   {episode.title}
                 </span>
               </button>
@@ -234,7 +248,7 @@ export default function Entry() {
             >
               {selectedEpisodes.filter((e) => entry.episodes[e].isSeen).length *
                 2 >
-                selectedEpisodes.length
+              selectedEpisodes.length
                 ? 'Mark as unseen'
                 : 'Mark as seen'}
             </button>
@@ -243,7 +257,7 @@ export default function Entry() {
                 (e) => entry.episodes[e].download.isPending,
               ).length *
                 2 >
-                selectedEpisodes.length
+              selectedEpisodes.length
                 ? 'Cancel download'
                 : 'Download'}
             </button>

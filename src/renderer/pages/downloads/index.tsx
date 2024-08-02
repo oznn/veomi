@@ -2,11 +2,16 @@ import { useEffect, useReducer, useState } from 'react';
 import { Entry, Episode } from '../../types';
 
 const {
-  electron: { store, ffmpeg },
+  electron: { store },
 } = window;
 
 let pending: (Episode & { entryKey: string; entryTitle: string })[] | null =
   null;
+
+const f = (a: any, b: any) => {
+  (a[b.entryTitle] = a[b.entryTitle] || []).push(b);
+  return a;
+};
 
 export default function Downloads() {
   const [, rerender] = useReducer((x) => x + 1, 0);
@@ -32,9 +37,25 @@ export default function Downloads() {
         ),
       );
       pending = episodes.filter((e) => e.download.isPending);
-      setIsDownloading(await store.get('ffmpegDownloading'));
       rerender();
     })();
+  }, []);
+  useEffect(() => {
+    const sub = window.electron.ipcRenderer.on(
+      'ffmpeg-progress',
+      (episodeId, episodeKey, progress) => {
+        if (pending && typeof progress === 'number') {
+          const idx = pending.findIndex((ep) => ep.id === episodeId);
+          if (idx !== -1) {
+            pending[idx].download.progress = progress;
+            store.set(`${episodeKey}.download.progress`, progress);
+            rerender();
+          }
+        }
+      },
+    );
+
+    return sub;
   }, []);
   useEffect(() => {
     const sub = window.electron.ipcRenderer.on(
@@ -52,30 +73,22 @@ export default function Downloads() {
 
     return sub;
   }, []);
-  useEffect(() => {
-    const sub = window.electron.ipcRenderer.on(
-      'ffmpeg-progress',
-      (episodeId, episodeKey, progress) => {
-        if (pending) {
-          console.log('progress');
-          const idx = pending.findIndex((ep) => ep.id === episodeId);
-          if (idx !== -1) {
-            pending[idx].download.progress = progress as number;
-            store.set(`${episodeKey}.download.progress`, progress);
-            rerender();
-          }
-        }
-      },
+
+  if (!pending || !pending.length)
+    return (
+      <span
+        style={{
+          display: 'block',
+          textAlign: 'center',
+        }}
+      >
+        Queue is empty
+      </span>
     );
-
-    return sub;
-  }, []);
-
-  if (pending && !pending.length) return <span>queue is empty</span>;
   if (pending)
     return (
       <>
-        {pending.length && !isDownloading && (
+        {/* pending.length && !isDownloading && (
           <button
             type="button"
             onClick={() => {
@@ -85,14 +98,19 @@ export default function Downloads() {
           >
             Resume
           </button>
-        )}
+        ) */}
         <ul>
-          {pending.map((episode) => (
-            <li key={episode.title}>
-              <h3>{episode.entryTitle}</h3>
-              <span>
-                {episode.title} {Math.floor(episode.download.progress)}%
-              </span>
+          {Object.keys(pending.reduce(f, {})).map((k) => (
+            <li key={k}>
+              <span style={{ fontSize: '1em', fontWeight: 500 }}>{k}</span>
+              <ul>
+                {pending &&
+                  pending.reduce(f, {})[k].map((e: Episode) => (
+                    <li key={e.title} style={{ color: 'silver' }}>
+                      <span>{Math.floor(e.download.progress)}%</span> {e.title}
+                    </li>
+                  ))}
+              </ul>
             </li>
           ))}
         </ul>
