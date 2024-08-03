@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Player from './Player';
-import { Server, Entry, Episode } from '../../types';
+import { Server, Entry, Video } from '../../types';
 import styles from '../../styles/Watch.module.css';
 import cloud from '../../../../assets/cloud.png';
 
@@ -17,13 +17,13 @@ export default function Watch() {
   const [entry, setEntry] = useState<Entry | null>(null);
   const [servers, setServers] = useState<Server[] | null>(null);
   const [serverIdx, setServerIdx] = useState(-1);
-  const [video, setVideo] = useState(null);
-  const [episode, setEpisode] = useState(startAt ? Number(startAt) : -1);
+  const [video, setVideo] = useState<Video | null>(null);
+  const [episodeIdx, setEpisodeIdx] = useState(startAt ? Number(startAt) : -1);
   const [isShowServers, setIsShowServers] = useState(false);
   const container = useRef<HTMLDivElement>(null);
   const entryKey = (ext + path).replace(/\./g, ' ');
   const nav = useNavigate();
-  const [isServerErr, setIsServerErr] = useState(false);
+  const [err, setErr] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -39,28 +39,44 @@ export default function Watch() {
       if (!entry) return;
       // getVideo wont work in prod if its not imported here
       const { getServers, getVideo } = await import(`../../extensions/${ext}`);//eslint-disable-line
-      if (episode === -1) {
+      if (episodeIdx === -1) {
         const n = (() => { // eslint-disable-line
           for (let i = 0; i < entry.episodes.length; i += 1)
             if (!entry.episodes[i].isSeen) return i;
         })();
-        setEpisode(n ?? 0);
+        setEpisodeIdx(n ?? 0);
       } else {
-        const res = (await getServers(entry.episodes[episode])) as Server[];
-        const preferredServ = res.findIndex(
-          ({ name }) => name === entry.preferredServ,
-        );
-        setServers(res);
-        setServerIdx(Math.max(0, preferredServ));
+        try {
+          const v = entry ? entry.episodes[episodeIdx].download.video : null;
+          const res = (await getServers(
+            entry.episodes[episodeIdx],
+          )) as Server[];
+          if (v) res.unshift({ name: 'LOCAL', id: '' });
+          const preferredServIdx = res.findIndex(
+            ({ name }) => name === entry.preferredServ,
+          );
+
+          setServers(res);
+          setServerIdx(Math.max(0, preferredServIdx));
+        } catch (e) {
+          const v = entry ? entry.episodes[episodeIdx].download.video : null;
+
+          if (v) {
+            setServers([{ name: 'LOCAL', id: '' }]);
+            setServerIdx(0);
+          } else setErr('No servers found');
+        }
       }
     })();
-  }, [entry, episode]);
+  }, [entry, episodeIdx]);
 
   useEffect(() => {
-    setIsServerErr(false);
+    setErr('');
     if (serverIdx === -1 || !servers || video) return;
     if (container.current && !document.fullscreenElement)
       container.current.requestFullscreen();
+    const v = entry ? entry.episodes[episodeIdx].download.video : null;
+    if (v && serverIdx === 0) return setVideo(v);//eslint-disable-line
 
     (async () => {
       const { getVideo } = await import(`../../extensions/${ext}`);
@@ -68,8 +84,8 @@ export default function Watch() {
         const res = await getVideo(servers[serverIdx]);
 
         setVideo(res);
-      } catch (err) {
-        setIsServerErr(true);
+      } catch (e) {
+        setErr('Selected server is not working');
       }
     })();
   }, [servers, serverIdx]);
@@ -85,12 +101,11 @@ export default function Watch() {
   function changeEpisode(i: number) {
     if (entry) {
       setVideo(null);
-      setEpisode(i);
+      setEpisodeIdx(i);
     }
   }
 
   if (!entry || !servers) return '';
-  if (servers.length === 0) return <h1>0 servers.</h1>;
 
   return (
     // eslint-disable-next-line
@@ -99,7 +114,7 @@ export default function Watch() {
       ref={container}
     >
       <header>
-        <span>{entry.episodes[episode].title}</span>
+        <span>{entry.episodes[episodeIdx].title}</span>
         <img // eslint-disable-line
           src={cloud}
           alt="cloud"
@@ -131,18 +146,17 @@ export default function Watch() {
           })}
         </div>
       )}
-      {isServerErr && (
-        <div className={styles.serverErr}>Selected server is not working</div>
-      )}
+      {err && <div className={styles.serverErr}>{err}</div>}
       {video && (
         <Player
           video={video}
           entry={entry}
-          episode={episode}
+          episode={episodeIdx}
           isShowServers={isShowServers}
           setIsShowServers={(b: boolean) => setIsShowServers(b)}
           next={() =>
-            episode < entry.episodes.length - 1 && changeEpisode(episode + 1)
+            episodeIdx < entry.episodes.length - 1 &&
+            changeEpisode(episodeIdx + 1)
           }
         />
       )}

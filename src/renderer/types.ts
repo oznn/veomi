@@ -4,6 +4,13 @@ export type Result = {
   title: string;
   posterURL: string;
 };
+export type Source = { file: string; qual: string };
+export type Track = { file: string; label: string };
+export type Video = {
+  sources: Source[];
+  tracks: Track[];
+  skips: { intro: number[]; outro: number[] };
+};
 export type Episode = {
   id: string;
   title: string;
@@ -15,7 +22,7 @@ export type Episode = {
     progress: number;
     isPending: boolean;
     isCompleted: boolean;
-    path?: string;
+    video?: Video;
   };
   info?: string[];
 };
@@ -43,16 +50,4 @@ export type Entry = {
 export type Server = {
   name: string;
   id: string;
-};
-export type Source = { file: string; qual: string };
-export type Track = {
-  file: string;
-  label: string;
-  caption: string;
-  defualt?: boolean;
-};
-export type Video = {
-  sources: Source[];
-  tracks: Track[];
-  skips: { intro: number[]; outro: number[] };
 };

@@ -68,22 +68,17 @@ export default function Entry() {
     })();
   }, []);
   useEffect(() => {
-    const sub = window.electron.ipcRenderer.on(
-      'ffmpeg-ended',
-      (episodeId, episodeKey) => {
-        store.set(`${episodeKey}.download.isPending`, false);
-        store.set(`${episodeKey}.download.isCompleted`, true);
-        setEntry((e) => {
-          if (e) {
-            const idx = e.episodes.findIndex((ep) => ep.id === episodeId);
-            e.episodes[idx].download.isPending = false;
-            e.episodes[idx].download.isCompleted = true;
-          }
-          return e;
-        });
-        rerender();
-      },
-    );
+    const sub = window.electron.ipcRenderer.on('ffmpeg-ended', (episodeId) => {
+      setEntry((e) => {
+        if (e) {
+          const idx = e.episodes.findIndex((ep) => ep.id === episodeId);
+          e.episodes[idx].download.isPending = false;
+          e.episodes[idx].download.isCompleted = true;
+        }
+        return e;
+      });
+      rerender();
+    });
     return sub;
   }, []);
 
@@ -136,7 +131,9 @@ export default function Entry() {
       selectedEpisodes.forEach((idx) => {
         const episodeKey = `entries.${entry.key}.episodes.${idx}`;
         entry.episodes[idx].download.isPending = isPending;
+        entry.episodes[idx].download.isCompleted = false;
         store.set(`${episodeKey}.download.isPending`, isPending);
+        store.set(`${episodeKey}.download.isCompleted`, false);
       });
       const ffmpegDownloading = await store.get('ffmpegDownloading');
       const g = (e: number) =>
@@ -263,6 +260,7 @@ export default function Entry() {
             </button>
           </div>
         )}
+        <br />
       </div>
     );
 }

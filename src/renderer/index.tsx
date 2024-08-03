@@ -35,6 +35,9 @@ window.electron.ipcRenderer.on('ffmpeg-download', async () => {
   const preferredQual = vid.sources.findIndex(
     ({ qual }) => entry.preferredQual === qual,
   );
+  const preferredTrackIdx = vid.tracks.findIndex(
+    ({ label }) => label?.includes(entry.preferredSubs),
+  );
   const { name } = extensions[entry.ext];
   const { title } = entry.details;
   const v = {
@@ -42,13 +45,32 @@ window.electron.ipcRenderer.on('ffmpeg-download', async () => {
     fileName: entry.episodes[episodeIdx].title.replace(/[<>:"/\\|?*]/g, ' '),
     episodeId: entry.episodes[episodeIdx].id,
     episodeKey: `entries.${entry.key}.episodes.${episodeIdx}`,
-    url: vid.sources[preferredQual === -1 ? 0 : preferredQual].file,
+    source: {
+      file: vid.sources[preferredQual === -1 ? 0 : preferredQual].file,
+      qual: vid.sources[preferredQual === -1 ? 0 : preferredQual].qual,
+    },
+    track: vid.tracks.length
+      ? {
+          file: vid.tracks[preferredTrackIdx === -1 ? 0 : preferredTrackIdx]
+            .file,
+          label:
+            vid.tracks[preferredTrackIdx === -1 ? 0 : preferredTrackIdx].label,
+        }
+      : null,
+    skips: vid.skips,
   };
+  if (vid.tracks.length) {
+    v.track = {
+      file: vid.tracks[preferredTrackIdx === -1 ? 0 : preferredTrackIdx].file,
+      label: vid.tracks[preferredTrackIdx === -1 ? 0 : preferredTrackIdx].label,
+    };
+  }
   ffmpeg.download(v);
 });
 window.electron.ipcRenderer.on('console-log', (arg) => {
   console.log(arg);
 });
+
 (async () => {
   const res = await store.get('ffmpegDownloading');
   if (res) ffmpeg.start();

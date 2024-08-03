@@ -38,7 +38,15 @@ type Video = {
   fileName: string;
   episodeId: string;
   episodeKey: string;
-  url: string;
+  source: {
+    file: string;
+    qual: string;
+  };
+  track: {
+    file: string;
+    label: string;
+  } | null;
+  skips: { intro: number[]; outro: number[] };
 };
 
 let ffmpeg: null | Ffmpeg.FfmpegCommand = null;
@@ -53,13 +61,15 @@ ipcMain.handle('ffmpeg-stop', () => {
 ipcMain.handle('ffmpeg-download', async (_, video: Video) => {
   ffmpeg = Ffmpeg();
 
-  const folder = `c:/users/l/desktop/${video.folderName}`;
+  const appDataDir = app.getPath('userData');
+  const downloadsDir = path.join(appDataDir, 'downloads');
+  if (!existsSync(downloadsDir)) await mkdir(downloadsDir);
+  const folder = `${downloadsDir}/${video.folderName}`;
   if (!existsSync(folder)) await mkdir(folder);
 
   console.log('video', video);
-  // mw?.webContents.send('console-log', `ffmpeg path ${ffmpegPath}`);
   ffmpeg
-    .input(video.url)
+    .input(video.source.file)
     .output(`${folder}/${video.fileName}.mp4`)
     // .addOption('-threads 1')
     .on('error', (err) => mw?.webContents.send('console-log', err))
@@ -77,6 +87,16 @@ ipcMain.handle('ffmpeg-download', async (_, video: Video) => {
     })
     .on('end', async () => {
       store.set('ffmpegDownloading', '');
+      store.set(`${video.episodeKey}.download.isPending`, false);
+      store.set(`${video.episodeKey}.download.isCompleted`, true);
+      const vid = {
+        sources: [
+          { file: `${folder}/${video.fileName}.mp4`, qual: video.source.qual },
+        ],
+        tracks: [],
+        skips: video.skips,
+      };
+      store.set(`${video.episodeKey}.download.video`, vid);
       mw?.webContents.send('ffmpeg-ended', video.episodeId, video.episodeKey);
       mw?.webContents.send('ffmpeg-download');
     })

@@ -58,18 +58,13 @@ export default function Downloads() {
     return sub;
   }, []);
   useEffect(() => {
-    const sub = window.electron.ipcRenderer.on(
-      'ffmpeg-ended',
-      (episodeId, episodeKey) => {
-        if (pending) {
-          const idx = pending.findIndex((ep) => ep.id === episodeId);
-          pending.splice(idx, 1);
-          store.set(`${episodeKey}.download.isPending`, false);
-          store.set(`${episodeKey}.download.isCompleted`, true);
-          rerender();
-        }
-      },
-    );
+    const sub = window.electron.ipcRenderer.on('ffmpeg-ended', (episodeId) => {
+      if (pending) {
+        const idx = pending.findIndex((ep) => ep.id === episodeId);
+        pending.splice(idx, 1);
+        rerender();
+      }
+    });
 
     return sub;
   }, []);

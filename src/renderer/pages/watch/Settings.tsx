@@ -41,7 +41,7 @@ function Subs({
       </button>
       {tracks.map((track, i) => (
         <button
-          key={track.label}
+          key={track.file}
           type="button"
           onClick={() => setTrackIdx(i)}
           disabled={trackIdx === i}
@@ -134,9 +134,27 @@ export default function Settings({
     rerender();
   }
 
+  function setGlobal() {
+    const global = {
+      isSkip: { intro: entry.isSkip.intro, outro: entry.isSkip.outro },
+      preferredSubs: entry.preferredSubs,
+      preferredQual: entry.preferredQual,
+    };
+
+    store.set('settings', global);
+  }
   return (
     <div className={styles.settings}>
       <div>
+        <button
+          type="button"
+          onClick={(e) => {
+            (e.target as HTMLButtonElement).disabled = true;
+            setGlobal();
+          }}
+        >
+          Use this globally
+        </button>
         <button type="button" onClick={() => toggleIsSkip('intro')}>
           <span
             style={{

@@ -4,6 +4,9 @@ const baseURL = 'https://hianime.to';
 const parser = new DOMParser();
 const parse = (html: string) => parser.parseFromString(html, 'text/html');
 const ext = 'hianime';
+const {
+  electron: { store },
+} = window;
 
 export async function getResults(query: string) {
   const res = await fetch(`${baseURL}/search?keyword=${query}`);
@@ -80,18 +83,22 @@ export async function getEntry(path: string): Promise<Entry> {
   const details = await getDetails(baseURL + path);
   const episodeId = path.slice(path.lastIndexOf('-') + 1, path.length);
   const episodes = await getEpisodes(episodeId);
+  const settings = (await store.get('settings')) || {};
 
   return {
     details: { ...details, id: episodeId },
     episodes,
     isInLibary: false,
-    isSkip: { intro: true, outro: true },
+    isSkip: {
+      intro: settings.isSkip.intro ?? true,
+      outro: settings.isSkip.outro ?? true,
+    },
     volume: 10,
     ext,
     path,
     key: (ext + path).replace(/\./g, ' '),
-    preferredSubs: 'English',
-    preferredQual: '',
+    preferredSubs: settings.preferredSubs || '',
+    preferredQual: settings.preferredQual || '',
     preferredServ: '',
   };
 }

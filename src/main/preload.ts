@@ -14,7 +14,15 @@ type Video = {
   fileName: string;
   episodeId: string;
   episodeKey: string;
-  url: string;
+  source: {
+    file: string;
+    qual: string;
+  };
+  track: {
+    file: string;
+    label: string;
+  } | null;
+  skips: { intro: number[]; outro: number[] };
 };
 
 const electronHandler = {

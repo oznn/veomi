@@ -71,7 +71,7 @@ export default function Player({
           });
         }
         const preferredTrackIdx = tracks.findIndex(
-          ({ label }) => label === entry.preferredSubs,
+          ({ label }) => label?.includes(entry.preferredSubs),
         );
         setTrackIdx(preferredTrackIdx);
         videoRef.current.currentTime = progress;
@@ -87,8 +87,11 @@ export default function Player({
   }, [srcIdx]);
   useEffect(() => {
     if (trackIdx > -1) {
-      entry.preferredSubs = tracks[trackIdx].label;
-      store.set(`entries.${entry.key}.preferredSubs`, tracks[trackIdx].label);
+      entry.preferredSubs = tracks[trackIdx].label.split(' ')[0];//eslint-disable-line
+      store.set(
+        `entries.${entry.key}.preferredSubs`,
+        tracks[trackIdx].label.split(' ')[0],
+      );
     }
   }, [trackIdx]);
 
@@ -205,14 +208,7 @@ export default function Player({
         }}
       >
         <source src={src.file} />
-        {track && (
-          <track
-            label={track.label}
-            kind={track.caption}
-            src={track.file}
-            default
-          />
-        )}
+        {track && <track src={track.file} label={track.label} default />}
       </video>
       <div className={styles.controls}>
         <span>

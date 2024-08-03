@@ -118,7 +118,7 @@ export default function Libary() {
           className={resultsStyles.link}
           onAuxClick={({ button }) =>
             button - 1
-              ? nav(`/ watch ? ext = ${entry.ext}& path=${entry.path} `)
+              ? nav(`/watch?ext=${entry.ext}&path=${entry.path}`)
               : remove(i)
           }
         >
