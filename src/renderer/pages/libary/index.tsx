@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Entry } from '../../types';
 import resultsStyles from '../../styles/Results.module.css';
@@ -11,7 +11,7 @@ let entries: Entry[] | null = null;
 export default function Libary() {
   const nav = useNavigate();
   const [, rerender] = useReducer((n) => n + 1, 0);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -43,40 +43,40 @@ export default function Libary() {
   function remove(i: number) {
     if (entries) {
       store.delete(`entries.${entries[i].key}`);
-      poster.delete(entries[i].details.posterPath);
+      poster.delete(entries[i].posterPath);
       entries.splice(i, 1);
       rerender();
     }
   }
-  async function update() {
-    setIsLoading(true);
-    if (entries) {
-      const targetedEntries = entries.filter((entry) => {
-        const isAllSeen = entry.episodes.every((ep) => ep.isSeen);
-        return !entry.details.isCompleted && isAllSeen;
-      });
-
-      const isUpdated = await Promise.all(
-        targetedEntries.map(async (entry) => {
-          const { getEntry } = await import(`../../extensions/${entry.ext}`);
-          const res = (await getEntry(entry.path)) as Entry | undefined;
-
-          if (res) {
-            if (res.details.isCompleted !== null)
-              entry.details.isCompleted = res.details.isCompleted;
-            for (let i = 0; i < entry.episodes.length; i += 1) {
-              entry.episodes[i].title = res.episodes[i].title;
-              entry.episodes[i].info = res.episodes[i].info;
-            }
-            for (let i = entry.episodes.length; i < res.episodes.length; i += 1)
-              entry.episodes.push(res.episodes[i]);
-            store.set(`entries.${entry.key}`, entry);
-          }
-        }),
-      );
-      if (isUpdated) setIsLoading(false);
-    }
-  }
+  // async function update() {
+  //   setIsLoading(true);
+  //   if (entries) {
+  //     const targetedEntries = entries.filter((entry) => {
+  //       const isAllSeen = entry.episodes.every((ep) => ep.isSeen);
+  //       return !entry.details.isCompleted && isAllSeen;
+  //     });
+  //
+  //     const isUpdated = await Promise.all(
+  //       targetedEntries.map(async (entry) => {
+  //         const { getEntry } = await import(`../../extensions/${entry.ext}`);
+  //         const res = (await getEntry(entry.path)) as Entry | undefined;
+  //
+  //         if (res) {
+  //           if (res.details.isCompleted !== null)
+  //             entry.details.isCompleted = res.details.isCompleted;
+  //           for (let i = 0; i < entry.episodes.length; i += 1) {
+  //             entry.episodes[i].title = res.episodes[i].title;
+  //             entry.episodes[i].info = res.episodes[i].info;
+  //           }
+  //           for (let i = entry.episodes.length; i < res.episodes.length; i += 1)
+  //             entry.episodes.push(res.episodes[i]);
+  //           store.set(`entries.${entry.key}`, entry);
+  //         }
+  //       }),
+  //     );
+  //     if (isUpdated) setIsLoading(false);
+  //   }
+  // }
 
   // async function f() {
   //   const query = `
@@ -113,19 +113,17 @@ export default function Libary() {
     <ul className={resultsStyles.container}>
       {entries.map((entry, i) => (
         <Link
-          key={entry.ext + entry.path}
-          to={`/entry?ext=${entry.ext}&path=${entry.path}`}
+          key={entry.key}
+          to={`/entry?key=${entry.key}`}
           className={resultsStyles.link}
           onAuxClick={({ button }) =>
-            button - 1
-              ? nav(`/watch?ext=${entry.ext}&path=${entry.path}`)
-              : remove(i)
+            button - 1 ? nav(`/watch?key=${entry.key}`) : remove(i)
           }
         >
           <div>
-            <img src={entry.details.posterPath} alt="poster" />
+            <img src={entry.posterPath} alt="poster" />
           </div>
-          <span title={entry.details.title}>{entry.details.title}</span>
+          <span title={entry.result.title}>{entry.result.title}</span>
           <span className={resultsStyles.remaining}>
             {entry.episodes.filter((e) => !e.isSeen).length}
           </span>

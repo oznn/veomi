@@ -4,15 +4,13 @@ import styles from '../../styles/Watch.module.css';
 
 let timestampPercent = 0;
 let seekerBoundingClient: any;
-let isMouseDown = false;
 const { floor, min, max } = Math;
 
 type Props = {
   videoRef: RefObject<HTMLVideoElement>;
   setProgress: (n: number) => void;
-  skips: { intro: number[]; outro: number[] };
 };
-export default function ProgressBar({ videoRef, setProgress, skips }: Props) {
+export default function ProgressBar({ videoRef, setProgress }: Props) {
   const seekerRef = useRef<HTMLDivElement>(null);
   const [hoveredTimestamp, setHoveredTimestamp] = useState(0);
 
@@ -38,18 +36,16 @@ export default function ProgressBar({ videoRef, setProgress, skips }: Props) {
     }
   }
   useEffect(() => {
-    window.onmousedown = () => isMouseDown = true;//eslint-disable-line
-    window.onmouseup = () => isMouseDown = false;//eslint-disable-line
-
     if (!seekerRef.current) return;
 
     const resizeObserver = new ResizeObserver(() => {
-      if (!seekerRef.current) return;
-      seekerBoundingClient = seekerRef.current.getBoundingClientRect();
+      if (seekerRef.current) {
+        seekerBoundingClient = seekerRef.current.getBoundingClientRect();
+      }
     });
     resizeObserver.observe(seekerRef.current);
     return () => resizeObserver.disconnect(); //eslint-disable-line
-  }, []);
+  }, [seekerRef.current]);
 
   if (!videoRef.current) return '';
   const { currentTime, duration } = videoRef.current;

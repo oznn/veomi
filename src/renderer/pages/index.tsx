@@ -1,4 +1,10 @@
-import { MemoryRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import {
+  MemoryRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+} from 'react-router-dom';
 import Extensions from './extensions';
 import Libary from './libary';
 import Browse from './browse';
@@ -8,8 +14,16 @@ import Downloads from './downloads';
 import '../styles/App.css';
 
 function Links() {
+  const nav = useNavigate();
+  const f = (e: any) => {
+    e.preventDefault();
+    nav(-1);
+  };
   return (
     <nav>
+      <Link to="/" onClick={f}>
+        {'<= '}
+      </Link>
       <Link to="/">Libary </Link>
       <Link to="/extensions">Extensions </Link>
       <Link to="/downloads">Downloads </Link>

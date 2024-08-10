@@ -1,12 +1,10 @@
-import { Entry, Episode, Result, Server, Source, Video } from '../../types';
+import { Episode, Result, Server, Source, Video } from '../../types';
+import { anilist } from '../../utils/details';
 
 const baseURL = 'https://hianime.to';
 const parser = new DOMParser();
 const parse = (html: string) => parser.parseFromString(html, 'text/html');
 const ext = 'hianime';
-const {
-  electron: { store },
-} = window;
 
 export async function getResults(query: string) {
   const res = await fetch(`${baseURL}/search?keyword=${query}`);
@@ -28,11 +26,14 @@ export async function getResults(query: string) {
   });
   return results;
 }
-export async function getEpisodes(episodeId: string) {
-  const res = await fetch(`${baseURL}/ajax/v2/episode/list/${episodeId}`);
+export async function getEpisodes(result: Result) {
+  const { path } = result;
+  const entryId = path.slice(path.lastIndexOf('-') + 1, path.length);
+  const res = await fetch(`${baseURL}/ajax/v2/episode/list/${entryId}`);
   const doc = parse((await res.json()).html);
   const elements = doc.querySelectorAll('.ss-list a');
   const episodes: Episode[] = [];
+
   elements.forEach((e) => {
     const id = e.getAttribute('data-id') || '';
     const title = e.getAttribute('title') || '';
@@ -43,7 +44,7 @@ export async function getEpisodes(episodeId: string) {
 
     episodes.push({
       id,
-      title: isNoTitle ? `Episode ${number}` : `E${number}. ${title}`,
+      title: isNoTitle ? `Episode ${number}` : `${number}. ${title}`,
       isFiller,
       number,
       isSeen: false,
@@ -55,52 +56,42 @@ export async function getEpisodes(episodeId: string) {
       },
     });
   });
+
   return episodes;
 }
-export async function getDetails(url: string) {
-  const res = await fetch(url);
+export async function getDetails(result: Result) {
+  const res = await fetch(baseURL + result.path);
   const doc = parse(await res.text());
-  const title = doc.querySelector('.film-name')?.innerHTML || '';
-  const desc = doc.querySelector('.film-description .text')?.innerHTML || '';
-  const posterURL =
-    doc.querySelector('.film-poster img')?.getAttribute('src') || '';
-  let isCompleted = false;
-  let studio = '';
+  const search = doc.querySelector('.film-name')?.innerHTML || '';
+  let season = '';
+  let seasonYear = '';
 
   doc.querySelectorAll('.item-title').forEach((e) => {
-    if (
-      e.querySelector('.item-head')?.innerHTML.includes('Status') &&
-      e.querySelector('.name')?.innerHTML === 'Finished Airing'
-    )
-      isCompleted = true;
-    if (e.querySelector('.item-head')?.innerHTML.includes('Studios'))
-      studio = e.querySelector('.name')?.innerHTML || '';
+    if (e.querySelector('.item-head')?.innerHTML.includes('Premiered')) {
+      const name = e.querySelector('.name')?.innerHTML || '';
+      season = name.split(' ')[0].toUpperCase(); //eslint-disable-line
+      seasonYear = name.split(' ')[1]; //eslint-disable-line
+    }
   });
 
-  return { title, posterURL, isCompleted, studio, desc };
+  const variables = { search, season, seasonYear };
+  const query = `
+query ($id: Int, $search: String, $season: MediaSeason, $seasonYear: Int) {
+  Media (id: $id, search: $search, season: $season, seasonYear: $seasonYear) {
+    id
+  }
 }
-export async function getEntry(path: string): Promise<Entry> {
-  const details = await getDetails(baseURL + path);
-  const episodeId = path.slice(path.lastIndexOf('-') + 1, path.length);
-  const episodes = await getEpisodes(episodeId);
-  const settings = (await store.get('settings')) || {};
-
-  return {
-    details: { ...details, id: episodeId },
-    episodes,
-    isInLibary: false,
-    isSkip: {
-      intro: settings.isSkip.intro ?? true,
-      outro: settings.isSkip.outro ?? true,
-    },
-    volume: 10,
-    ext,
-    path,
-    key: (ext + path).replace(/\./g, ' '),
-    preferredSubs: settings.preferredSubs || '',
-    preferredQual: settings.preferredQual || '',
-    preferredServ: '',
+`;
+  const url = 'https://graphql.anilist.co';
+  const body = JSON.stringify({ query, variables });
+  const options = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body,
   };
+  const { data } = await (await fetch(url, options)).json();
+
+  return data.Media ? anilist(data.Media.id) : null;
 }
 export async function getServers(episode: Episode) {
   const res = await fetch(
@@ -125,14 +116,14 @@ export async function getServers(episode: Episode) {
 async function getSources(url: string): Promise<Source[]> {
   const res = await fetch(url);
   const lines = (await res.text()).split('\n');
-  const sources: { file: string; qual: string }[] = [];
+  const sources: Source[] = [];
 
   let i = 1;
   while (lines[i] && lines[i + 1]) {
     const file = url.slice(0, url.lastIndexOf('/') + 1) + lines[i + 1];
     const [qual] = /\d+x\d+/.exec(lines[i]) || [];
 
-    sources.push({ file, qual: qual ? `${qual.split('x')[1]}p` : '' });
+    if (qual) sources.push({ file, qual: Number(qual.split('x')[1]) });
     i += 2;
   }
   return sources;

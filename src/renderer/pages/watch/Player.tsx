@@ -38,17 +38,15 @@ export default function Player({
   const episodeKey = `entries.${entry.key}.episodes.${episode}`;
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const [isShowSettings, setIsShowSettings] = useState(false);
-  const preferredSrcIdx = sources.findIndex(
-    ({ qual }) => qual === entry.preferredQual,
-  );
-  const [srcIdx, setSrcIdx] = useState(
-    preferredSrcIdx !== -1 ? preferredSrcIdx : 0,
-  );
-  const [trackIdx, setTrackIdx] = useState(-1);
+  const f = ({ qual }: { qual: number }) =>
+    qual === entry.settings.preferredQual;
+  const preferredSrcIdx = sources.findIndex(f);
+  const [srcIdx, setSrcIdx] = useState(Math.max(0, preferredSrcIdx));
   const src = sources[srcIdx];
+  const [trackIdx, setTrackIdx] = useState(-1);
   const track = tracks[trackIdx];
   const [progress, setProgress] = useState(entry.episodes[episode].progress);
-  const [volume, setVolume] = useState(entry.volume);
+  const [volume, setVolume] = useState(entry.settings.volume);
   const [isShowVolume, setIsShowVolume] = useState(false);
   const [isShowCursor, setIsShowCursor] = useState(false);
 
@@ -71,8 +69,9 @@ export default function Player({
           });
         }
         const preferredTrackIdx = tracks.findIndex(
-          ({ label }) => label?.includes(entry.preferredSubs),
+          ({ label }) => label?.includes(entry.settings.preferredSubs),
         );
+
         setTrackIdx(preferredTrackIdx);
         videoRef.current.currentTime = progress;
         videoRef.current.volume = volume * 0.05;
@@ -82,14 +81,17 @@ export default function Player({
     })();
   }, [src]);
   useEffect(() => {
-    entry.preferredQual = sources[srcIdx].qual;
-    store.set(`entries.${entry.key}.preferredQual`, sources[srcIdx].qual);
+    entry.settings.preferredQual = sources[srcIdx].qual;
+    store.set(
+      `entries.${entry.key}.settings.preferredQual`,
+      sources[srcIdx].qual,
+    );
   }, [srcIdx]);
   useEffect(() => {
     if (trackIdx > -1) {
-      entry.preferredSubs = tracks[trackIdx].label.split(' ')[0];//eslint-disable-line
+      entry.settings.preferredSubs = tracks[trackIdx].label.split(' ')[0]; //eslint-disable-line
       store.set(
-        `entries.${entry.key}.preferredSubs`,
+        `entries.${entry.key}.settings.preferredSubs`,
         tracks[trackIdx].label.split(' ')[0],
       );
     }
@@ -114,7 +116,7 @@ export default function Player({
   function skip(part: 'intro' | 'outro', time: number) {
     if (videoRef.current) {
       const isSkip = time >= skips[part][0] && time < skips[part][1];
-      if (isSkip) videoRef.current.currentTime = skips[part][1];// eslint-disable-line
+      if (isSkip) videoRef.current.currentTime = skips[part][1]; // eslint-disable-line
     }
   }
   function update() {
@@ -124,8 +126,8 @@ export default function Player({
 
       if (currentTime > 0 && floor(currentTime) % 10 === 0)
         store.set(`${episodeKey}.progress`, currentTime);
-      if (entry.isSkip.intro) skip('intro', currentTime);
-      if (entry.isSkip.outro) skip('outro', currentTime);
+      if (entry.settings.isSkip.intro) skip('intro', currentTime);
+      if (entry.settings.isSkip.outro) skip('outro', currentTime);
       if (!entry.episodes[episode].isSeen && progressPercent >= 85)
         store.set(`${episodeKey}.isSeen`, true);
 
@@ -137,7 +139,8 @@ export default function Player({
     if (videoRef.current) {
       v = max(0, min(volume + v, 20)); // eslint-disable-line
       videoRef.current.volume = v * 0.05;
-      store.set(`entries.${entry.key}.volume`, v);
+      entry.settings.volume = v;
+      store.set(`entries.${entry.key}.settings.volume`, v);
       setVolume(v);
       setIsShowVolume(true);
       clearTimeout(volumeTimer);
@@ -145,6 +148,7 @@ export default function Player({
     }
   }
   function handleKeyEvents(key: string) {
+    console.log(key);
     if (videoRef.current)
       switch (key) {
         case 'l':
@@ -176,6 +180,11 @@ export default function Player({
         // no default
       }
   }
+  useEffect(() => {
+    const g = ({ key }: { key: string }) => handleKeyEvents(key);
+    window.addEventListener('keydown', g);
+    return () => window.removeEventListener('keydown', g);
+  });
 
   return (
     <>
@@ -189,14 +198,13 @@ export default function Player({
         onClick={playPause}
         onTimeUpdate={update}
         onPause={handlePause}
-        onKeyDown={({ key }) => handleKeyEvents(key)}
         onAuxClick={({ button }) => {
           if (button === 2) next();
           else document.exitFullscreen();
         }}
         onWaiting={() => setIsVideoLoading(true)}
         onPlaying={() => setIsVideoLoading(false)}
-        onWheel={({ deltaY }) => changeVolume(deltaY * -0.01)}
+        onWheel={({ deltaY }) => changeVolume(deltaY < 0 ? 1 : -1)}
         onEnded={() => {
           store.set(`${episodeKey}.progress`, 0);
           next();
@@ -220,7 +228,6 @@ export default function Player({
           <ProgressBar
             videoRef={videoRef}
             setProgress={(n: number) => setProgress(n)}
-            skips={skips}
           />
         )}
         <img // eslint-disable-line

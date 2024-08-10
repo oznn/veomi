@@ -1,10 +1,11 @@
 export type Result = {
-  ext: string;
-  path: string;
   title: string;
   posterURL: string;
+  ext: string;
+  path: string;
+  [key: string]: any;
 };
-export type Source = { file: string; qual: string };
+export type Source = { file: string; qual: number };
 export type Track = { file: string; label: string };
 export type Video = {
   sources: Source[];
@@ -26,26 +27,26 @@ export type Episode = {
   };
   info?: string[];
 };
+export type Details = {
+  posterURL: string;
+  status: string;
+  studio: string;
+  description: string;
+};
 export type Entry = {
-  details: {
-    id: string;
-    title: string;
-    posterURL: string;
-    isCompleted: boolean | null;
-    studio: string;
-    desc: string;
-    posterPath?: string;
-  };
-  episodes: Episode[];
-  isInLibary: boolean;
-  isSkip: { intro: boolean; outro: boolean };
-  volume: number;
-  ext: string;
-  path: string;
   key: string;
-  preferredSubs: string;
-  preferredQual: string;
-  preferredServ: string;
+  result: Result;
+  episodes: Episode[];
+  details: Details | null;
+  isInLibary: boolean;
+  posterPath?: string;
+  settings: {
+    volume: number;
+    isSkip: { intro: boolean; outro: boolean };
+    preferredSubs: string;
+    preferredQual: number;
+    preferredServ: string;
+  };
 };
 export type Server = {
   name: string;

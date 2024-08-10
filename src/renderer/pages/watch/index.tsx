@@ -12,8 +12,7 @@ const {
 export default function Watch() {
   const [searchParams] = useSearchParams();
   const startAt = searchParams.get('startAt');
-  const ext = searchParams.get('ext') || '';
-  const path = searchParams.get('path') || '';
+  const entryKey = searchParams.get('key') || '';
   const [entry, setEntry] = useState<Entry | null>(null);
   const [servers, setServers] = useState<Server[] | null>(null);
   const [serverIdx, setServerIdx] = useState(-1);
@@ -21,7 +20,6 @@ export default function Watch() {
   const [episodeIdx, setEpisodeIdx] = useState(startAt ? Number(startAt) : -1);
   const [isShowServers, setIsShowServers] = useState(false);
   const container = useRef<HTMLDivElement>(null);
-  const entryKey = (ext + path).replace(/\./g, ' ');
   const nav = useNavigate();
   const [err, setErr] = useState('');
 
@@ -38,9 +36,13 @@ export default function Watch() {
     (async () => {
       if (!entry) return;
       // getVideo wont work in prod if its not imported here
-      const { getServers, getVideo } = await import(`../../extensions/${ext}`);//eslint-disable-line
+      // eslint-disable-next-line
+      const { getServers, getVideo } = await import(
+        `../../extensions/${entry.result.ext}`
+      );
       if (episodeIdx === -1) {
-        const n = (() => { // eslint-disable-line
+        // eslint-disable-next-line
+        const n = (() => {
           for (let i = 0; i < entry.episodes.length; i += 1)
             if (!entry.episodes[i].isSeen) return i;
         })();
@@ -53,7 +55,7 @@ export default function Watch() {
           )) as Server[];
           if (v) res.unshift({ name: 'LOCAL', id: '' });
           const preferredServIdx = res.findIndex(
-            ({ name }) => name === entry.preferredServ,
+            ({ name }) => name === entry.settings.preferredServ,
           );
 
           setServers(res);
@@ -76,10 +78,12 @@ export default function Watch() {
     if (container.current && !document.fullscreenElement)
       container.current.requestFullscreen();
     const v = entry ? entry.episodes[episodeIdx].download.video : null;
-    if (v && serverIdx === 0) return setVideo(v);//eslint-disable-line
+    if (v && serverIdx === 0) return setVideo(v); //eslint-disable-line
 
     (async () => {
-      const { getVideo } = await import(`../../extensions/${ext}`);
+      const { getVideo } = await import(
+        `../../extensions/${entry?.result.ext}`
+      );
       try {
         const res = await getVideo(servers[serverIdx]);
 
@@ -93,7 +97,7 @@ export default function Watch() {
   function changeServer(i: number) {
     setVideo(null);
     if (servers && entry) {
-      entry.preferredServ = servers[i].name;
+      entry.settings.preferredServ = servers[i].name;
       store.set(`entries.${entryKey}.preferredServ`, servers[i].name);
       setServerIdx(i);
     }
@@ -109,10 +113,7 @@ export default function Watch() {
 
   return (
     // eslint-disable-next-line
-    <div
-      className={styles.container}
-      ref={container}
-    >
+    <div className={styles.container} ref={container}>
       <header>
         <span>{entry.episodes[episodeIdx].title}</span>
         <img // eslint-disable-line

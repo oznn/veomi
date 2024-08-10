@@ -82,8 +82,6 @@ ipcMain.handle('ffmpeg-download', async (_, video: Video) => {
         video.episodeKey,
         progress.percent,
       );
-
-      // store.set(`${videoList[0].episodeKey}.download.progress`, videoList);
     })
     .on('end', async () => {
       store.set('ffmpegDownloading', '');
@@ -103,7 +101,7 @@ ipcMain.handle('ffmpeg-download', async (_, video: Video) => {
     .run();
   store.set('ffmpegDownloading', video.episodeKey);
 });
-ipcMain.on('change-origin', (_, newOrigin) => (origin = newOrigin));//eslint-disable-line
+ipcMain.on('change-origin', (_, newOrigin) => (origin = newOrigin)); //eslint-disable-line
 ipcMain.handle('store-get', (_, k) => store.get(k));
 ipcMain.handle('store-set', (_, k, v) => store.set(k, v));
 ipcMain.handle('store-delete', (_, k) => store.delete(k));
@@ -124,7 +122,7 @@ ipcMain.handle('poster-download', async (_, url, entryKey) => {
     const stream = createWriteStream(posterPath);
 
     if (body) await finished(Readable.fromWeb(body as any).pipe(stream));
-    store.set(`entries.${entryKey}.details.posterPath`, posterPath);
+    store.set(`entries.${entryKey}.posterPath`, posterPath);
   } catch (err) {
     console.log('poster-download', err);
   }

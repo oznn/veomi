@@ -25,7 +25,6 @@ export async function getResults(query: string) {
       posterURL,
       path,
       ext,
-      key: (ext + path).replace(/\./g, ' '),
     });
   });
 
@@ -41,7 +40,7 @@ async function getEpisodes(dataId: string) {
 
   const episodes: Episode[] = [];
   doc.querySelectorAll('a').forEach((a) => {
-    const info: string[] = [];
+    // const info: string[] = [];
     const id = a.getAttribute('data-ids') || '';
     const infoString = a.parentElement?.getAttribute('title') || '';
     const epTitle = a.querySelector('.d-title')?.textContent || '';
@@ -52,20 +51,37 @@ async function getEpisodes(dataId: string) {
     ['Sub', 'Softsub', 'Dub'].forEach((type) => {
       if (infoString.includes(type)) types.push(type);
     });
-    const epNum = a.getAttribute('data-num');
+    const number = a.getAttribute('data-num') || '';
     const isValidEp = /^\d+$/.test(a.getAttribute('data-slug') || '');
 
-    if (isFiller) info.push('Filler');
-    info.push(releaseDate);
-    info.push(types.join(', '));
+    // info.push(releaseDate);
+    // info.push(types.join(', '));
+    // {
+    //   number: string;
+    //   isSeen: boolean;
+    //   progress: number;
+    //   download: {
+    //     progress: number;
+    //     isPending: boolean;
+    //     isCompleted: boolean;
+    //     video?: Video;
+    //   };
+    // }
 
     if (isValidEp)
       episodes.push({
-        title: isNoEpTitle ? `Episode ${epNum}` : `E${epNum}. ${epTitle}`,
-        info,
+        id,
+        title: isNoEpTitle ? `Episode ${number}` : `${number}. ${epTitle}`,
+        isFiller,
+        number,
         isSeen: false,
         progress: 0,
-        id,
+        download: {
+          progress: 0,
+          isPending: false,
+          isCompleted: false,
+        },
+        info: [releaseDate, types.join(', ')],
       });
   });
 

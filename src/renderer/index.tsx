@@ -26,20 +26,22 @@ window.electron.ipcRenderer.on('ffmpeg-download', async () => {
   }
   if (!entry) return;
 
-  const { getServers, getVideo } = await import(`./extensions/${entry.ext}`);
+  const { getServers, getVideo } = await import(
+    `./extensions/${entry.result.ext}`
+  );
   const servers = (await getServers(entry.episodes[episodeIdx])) as Server[];
   const preferredServ = servers.findIndex(
-    ({ name }) => name === entry.preferredServ,
+    ({ name }) => name === entry.settings.preferredServ,
   );
   const vid = (await getVideo(servers[Math.max(0, preferredServ)])) as Video;
   const preferredQual = vid.sources.findIndex(
-    ({ qual }) => entry.preferredQual === qual,
+    ({ qual }) => entry.settings.preferredQual === qual,
   );
   const preferredTrackIdx = vid.tracks.findIndex(
-    ({ label }) => label?.includes(entry.preferredSubs),
+    ({ label }) => label?.includes(entry.settings.preferredSubs),
   );
-  const { name } = extensions[entry.ext];
-  const { title } = entry.details;
+  const { name } = extensions[entry.result.ext];
+  const { title } = entry.result;
   const v = {
     folderName: `[${name}] ${title.replace(/[<>:"/\\|?*]/g, ' ')}`,
     fileName: entry.episodes[episodeIdx].title.replace(/[<>:"/\\|?*]/g, ' '),

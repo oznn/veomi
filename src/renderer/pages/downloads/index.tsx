@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer } from 'react';
 import { Entry, Episode } from '../../types';
 
 const {
@@ -15,7 +15,7 @@ const f = (a: any, b: any) => {
 
 export default function Downloads() {
   const [, rerender] = useReducer((x) => x + 1, 0);
-  const [isDownloading, setIsDownloading] = useState(true);
+  // const [isDownloading, setIsDownloading] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -32,7 +32,7 @@ export default function Downloads() {
           episodes.push({
             ...ep,
             entryKey: entry.key,
-            entryTitle: entry.details.title,
+            entryTitle: entry.result.title || '',
           }),
         ),
       );

@@ -20,16 +20,16 @@ function Results({ results }: { results: Result[] }) {
     );
   return (
     <ul className={resultsStyles.container}>
-      {results.map(({ path, ext, title, posterURL }) => (
+      {results.map((result) => (
         <Link
-          key={ext + path}
+          key={result.ext + result.path}
           className={resultsStyles.link}
-          to={`/entry?ext=${ext}&path=${path}`}
+          to={`/entry?result=${JSON.stringify(result)}`}
         >
           <div>
-            <img loading="lazy" src={posterURL} alt="poster" />
+            <img loading="lazy" src={result.posterURL} alt="poster" />
           </div>
-          <span title={title}>{title}</span>
+          <span title={result.title}>{result.title}</span>
         </Link>
       ))}
     </ul>
@@ -57,6 +57,7 @@ export default function Browse() {
   return (
     <div className={styles.container}>
       <input
+        autoFocus //eslint-disable-line
         type="text"
         defaultValue={query}
         placeholder={`Search ${extensions[ext].name}`}

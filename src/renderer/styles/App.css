@@ -60,7 +60,7 @@ nav button{
   background: rgba(0, 0, 0, 0);
 }
 ::cue{
-  text-shadow: -2px -2px 2px #000, 2px -2px 2px #000, -2px 2px 2px #000, 2px 2px 2px #000;
+  text-shadow: 0 0 4px #000, 0 0 4px #000, 0 0 4px #000, 0 0 4px #000;
   background: none;
   font-family: 'baloo2';
   line-height:.1;

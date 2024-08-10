@@ -71,23 +71,25 @@ function Quals({
 }) {
   return (
     <>
-      {sources.map(({ qual }, i) => (
-        <button
-          type="button"
-          key={qual}
-          onClick={() => setSrcIdx(i)}
-          disabled={srcIdx === i}
-        >
-          <span
-            style={{
-              opacity: srcIdx === i ? 1 : 0,
-              transform: `scale(${srcIdx === i ? 1 : 3})`,
-              borderRadius: '50%',
-            }}
-          />
-          {qual}
-        </button>
-      ))}
+      {sources
+        .sort((a, b) => b.qual - a.qual)
+        .map(({ qual }, i) => (
+          <button
+            type="button"
+            key={qual}
+            onClick={() => setSrcIdx(i)}
+            disabled={srcIdx === i}
+          >
+            <span
+              style={{
+                opacity: srcIdx === i ? 1 : 0,
+                transform: `scale(${srcIdx === i ? 1 : 3})`,
+                borderRadius: '50%',
+              }}
+            />
+            {qual}p
+          </button>
+        ))}
     </>
   );
 }
@@ -128,21 +130,12 @@ export default function Settings({
     );
 
   function toggleIsSkip(part: 'intro' | 'outro') {
-    const toggle = !entry.isSkip[part];
-    entry.isSkip[part] = toggle;
+    const toggle = !entry.settings.isSkip[part];
+    entry.settings.isSkip[part] = toggle;
     store.set(`entries.${entry.key}.isSkip.${part}`, toggle);
     rerender();
   }
 
-  function setGlobal() {
-    const global = {
-      isSkip: { intro: entry.isSkip.intro, outro: entry.isSkip.outro },
-      preferredSubs: entry.preferredSubs,
-      preferredQual: entry.preferredQual,
-    };
-
-    store.set('settings', global);
-  }
   return (
     <div className={styles.settings}>
       <div>
@@ -150,16 +143,16 @@ export default function Settings({
           type="button"
           onClick={(e) => {
             (e.target as HTMLButtonElement).disabled = true;
-            setGlobal();
+            store.set('settings', entry.settings);
           }}
         >
-          Use this globally
+          Use globally
         </button>
         <button type="button" onClick={() => toggleIsSkip('intro')}>
           <span
             style={{
-              opacity: entry.isSkip.intro ? 1 : 0,
-              transform: `scale(${entry.isSkip.intro ? 1 : 3})`,
+              opacity: entry.settings.isSkip.intro ? 1 : 0,
+              transform: `scale(${entry.settings.isSkip.intro ? 1 : 3})`,
             }}
           />
           Skip intro
@@ -167,8 +160,8 @@ export default function Settings({
         <button type="button" onClick={() => toggleIsSkip('outro')}>
           <span
             style={{
-              opacity: entry.isSkip.outro ? 1 : 0,
-              transform: `scale(${entry.isSkip.outro ? 1 : 3})`,
+              opacity: entry.settings.isSkip.outro ? 1 : 0,
+              transform: `scale(${entry.settings.isSkip.outro ? 1 : 3})`,
             }}
           />
           Skip outro
