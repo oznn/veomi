@@ -115,7 +115,7 @@ export default function Settings({
         <Quals sources={video.sources} srcIdx={srcIdx} setSrcIdx={setSrcIdx} />
       </div>
     );
-  if (isShowSubs)
+  if (video.tracks && isShowSubs)
     return (
       <div className={styles.settings}>
         <button type="button" onClick={() => setIsShowSubs(false)}>
@@ -170,10 +170,10 @@ export default function Settings({
       <div>
         <button type="button" onClick={() => setIsShowQuals(true)}>
           <span className={styles.arrow} />
-          {video.sources[srcIdx].qual}
+          {video.sources[srcIdx].qual}p
         </button>
       </div>
-      {video.tracks.length > 0 && (
+      {video.tracks && (
         <div>
           <button type="button" onClick={() => setIsShowSubs(true)}>
             <span className={styles.arrow} />

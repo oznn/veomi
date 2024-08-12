@@ -44,7 +44,7 @@ export default function Player({
   const [srcIdx, setSrcIdx] = useState(Math.max(0, preferredSrcIdx));
   const src = sources[srcIdx];
   const [trackIdx, setTrackIdx] = useState(-1);
-  const track = tracks[trackIdx];
+  // const track = tracks[trackIdx];
   const [progress, setProgress] = useState(entry.episodes[episode].progress);
   const [volume, setVolume] = useState(entry.settings.volume);
   const [isShowVolume, setIsShowVolume] = useState(false);
@@ -68,11 +68,13 @@ export default function Player({
             console.log(err);
           });
         }
-        const preferredTrackIdx = tracks.findIndex(
-          ({ label }) => label?.includes(entry.settings.preferredSubs),
-        );
+        if (tracks) {
+          const preferredTrackIdx = tracks.findIndex(
+            ({ label }) => label?.includes(entry.settings.preferredSubs),
+          );
 
-        setTrackIdx(preferredTrackIdx);
+          setTrackIdx(preferredTrackIdx);
+        }
         videoRef.current.currentTime = progress;
         videoRef.current.volume = volume * 0.05;
         videoRef.current.focus();
@@ -88,7 +90,7 @@ export default function Player({
     );
   }, [srcIdx]);
   useEffect(() => {
-    if (trackIdx > -1) {
+    if (tracks && trackIdx > -1) {
       entry.settings.preferredSubs = tracks[trackIdx].label.split(' ')[0]; //eslint-disable-line
       store.set(
         `entries.${entry.key}.settings.preferredSubs`,
@@ -148,7 +150,6 @@ export default function Player({
     }
   }
   function handleKeyEvents(key: string) {
-    console.log(key);
     if (videoRef.current)
       switch (key) {
         case 'l':
@@ -216,7 +217,13 @@ export default function Player({
         }}
       >
         <source src={src.file} />
-        {track && <track src={track.file} label={track.label} default />}
+        {tracks && trackIdx > -1 && (
+          <track
+            src={tracks[trackIdx].file}
+            label={tracks[trackIdx].label}
+            default
+          />
+        )}
       </video>
       <div className={styles.controls}>
         <span>

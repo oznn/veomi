@@ -16,12 +16,14 @@ type Video = {
   episodeKey: string;
   source: {
     file: string;
-    qual: string;
+    qual: number;
   };
-  track: {
-    file: string;
-    label: string;
-  } | null;
+  track:
+    | {
+        file: string;
+        label: string;
+      }
+    | undefined;
   skips: { intro: number[]; outro: number[] };
 };
 

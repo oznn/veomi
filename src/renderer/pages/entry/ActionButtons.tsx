@@ -1,13 +1,16 @@
-import { useReducer, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Entry } from '../../types';
 import styles from '../../styles/Entry.module.css';
 
+type Props = {
+  entry: Entry;
+  rerender: () => void;
+};
 const {
   electron: { store, poster },
 } = window;
-export default function ActionButtons({ entry }: { entry: Entry }) {
-  const [, rerender] = useReducer((n) => n + 1, 0);
+export default function ActionButtons({ entry, rerender }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const nav = useNavigate();
 
@@ -17,7 +20,7 @@ export default function ActionButtons({ entry }: { entry: Entry }) {
     const { getEpisodes } = await import(
       `../../extensions/${entry.result.ext}`
     );
-    const episodes = getEpisodes(entry.result) || [];
+    const episodes = (await getEpisodes(entry.result)) || [];
 
     for (let i = 0; i < entry.episodes.length; i += 1) {
       entry.episodes[i].title = episodes[i].title;
@@ -28,6 +31,7 @@ export default function ActionButtons({ entry }: { entry: Entry }) {
 
     store.set(`entries.${entry.key}`, entry);
     setIsLoading(false);
+    rerender();
   }
   function addToLibary() {
     if (entry) {

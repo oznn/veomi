@@ -98,7 +98,7 @@ export default function Watch() {
     setVideo(null);
     if (servers && entry) {
       entry.settings.preferredServ = servers[i].name;
-      store.set(`entries.${entryKey}.preferredServ`, servers[i].name);
+      store.set(`entries.${entryKey}.settings.preferredServ`, servers[i].name);
       setServerIdx(i);
     }
   }

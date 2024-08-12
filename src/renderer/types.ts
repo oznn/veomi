@@ -7,16 +7,17 @@ export type Result = {
 };
 export type Source = { file: string; qual: number };
 export type Track = { file: string; label: string };
+export type Skips = { intro: number[]; outro: number[] };
 export type Video = {
   sources: Source[];
-  tracks: Track[];
-  skips: { intro: number[]; outro: number[] };
+  tracks?: Track[];
+  skips: Skips;
 };
 export type Episode = {
   id: string;
   title: string;
   isFiller: boolean;
-  number: string;
+  number: number;
   isSeen: boolean;
   progress: number;
   download: {
@@ -37,7 +38,7 @@ export type Entry = {
   key: string;
   result: Result;
   episodes: Episode[];
-  details: Details | null;
+  details?: Details;
   isInLibary: boolean;
   posterPath?: string;
   settings: {

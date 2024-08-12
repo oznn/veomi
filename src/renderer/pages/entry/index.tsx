@@ -135,10 +135,11 @@ export default function Entry() {
     }
   }
 
+  console.log('rerender');
   if (entry)
     return (
       <div className={styles.container}>
-        <Details entry={entry} />
+        <Details entry={entry} rerender={() => rerender()} />
         <span>{entry.episodes.length} Episodes</span>
         <ul style={{ margin: 0 }}>
           {entry.episodes.map((episode, i) => (

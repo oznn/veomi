@@ -30,7 +30,7 @@ class AppUpdater {
 }
 
 let mw: BrowserWindow | null = null;
-let origin: string | null = null;
+let origin: string | null = 'https://hianime.to';
 const store = new Store();
 
 type Video = {
@@ -91,7 +91,6 @@ ipcMain.handle('ffmpeg-download', async (_, video: Video) => {
         sources: [
           { file: `${folder}/${video.fileName}.mp4`, qual: video.source.qual },
         ],
-        tracks: [],
         skips: video.skips,
       };
       store.set(`${video.episodeKey}.download.video`, vid);

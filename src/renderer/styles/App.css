@@ -63,6 +63,7 @@ nav button{
   text-shadow: 0 0 4px #000, 0 0 4px #000, 0 0 4px #000, 0 0 4px #000;
   background: none;
   font-family: 'baloo2';
-  line-height:.1;
+  line-height:1px;
   font-size: .8em;
+  font-weight:bold;
 }

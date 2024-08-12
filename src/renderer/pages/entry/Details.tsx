@@ -3,7 +3,11 @@ import extensions from '../ext';
 import styles from '../../styles/Entry.module.css';
 import ActionButtons from './ActionButtons';
 
-export default function Details({ entry }: { entry: Entry }) {
+type Props = {
+  entry: Entry;
+  rerender: () => void;
+};
+export default function Details({ entry, rerender }: Props) {
   const { details } = entry;
 
   if (details)
@@ -30,7 +34,7 @@ export default function Details({ entry }: { entry: Entry }) {
             </span>
             <p dangerouslySetInnerHTML={{ __html: details.description }} />
           </div>
-          <ActionButtons entry={entry} />
+          <ActionButtons entry={entry} rerender={() => rerender()} />
         </div>
       </div>
     );
@@ -50,7 +54,7 @@ export default function Details({ entry }: { entry: Entry }) {
             {entry.result.title}
           </span>
         </div>
-        <ActionButtons entry={entry} />
+        <ActionButtons entry={entry} rerender={() => rerender()} />
       </div>
     </div>
   );

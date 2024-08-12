@@ -37,9 +37,11 @@ window.electron.ipcRenderer.on('ffmpeg-download', async () => {
   const preferredQual = vid.sources.findIndex(
     ({ qual }) => entry.settings.preferredQual === qual,
   );
-  const preferredTrackIdx = vid.tracks.findIndex(
-    ({ label }) => label?.includes(entry.settings.preferredSubs),
-  );
+  const preferredTrackIdx = vid.tracks
+    ? vid.tracks.findIndex(({ label }) =>
+        label.includes(entry.settings.preferredSubs),
+      )
+    : -1;
   const { name } = extensions[entry.result.ext];
   const { title } = entry.result;
   const v = {
@@ -51,22 +53,16 @@ window.electron.ipcRenderer.on('ffmpeg-download', async () => {
       file: vid.sources[preferredQual === -1 ? 0 : preferredQual].file,
       qual: vid.sources[preferredQual === -1 ? 0 : preferredQual].qual,
     },
-    track: vid.tracks.length
+    track: vid.tracks
       ? {
           file: vid.tracks[preferredTrackIdx === -1 ? 0 : preferredTrackIdx]
             .file,
           label:
             vid.tracks[preferredTrackIdx === -1 ? 0 : preferredTrackIdx].label,
         }
-      : null,
+      : undefined,
     skips: vid.skips,
   };
-  if (vid.tracks.length) {
-    v.track = {
-      file: vid.tracks[preferredTrackIdx === -1 ? 0 : preferredTrackIdx].file,
-      label: vid.tracks[preferredTrackIdx === -1 ? 0 : preferredTrackIdx].label,
-    };
-  }
   ffmpeg.download(v);
 });
 window.electron.ipcRenderer.on('console-log', (arg) => {

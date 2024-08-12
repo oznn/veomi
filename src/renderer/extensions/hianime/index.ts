@@ -46,7 +46,7 @@ export async function getEpisodes(result: Result) {
       id,
       title: isNoTitle ? `Episode ${number}` : `${number}. ${title}`,
       isFiller,
-      number,
+      number: Number(number),
       isSeen: false,
       progress: 0,
       download: {
@@ -111,6 +111,7 @@ export async function getServers(episode: Episode) {
     if (supportedServers.includes(name))
       servers.push({ id, name: `[${type}]${name}` });
   });
+
   return servers;
 }
 async function getSources(url: string): Promise<Source[]> {
