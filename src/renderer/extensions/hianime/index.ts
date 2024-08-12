@@ -93,9 +93,9 @@ query ($id: Int, $search: String, $season: MediaSeason, $seasonYear: Int) {
 
   return data.Media ? anilist(data.Media.id) : null;
 }
-export async function getServers(episode: Episode) {
+export async function getServers(episodeId: string) {
   const res = await fetch(
-    `${baseURL}/ajax/v2/episode/servers?episodeId=${episode.id}`,
+    `${baseURL}/ajax/v2/episode/servers?episodeId=${episodeId}`,
   );
   const { html } = await res.json();
   const doc = parse(html);

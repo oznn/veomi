@@ -19,7 +19,7 @@
   margin:.4em .1em;
   padding:.1em 1em;
 }
-.action:hover{
+.action:hover,.action:focus{
   background-color: #555;
 }
 .info p{
@@ -56,7 +56,7 @@
   padding: 0 .2em;
   border-radius: 0;
 }
-.episode:hover{
+.episode:hover,.episode:focus{
   color:white;
   transition:color 0s;
 }

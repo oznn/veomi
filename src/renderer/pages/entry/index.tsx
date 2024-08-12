@@ -135,7 +135,6 @@ export default function Entry() {
     }
   }
 
-  console.log('rerender');
   if (entry)
     return (
       <div className={styles.container}>

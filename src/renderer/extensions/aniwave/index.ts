@@ -62,7 +62,7 @@ export async function getEpisodes(result: Result): Promise<Episode[]> {
   const doc = parse(data.result);
 
   const episodes: Episode[] = [];
-  doc.querySelectorAll('a').forEach((a) => {
+  doc.querySelectorAll('a').forEach((a, i) => {
     const id = a.getAttribute('data-ids') || '';
     const infoString = a.parentElement?.getAttribute('title') || '';
     const epTitle = a.querySelector('.d-title')?.textContent || '';
@@ -73,15 +73,13 @@ export async function getEpisodes(result: Result): Promise<Episode[]> {
     ['Sub', 'Softsub', 'Dub'].forEach((type) => {
       if (infoString.includes(type)) types.push(type);
     });
-    const number = a.getAttribute('data-num') || '';
     const isValidEp = /^\d+$/.test(a.getAttribute('data-slug') || '');
 
     if (isValidEp)
       episodes.push({
         id,
-        title: isNoEpTitle ? `Episode ${number}` : `${number}. ${epTitle}`,
+        title: isNoEpTitle ? `Episode ${i}` : `${i}. ${epTitle}`,
         isFiller,
-        number: Number(number),
         isSeen: false,
         progress: 0,
         download: {
@@ -126,9 +124,9 @@ query ($id: Int, $search: String, $season: MediaSeason, $seasonYear: Int) {
   return data.Media ? anilist(data.Media.id) : undefined;
 }
 
-export async function getServers(episode: Episode): Promise<Server[]> {
-  const vrf = vrfEncrypt(episode.id);
-  const reqUrl = `${baseURL}/ajax/server/list/${episode.id}?vrf=${vrf}`;
+export async function getServers(episodeId: string): Promise<Server[]> {
+  const vrf = vrfEncrypt(episodeId);
+  const reqUrl = `${baseURL}/ajax/server/list/${episodeId}?vrf=${vrf}`;
   const res = await fetch(reqUrl);
   const html = (await res.json()).result;
   const doc = parse(html);
@@ -148,12 +146,11 @@ export async function getServers(episode: Episode): Promise<Server[]> {
   return servers;
 }
 
-export async function getVideo(server: Server): Promise<Video | undefined> {
-  const serverId = server.id || '';
+export async function getVideo(server: Server): Promise<Video> {
   const serverName = server.name ? server.name.split(' ')[1] : '';
-  const vrf = vrfEncrypt(serverId);
-  const reqUrl = `${baseURL}/ajax/server/${serverId}?vrf=${vrf}`;
-  const res = await fetch(reqUrl, { referrer: baseURL });
+  const vrf = vrfEncrypt(server.id);
+  const reqUrl = `${baseURL}/ajax/server/${server.id}?vrf=${vrf}`;
+  const res = await fetch(reqUrl);
   const { result } = await res.json();
   const embedUrl = vrfDecrypt(result.url);
   const skips = vrfDecrypt(result.skip_data);
@@ -172,6 +169,6 @@ export async function getVideo(server: Server): Promise<Video | undefined> {
       return { sources, skips: JSON.parse(skips) as Skips };
     }
     default:
-      return undefined;
+      throw Error('Unsupported server');
   }
 }

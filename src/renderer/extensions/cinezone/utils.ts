@@ -11,17 +11,17 @@ function decodeUrl(inp: string): string {
   return input;
 }
 
-// function vrfShift(vrf: Buffer) {
-//   const shifts = [-2, -4, -5, 6, 2, -3, 3, 6];
-//   for (let i = 0; i < vrf.length; i += 1) {
-//     const shift = shifts[i % 8];
-//     vrf[i] = (vrf[i] + shift) & 0xff; // eslint-disable-line no-bitwise
-//   }
-//   return vrf;
-// }
+function vrfShift(vrf: Buffer) {
+  const shifts = [-2, -4, -5, 6, 2, -3, 3, 6];
+  for (let i = 0; i < vrf.length; i += 1) {
+    const shift = shifts[i % 8];
+    vrf[i] = (vrf[i] + shift) & 0xff; // eslint-disable-line no-bitwise
+  }
+  return vrf;
+}
 
 export function vrfEncrypt(input: string) {
-  const rc4 = rc4Encrypt('T78s2WjTc7hSIZZR', Buffer.from(input));
+  const rc4 = rc4Encrypt('Ex3tc7qjUz7YlWpQ', Buffer.from(input));
   const vrf = decodeUrl(rc4.toString('base64'));
   // const vrf1 = Buffer.from(vrf).toString('base64');
   // const vrf2 = vrfShift(Buffer.from(vrf1)).reverse();
@@ -29,7 +29,8 @@ export function vrfEncrypt(input: string) {
   const vrf4 = new TextDecoder('utf-8').decode(Buffer.from(vrf));
   return encodeURIComponent(vrf4);
 }
+
 export function vrfDecrypt(input: string) {
-  const rc4 = rc4Encrypt('ctpAbOz5u7S6OMkx', Buffer.from(input, 'base64'));
+  const rc4 = rc4Encrypt('8z5Ag5wgagfsOuhz', Buffer.from(input, 'base64'));
   return decodeURIComponent(new TextDecoder('utf-8').decode(rc4));
 }

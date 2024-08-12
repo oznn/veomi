@@ -51,7 +51,7 @@ export default function Watch() {
         try {
           const v = entry ? entry.episodes[episodeIdx].download.video : null;
           const res = (await getServers(
-            entry.episodes[episodeIdx],
+            entry.episodes[episodeIdx].id,
           )) as Server[];
           if (v) res.unshift({ name: 'LOCAL', id: '' });
           const preferredServIdx = res.findIndex(
@@ -87,7 +87,8 @@ export default function Watch() {
       try {
         const res = await getVideo(servers[serverIdx]);
 
-        setVideo(res);
+        if (res) setVideo(res);
+        else setErr('Selected server is not working');
       } catch (e) {
         setErr('Selected server is not working');
       }

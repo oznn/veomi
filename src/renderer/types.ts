@@ -16,8 +16,6 @@ export type Video = {
 export type Episode = {
   id: string;
   title: string;
-  isFiller: boolean;
-  number: number;
   isSeen: boolean;
   progress: number;
   download: {
@@ -27,6 +25,7 @@ export type Episode = {
     video?: Video;
   };
   info?: string[];
+  isFiller?: boolean;
 };
 export type Details = {
   posterURL: string;
@@ -52,4 +51,5 @@ export type Entry = {
 export type Server = {
   name: string;
   id: string;
+  [key: string]: any;
 };
