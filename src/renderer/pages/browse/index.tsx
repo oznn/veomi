@@ -56,21 +56,6 @@ export default function Browse() {
 
   return (
     <div className={styles.container}>
-      <input
-        autoFocus //eslint-disable-line
-        type="text"
-        defaultValue={query}
-        placeholder={`Search ${extensions[ext].name}`}
-        onKeyUp={({ key, target }) => {
-          if (key === 'Enter') {
-            setResults(null);
-            const q = (target as HTMLInputElement).value;
-            nav(`/browse?query=${q}&ext=${ext}`);
-          }
-        }}
-      />
-      <br />
-      <br />
       {query && !results ? (
         <div className={loadingStyles.container} />
       ) : (

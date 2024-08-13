@@ -22,6 +22,10 @@
 .action:hover,.action:focus{
   background-color: #555;
 }
+.action:disabled{
+  background-color: #222;
+  color:grey;
+}
 .info p{
   height:200px;
   overflow:scroll;

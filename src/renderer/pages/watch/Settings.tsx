@@ -1,6 +1,7 @@
 import { useReducer, useState } from 'react';
 import { Entry, Video, Source, Track } from '../../types';
 import styles from '../../styles/Watch.module.css';
+import arrowBack from '../../../../assets/arrow back.png';
 
 type Props = {
   entry: Entry;
@@ -110,7 +111,7 @@ export default function Settings({
     return (
       <div className={styles.settings}>
         <button type="button" onClick={() => setIsShowQuals(false)}>
-          {'<='}
+          <img src={arrowBack} alt="icon" />
         </button>
         <Quals sources={video.sources} srcIdx={srcIdx} setSrcIdx={setSrcIdx} />
       </div>
@@ -119,7 +120,7 @@ export default function Settings({
     return (
       <div className={styles.settings}>
         <button type="button" onClick={() => setIsShowSubs(false)}>
-          {'<='}
+          <img src={arrowBack} alt="icon" />
         </button>
         <Subs
           tracks={video.tracks}

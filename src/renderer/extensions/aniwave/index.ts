@@ -78,7 +78,7 @@ export async function getEpisodes(result: Result): Promise<Episode[]> {
     if (isValidEp)
       episodes.push({
         id,
-        title: isNoEpTitle ? `Episode ${i}` : `${i}. ${epTitle}`,
+        title: isNoEpTitle ? `Episode ${i + 1}` : `${i + 1}. ${epTitle}`,
         isFiller,
         isSeen: false,
         progress: 0,
