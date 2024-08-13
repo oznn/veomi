@@ -23,12 +23,12 @@ body, input,button,select {
   font-family: baloo2;
   font-variant-numeric: tabular-nums;
 }
-select,a {
+nav select,a {
   text-decoration: none;
   color: grey;
   transition: color 200ms ease-in;
 }
-select:hover,select:focus,a:hover,a:focus{
+nav select:hover,nav select:focus,a:hover,a:focus{
   color:white;
   transition: color 0s;
 }
@@ -37,18 +37,6 @@ button{
 }
 button:enabled{
   cursor: pointer;
-}
-select,input{
-  padding:0 .2em;
-  border: solid 3px grey;
-  border-radius: .2em;
-}
-input{
-  transition: border 200ms ease;
-  padding:0 .4em;
-}
-select:focus,input:focus{
-  border:solid 3px white;
 }
 ::-webkit-scrollbar {
   width: 0.2em;
@@ -91,4 +79,19 @@ nav img {
 nav img:hover,nav img:focus{
   opacity: 1;
   transition: color 0s;
+}
+input{
+  accent-color:grey;
+}
+nav select,nav input{
+  padding:0 .2em;
+  border: solid 3px grey;
+  border-radius: .2em;
+}
+nav input{
+  transition: border 200ms ease;
+  padding:0 .4em;
+}
+nav select:focus{
+  border:solid 3px white;
 }

@@ -44,11 +44,11 @@ export default function Player({
   const [srcIdx, setSrcIdx] = useState(Math.max(0, preferredSrcIdx));
   const src = sources[srcIdx];
   const [trackIdx, setTrackIdx] = useState(-1);
-  // const track = tracks[trackIdx];
   const [progress, setProgress] = useState(entry.episodes[episode].progress);
   const [volume, setVolume] = useState(entry.settings.volume);
   const [isShowVolume, setIsShowVolume] = useState(false);
   const [isShowCursor, setIsShowCursor] = useState(false);
+  const [playback, setPlayback] = useState(entry.settings.playback);
 
   useEffect(() => {
     (async () => {
@@ -77,6 +77,7 @@ export default function Player({
         }
         videoRef.current.currentTime = progress;
         videoRef.current.volume = volume * 0.05;
+        videoRef.current.playbackRate = playback;
         videoRef.current.focus();
         videoRef.current.play();
       }
@@ -98,6 +99,14 @@ export default function Player({
       );
     }
   }, [trackIdx]);
+  useEffect(() => {
+    if (videoRef.current) {
+      console.log('playback', playback);
+      videoRef.current.playbackRate = playback;
+      entry.settings.playback = playback;
+      store.set(`entries.${entry.key}.settings.playback`, playback);
+    }
+  }, [playback]);
 
   function playPause() {
     if (videoRef.current) {
@@ -254,8 +263,10 @@ export default function Player({
           video={video}
           srcIdx={srcIdx}
           trackIdx={trackIdx}
+          playback={playback}
           setSrcIdx={(i: number) => setSrcIdx(i)}
           setTrackIdx={(i: number) => setTrackIdx(i)}
+          setPlayback={(n: number) => setPlayback(n)}
         />
       )}
     </>

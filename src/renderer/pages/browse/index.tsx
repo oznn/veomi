@@ -1,10 +1,8 @@
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Result } from '../../types';
-import styles from '../../styles/Browse.module.css';
 import loadingStyles from '../../styles/Loading.module.css';
 import resultsStyles from '../../styles/Results.module.css';
-import extensions from '../ext';
 
 function Results({ results }: { results: Result[] }) {
   if (results.length === 0)
@@ -39,7 +37,6 @@ function Results({ results }: { results: Result[] }) {
 const { electron } = window;
 export default function Browse() {
   const [results, setResults] = useState<Result[] | null>(null);
-  const nav = useNavigate();
   const [searchParams] = useSearchParams();
   const ext = searchParams.get('ext') || '';
   const query = searchParams.get('query') || '';
@@ -55,7 +52,7 @@ export default function Browse() {
   }, [query]);
 
   return (
-    <div className={styles.container}>
+    <div>
       {query && !results ? (
         <div className={loadingStyles.container} />
       ) : (

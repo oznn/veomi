@@ -89,6 +89,7 @@ export default function App() {
   return (
     <Router>
       <Links />
+      <br />
       <Routes>
         <Route path="/" element={<Libary />} />
         <Route path="/extensions" element={<Extensions />} />

@@ -3,14 +3,6 @@ import { Entry, Video, Source, Track } from '../../types';
 import styles from '../../styles/Watch.module.css';
 import arrowBack from '../../../../assets/arrow back.png';
 
-type Props = {
-  entry: Entry;
-  video: Video;
-  srcIdx: number;
-  trackIdx: number;
-  setSrcIdx: (i: number) => void;
-  setTrackIdx: (i: number) => void;
-};
 const {
   electron: { store },
 } = window;
@@ -95,16 +87,54 @@ function Quals({
   );
 }
 
+function Playback({
+  playback,
+  setPlayback,
+}: {
+  playback: number;
+  setPlayback: (n: number) => void;
+}) {
+  return (
+    <div style={{ padding: '0 .5em' }}>
+      <span style={{ color: 'grey' }}>{playback.toFixed(2)}x </span>
+      <input
+        type="range"
+        step={1}
+        max={12}
+        defaultValue={(playback - 1) / 0.25}
+        onChange={({ target }) => {
+          const speed = Number(target.value) * 0.25 + 1;
+          setPlayback(speed);
+        }}
+        title={`${playback}`}
+      />
+    </div>
+  );
+}
+
+type Props = {
+  entry: Entry;
+  video: Video;
+  srcIdx: number;
+  trackIdx: number;
+  playback: number;
+  setSrcIdx: (i: number) => void;
+  setTrackIdx: (i: number) => void;
+  setPlayback: (n: number) => void;
+};
 export default function Settings({
   entry,
   video,
   srcIdx,
   trackIdx,
+  playback,
   setSrcIdx,
   setTrackIdx,
+  setPlayback,
 }: Props) {
   const [isShowQuals, setIsShowQuals] = useState(false);
   const [isShowSubs, setIsShowSubs] = useState(false);
+  const [isShowPlayback, setIsShowPlayback] = useState(false);
   const [, rerender] = useReducer((n) => n + 1, 0);
 
   if (isShowQuals)
@@ -127,6 +157,15 @@ export default function Settings({
           trackIdx={trackIdx}
           setTrackIdx={setTrackIdx}
         />
+      </div>
+    );
+  if (isShowPlayback)
+    return (
+      <div className={styles.settings}>
+        <button type="button" onClick={() => setIsShowPlayback(false)}>
+          <img src={arrowBack} alt="icon" />
+        </button>
+        <Playback playback={playback} setPlayback={setPlayback} />
       </div>
     );
 
@@ -172,6 +211,12 @@ export default function Settings({
         <button type="button" onClick={() => setIsShowQuals(true)}>
           <span className={styles.arrow} />
           {video.sources[srcIdx].qual}p
+        </button>
+      </div>
+      <div>
+        <button type="button" onClick={() => setIsShowPlayback(true)}>
+          <span className={styles.arrow} />
+          {playback.toFixed(2)}x
         </button>
       </div>
       {video.tracks && (

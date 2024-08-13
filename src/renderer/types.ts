@@ -42,6 +42,7 @@ export type Entry = {
   posterPath?: string;
   settings: {
     volume: number;
+    playback: number;
     isSkip: { intro: boolean; outro: boolean };
     preferredSubs: string;
     preferredQual: number;

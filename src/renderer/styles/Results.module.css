@@ -1,11 +1,10 @@
 .container {
   list-style-type: none;
   margin:0;
-  padding:0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, max-content));
   grid-gap: 1em;
-  padding: 1em;
+  padding: 0 1em;
 }
 .link{
   display:block;

@@ -50,6 +50,7 @@ export default function Entry() {
             isInLibary: false,
             settings: settings || {
               volume: 10,
+              playback: 1,
               isSkip: { intro: true, outro: true },
               preferredSubs: '',
               preferredQual: 0,
