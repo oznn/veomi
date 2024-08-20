@@ -1,35 +1,80 @@
 import { Buffer } from 'buffer';
 import rc4Encrypt from '../../utils/rc4Encrypt';
+import { encodeBase64URL, decodeBase64URL } from '../../utils/base64';
 
-function decodeUrl(inp: string): string {
-  let input = inp.replace(/-/g, '+').replace(/_/g, '/');
-  const pad = input.length % 4;
-  if (pad) {
-    if (pad === 1) throw new Error('InvalidLengthError');
-    input += new Array(5 - pad).join('=');
-  }
-  return input;
+function exchange(input: string, key1: string, key2: string) {
+  const f = (c: string) => {
+    const i = key1.indexOf(c);
+    return i !== -1 ? key2[i] : c;
+  };
+
+  return input.split('').map(f).join('');
 }
 
-// function vrfShift(vrf: Buffer) {
-//   const shifts = [-2, -4, -5, 6, 2, -3, 3, 6];
-//   for (let i = 0; i < vrf.length; i += 1) {
-//     const shift = shifts[i % 8];
-//     vrf[i] = (vrf[i] + shift) & 0xff; // eslint-disable-line no-bitwise
-//   }
-//   return vrf;
-// }
+export async function vrfEncrypt(input: string) {
+  let vrf = input;
+  const res = await fetch('https://rowdy-avocado.github.io/multi-keys/');
+  const { aniwave } = (await res.json()) as {
+    aniwave: { sequence: number; method: string; keys?: string[] }[];
+  };
 
-export function vrfEncrypt(input: string) {
-  const rc4 = rc4Encrypt('T78s2WjTc7hSIZZR', Buffer.from(input));
-  const vrf = decodeUrl(rc4.toString('base64'));
-  // const vrf1 = Buffer.from(vrf).toString('base64');
-  // const vrf2 = vrfShift(Buffer.from(vrf1)).reverse();
-  // const vrf3 = decodeUrl(vrf2.toString('base64'));
-  const vrf4 = new TextDecoder('utf-8').decode(Buffer.from(vrf));
-  return encodeURIComponent(vrf4);
+  aniwave
+    .sort((a, b) => a.sequence - b.sequence)
+    .forEach(({ method, keys }) => {
+      switch (method) {
+        case 'exchange':
+          vrf = exchange(vrf, keys?.at(0) || '', keys?.at(1) || '');
+          break;
+        case 'rc4':
+          vrf = rc4Encrypt(keys?.at(0) || '', Buffer.from(vrf)).toString(
+            'base64',
+          );
+          break;
+        case 'reverse':
+          vrf = vrf.split('').reverse().join('');
+          break;
+        case 'base64':
+          vrf = encodeBase64URL(vrf);
+          break;
+        default:
+        // no default
+      }
+    });
+
+  return encodeURIComponent(vrf);
 }
-export function vrfDecrypt(input: string) {
-  const rc4 = rc4Encrypt('ctpAbOz5u7S6OMkx', Buffer.from(input, 'base64'));
-  return decodeURIComponent(new TextDecoder('utf-8').decode(rc4));
+
+export async function vrfDecrypt(input: string) {
+  let vrf = input;
+  const res = await fetch('https://rowdy-avocado.github.io/multi-keys/');
+  const { aniwave } = (await res.json()) as {
+    aniwave: { sequence: number; method: string; keys?: string[] }[];
+  };
+
+  if (aniwave)
+    aniwave
+      .sort((a, b) => b.sequence - a.sequence)
+      .forEach(({ method, keys }) => {
+        switch (method) {
+          case 'exchange':
+            vrf = exchange(vrf, keys?.at(1) || '', keys?.at(0) || '');
+            break;
+          case 'rc4':
+            vrf = rc4Encrypt(
+              keys?.at(0) || '',
+              Buffer.from(vrf, 'base64'),
+            ).toString();
+            break;
+          case 'reverse':
+            vrf = vrf.split('').reverse().join('');
+            break;
+          case 'base64':
+            vrf = decodeBase64URL(vrf);
+            break;
+          default:
+          // no default
+        }
+      });
+
+  return vrf;
 }

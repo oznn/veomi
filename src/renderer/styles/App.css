@@ -58,11 +58,12 @@ button:enabled{
   font-weight:bold;
 }
 nav {
+  z-index: 1;
   position:sticky;
   display:flex;
   justify-content:space-between;
   top:0;
-background-color: rgba(0, 0, 0, 0.6);
+  background-color: #111111cc;
   backdrop-filter: blur(5px);
   padding:.4em 1em;
 }
@@ -87,11 +88,16 @@ nav select,nav input{
   padding:0 .2em;
   border: solid 3px grey;
   border-radius: .2em;
+  background: none;
+}
+nav select option{
+  color: grey;
+  background: #111;
 }
 nav input{
   transition: border 200ms ease;
   padding:0 .4em;
 }
-nav select:focus{
+nav select:focus, nav input:focus{
   border:solid 3px white;
 }

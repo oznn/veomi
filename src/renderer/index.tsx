@@ -29,7 +29,7 @@ window.electron.ipcRenderer.on('ffmpeg-download', async () => {
   const { getServers, getVideo } = await import(
     `./extensions/${entry.result.ext}`
   );
-  const servers = (await getServers(entry.episodes[episodeIdx])) as Server[];
+  const servers = (await getServers(entry.episodes[episodeIdx].id)) as Server[];
   const preferredServ = servers.findIndex(
     ({ name }) => name === entry.settings.preferredServ,
   );

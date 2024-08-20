@@ -101,7 +101,6 @@ export default function Player({
   }, [trackIdx]);
   useEffect(() => {
     if (videoRef.current) {
-      console.log('playback', playback);
       videoRef.current.playbackRate = playback;
       entry.settings.playback = playback;
       store.set(`entries.${entry.key}.settings.playback`, playback);

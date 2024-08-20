@@ -16,6 +16,7 @@ function Results({ results }: { results: Result[] }) {
         No results found
       </span>
     );
+
   return (
     <ul className={resultsStyles.container}>
       {results.map((result) => (
@@ -42,14 +43,14 @@ export default function Browse() {
   const query = searchParams.get('query') || '';
 
   useEffect(() => {
-    if (!query) return;
+    setResults(null);
     (async () => {
       electron.ipcRenderer.sendMessage('change-origin');
       const { getResults } = await import(`../../extensions/${ext}`);
 
       setResults((await getResults(query)) as Result[]);
     })();
-  }, [query]);
+  }, [ext, query]);
 
   return (
     <div>

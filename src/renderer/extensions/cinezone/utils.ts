@@ -11,14 +11,14 @@ function decodeUrl(inp: string): string {
   return input;
 }
 
-function vrfShift(vrf: Buffer) {
-  const shifts = [-2, -4, -5, 6, 2, -3, 3, 6];
-  for (let i = 0; i < vrf.length; i += 1) {
-    const shift = shifts[i % 8];
-    vrf[i] = (vrf[i] + shift) & 0xff; // eslint-disable-line no-bitwise
-  }
-  return vrf;
-}
+// function vrfShift(vrf: Buffer) {
+//   const shifts = [-2, -4, -5, 6, 2, -3, 3, 6];
+//   for (let i = 0; i < vrf.length; i += 1) {
+//     const shift = shifts[i % 8];
+//     vrf[i] = (vrf[i] + shift) & 0xff; // eslint-disable-line no-bitwise
+//   }
+//   return vrf;
+// }
 
 export function vrfEncrypt(input: string) {
   const rc4 = rc4Encrypt('Ex3tc7qjUz7YlWpQ', Buffer.from(input));

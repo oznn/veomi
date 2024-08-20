@@ -1,4 +1,4 @@
-import { vrfEncrypt, vrfDecrypt } from './utils';
+import { encrypt, decrypt } from '../../utils/vrf';
 import vidsrcExtractor from '../../extractors/vidsrc';
 import mp4uploadExtractor from '../../extractors/mp4upload';
 import { Result, Episode, Server, Details, Video, Skips } from '../../types';
@@ -28,6 +28,14 @@ const months = [
 ];
 for (let i = 0; i < 12; i += 1) seasonMap.set(months[i], seasons[f(i / 3)]);
 
+let targets: { [key: string]: any[] } = {};
+async function getTarget(t: string) {
+  if (Object.keys(targets).length) return targets[t];
+  const targetsURL = 'https://rowdy-avocado.github.io/multi-keys/';
+  targets = await (await fetch(targetsURL)).json();
+  return targets[t];
+}
+
 export async function getResults(query: string): Promise<Result[]> {
   const res = await fetch(`${baseURL}/filter?keyword=${query}`);
   const doc = parse(await res.text());
@@ -55,10 +63,12 @@ export async function getResults(query: string): Promise<Result[]> {
 
 export async function getEpisodes(result: Result): Promise<Episode[]> {
   const { dataId } = result;
-  const vrf = vrfEncrypt(result.dataId);
+  const target = await getTarget(ext);
+  const vrf = encrypt(target, dataId);
   const reqUrl = `${baseURL}/ajax/episode/list/${dataId}?vrf=${vrf}`;
   const res = await fetch(reqUrl);
   const data = await res.json();
+  console.log(data);
   const doc = parse(data.result);
 
   const episodes: Episode[] = [];
@@ -125,13 +135,15 @@ query ($id: Int, $search: String, $season: MediaSeason, $seasonYear: Int) {
 }
 
 export async function getServers(episodeId: string): Promise<Server[]> {
-  const vrf = vrfEncrypt(episodeId);
+  const target = await getTarget(ext);
+  console.log('target', target);
+  const vrf = encrypt(target, episodeId);
   const reqUrl = `${baseURL}/ajax/server/list/${episodeId}?vrf=${vrf}`;
   const res = await fetch(reqUrl);
   const html = (await res.json()).result;
   const doc = parse(html);
   const servers: Server[] = [];
-  const supportedServers = ['MP4u', 'Vidstream', 'MegaF'];
+  const supportedServers = ['MP4u', 'Vidplay', 'MegaF'];
 
   doc.querySelectorAll('.type').forEach((server) => {
     const type = server.getAttribute('data-type');
@@ -148,24 +160,28 @@ export async function getServers(episodeId: string): Promise<Server[]> {
 
 export async function getVideo(server: Server): Promise<Video> {
   const serverName = server.name ? server.name.split(' ')[1] : '';
-  const vrf = vrfEncrypt(server.id);
+  const target = await getTarget(ext);
+  const vrf = encrypt(target, server.id);
   const reqUrl = `${baseURL}/ajax/server/${server.id}?vrf=${vrf}`;
   const res = await fetch(reqUrl);
   const { result } = await res.json();
-  const embedUrl = vrfDecrypt(result.url);
-  const skips = vrfDecrypt(result.skip_data);
-  const origin = `https://${new URL(embedUrl).hostname}`;
+  const embedURL = decrypt(targets[ext], result.url);
+  const skips = decrypt(targets[ext], result.skip_data);
+  const origin = `https://${new URL(embedURL).hostname}`;
 
   electron.ipcRenderer.sendMessage('change-origin', origin);
 
   switch (serverName) {
-    case 'Vidstream':
+    case 'Vidplay':
     case 'MegaF': {
-      const { sources, tracks } = await vidsrcExtractor(embedUrl);
+      const { sources, tracks } = await vidsrcExtractor(
+        embedURL,
+        targets.vidplay,
+      );
       return { sources, tracks, skips: JSON.parse(skips) as Skips };
     }
     case 'MP4u': {
-      const sources = await mp4uploadExtractor(embedUrl);
+      const sources = await mp4uploadExtractor(embedURL);
       return { sources, skips: JSON.parse(skips) as Skips };
     }
     default:

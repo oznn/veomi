@@ -73,7 +73,6 @@ export default function Watch() {
   }, [entry, episodeIdx]);
 
   useEffect(() => {
-    setErr('');
     if (serverIdx === -1 || !servers || video) return;
     if (container.current && !document.fullscreenElement)
       container.current.requestFullscreen();
@@ -87,8 +86,10 @@ export default function Watch() {
       try {
         const res = await getVideo(servers[serverIdx]);
 
-        if (res) setVideo(res);
-        else setErr('Selected server is not working');
+        if (res) {
+          setVideo(res);
+          setErr('');
+        } else setErr('Selected server is not working');
       } catch (e) {
         setErr('Selected server is not working');
       }

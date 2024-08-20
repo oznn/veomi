@@ -109,7 +109,7 @@ export async function getServers(episodeId: string) {
     const name = e.querySelector('a')?.innerHTML || '';
 
     if (supportedServers.includes(name))
-      servers.push({ id, name: `[${type}]${name}` });
+      servers.push({ id, name: `[${type}] ${name}` });
   });
 
   return servers;

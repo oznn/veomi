@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer';
 
-export default function rc4Encrypt(key: string, message: Buffer) {
+export default function rc4Encrypt(key: string, input: Buffer) {
   const S = Array.from(Array(256).keys());
   let j = 0;
   for (let i = 0; i < 256; i += 1) {
@@ -11,8 +11,8 @@ export default function rc4Encrypt(key: string, message: Buffer) {
   const out: number[] = [];
   let i = 0;
   j = 0;
-  for (let n = 0; n < message.length; n += 1) {
-    const char = message[n];
+  for (let n = 0; n < input.length; n += 1) {
+    const char = input[n];
     i = (i + 1) % 256;
     j = (j + S[i]) % 256;
     [S[i], S[j]] = [S[j], S[i]];

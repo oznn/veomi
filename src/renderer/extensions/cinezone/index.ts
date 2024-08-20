@@ -1,5 +1,5 @@
 import { Details, Episode, Result, Server, Video } from '../../types';
-import { vrfDecrypt, vrfEncrypt } from './utils';
+import { decrypt, encrypt } from '../../utils/vrf';
 import vidsrcExtractor from '../../extractors/vidsrc';
 
 const baseURL = 'https://cinezone.to';
@@ -7,6 +7,14 @@ const ext = 'cinezone';
 const parser = new DOMParser();
 const parse = (html: string) => parser.parseFromString(html, 'text/html');
 const { electron } = window;
+
+let targets: { [key: string]: any[] } = {};
+async function getTarget(t: string) {
+  if (Object.keys(targets).length) return targets[t];
+  const targetsURL = 'https://rowdy-avocado.github.io/multi-keys/';
+  targets = await (await fetch(targetsURL)).json();
+  return targets[t];
+}
 
 export async function getResults(query: string): Promise<Result[]> {
   const res = await fetch(`${baseURL}/filter?keyword=${query}`);
@@ -38,7 +46,8 @@ export async function getDetails(result: Result): Promise<Details | undefined> {
 }
 export async function getEpisodes(result: Result): Promise<Episode[]> {
   const { dataId } = result;
-  const vrf = vrfEncrypt(result.dataId);
+  const target = await getTarget(ext);
+  const vrf = encrypt(target, result.dataId);
   const reqUrl = `${baseURL}/ajax/episode/list/${dataId}?vrf=${vrf}`;
   const res = await fetch(reqUrl);
   const data = await res.json();
@@ -71,7 +80,8 @@ export async function getEpisodes(result: Result): Promise<Episode[]> {
   return episodes;
 }
 export async function getServers(episodeId: string): Promise<Server[]> {
-  const vrf = vrfEncrypt(episodeId);
+  const target = await getTarget(ext);
+  const vrf = encrypt(target, episodeId);
   const reqUrl = `${baseURL}/ajax/server/list/${episodeId}?vrf=${vrf}`;
   const res = await fetch(reqUrl);
   const { result } = await res.json();
@@ -82,7 +92,7 @@ export async function getServers(episodeId: string): Promise<Server[]> {
   doc.querySelectorAll('.server').forEach((e) => {
     const id = e.getAttribute('data-link-id') || '';
     const serverName = e.querySelector('span')?.textContent || '';
-    if (supportedServers)
+    if (supportedServers.includes(serverName))
       servers.push({
         name: `[softsub] ${serverName}`,
         id,
@@ -93,11 +103,13 @@ export async function getServers(episodeId: string): Promise<Server[]> {
   return servers;
 }
 export async function getVideo(server: Server): Promise<Video> {
-  const vrf = vrfEncrypt(server.id);
+  const target = await getTarget(ext);
+  const vidplay = await getTarget('vidplay');
+  const vrf = encrypt(target, server.id);
   const reqUrl = `${baseURL}/ajax/server/${server.id}?vrf=${vrf}`;
   const res = await fetch(reqUrl);
   const { result } = await res.json();
-  const embedUrl = vrfDecrypt(result.url);
+  const embedUrl = decrypt(target, result.url);
   const skips = result.skip_data;
   const origin = `https://${new URL(embedUrl).hostname}`;
 
@@ -106,7 +118,7 @@ export async function getVideo(server: Server): Promise<Video> {
   switch (server.name.split(' ')[1]) {
     case 'VidCloud':
     case 'MegaCloud': {
-      const { sources } = await vidsrcExtractor(embedUrl);
+      const { sources } = await vidsrcExtractor(embedUrl, vidplay);
       const subsURL = `${baseURL}/ajax/episode/subtitles/${server.episodeId}`;
       const tracks = await (await fetch(subsURL)).json();
       return { sources, tracks, skips };
