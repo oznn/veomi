@@ -1,6 +1,7 @@
 import { encrypt, decrypt } from '../../utils/vrf';
-import vidsrcExtractor from '../../extractors/vidsrc';
-import mp4uploadExtractor from '../../extractors/mp4upload';
+import vidplay from '../../extractors/vidplay';
+import filemoon from '../../extractors/filemoon';
+import mp4upload from '../../extractors/mp4upload';
 import { Result, Episode, Server, Details, Video, Skips } from '../../types';
 import { anilist } from '../../utils/details';
 
@@ -27,6 +28,12 @@ const months = [
   'Nov',
 ];
 for (let i = 0; i < 12; i += 1) seasonMap.set(months[i], seasons[f(i / 3)]);
+const serverIds: { [key: string]: string } = {
+  '41': 'Vidplay',
+  '28': 'Mycloud',
+  '44': 'Filemoon',
+  '35': 'Mp4upload',
+};
 
 let targets: { [key: string]: any[] } = {};
 async function getTarget(t: string) {
@@ -141,15 +148,15 @@ export async function getServers(episodeId: string): Promise<Server[]> {
   const html = (await res.json()).result;
   const doc = parse(html);
   const servers: Server[] = [];
-  const supportedServers = ['MP4u', 'Vidplay', 'MegaF'];
 
   doc.querySelectorAll('.type').forEach((server) => {
     const type = server.getAttribute('data-type');
     server.querySelectorAll('li').forEach((li) => {
       const id = li.getAttribute('data-link-id') || '';
-      const serverName = li.textContent || '';
-      if (supportedServers.includes(serverName))
-        servers.push({ name: `[${type}] ${serverName}`, id });
+      const dataId = li.getAttribute('data-sv-id') || '';
+      console.log(dataId);
+      if (Object.keys(serverIds).includes(dataId))
+        servers.push({ name: `[${type}] ${serverIds[dataId]}`, id, dataId });
     });
   });
 
@@ -157,7 +164,6 @@ export async function getServers(episodeId: string): Promise<Server[]> {
 }
 
 export async function getVideo(server: Server): Promise<Video> {
-  const serverName = server.name ? server.name.split(' ')[1] : '';
   const target = await getTarget(ext);
   const vrf = encrypt(target, server.id);
   const reqUrl = `${baseURL}/ajax/server/${server.id}?vrf=${vrf}`;
@@ -169,17 +175,19 @@ export async function getVideo(server: Server): Promise<Video> {
 
   electron.ipcRenderer.sendMessage('change-origin', origin);
 
-  switch (serverName) {
-    case 'Vidplay':
-    case 'MegaF': {
-      const { sources, tracks } = await vidsrcExtractor(
-        embedURL,
-        targets.vidplay,
-      );
+  console.log(server.dataId);
+  switch (server.dataId) {
+    case '41':
+    case '28': {
+      const { sources, tracks } = await vidplay(embedURL, targets.vidplay);
       return { sources, tracks, skips: JSON.parse(skips) as Skips };
     }
-    case 'MP4u': {
-      const sources = await mp4uploadExtractor(embedURL);
+    case '44': {
+      const { sources } = await filemoon(embedURL);
+      return { sources, skips: JSON.parse(skips) as Skips };
+    }
+    case '35': {
+      const { sources } = await mp4upload(embedURL);
       return { sources, skips: JSON.parse(skips) as Skips };
     }
     default:

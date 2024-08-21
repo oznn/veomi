@@ -1,6 +1,6 @@
 import { Details, Episode, Result, Server, Video } from '../../types';
 import { decrypt, encrypt } from '../../utils/vrf';
-import vidsrc from '../../extractors/vidsrc';
+import vidplay from '../../extractors/vidplay';
 import filemoon from '../../extractors/filemoon';
 
 const baseURL = 'https://cinezone.to';
@@ -8,6 +8,11 @@ const ext = 'cinezone';
 const parser = new DOMParser();
 const parse = (html: string) => parser.parseFromString(html, 'text/html');
 const { electron } = window;
+const serverIds: { [key: string]: string } = {
+  '41': 'Vidplay',
+  '28': 'Mycloud',
+  '45': 'Filemoon',
+};
 
 let targets: { [key: string]: any[] } = {};
 async function getTarget(t: string) {
@@ -87,17 +92,18 @@ export async function getServers(episodeId: string): Promise<Server[]> {
   const res = await fetch(reqUrl);
   const { result } = await res.json();
   const doc = parse(result);
-  const supportedServers = ['VidCloud', 'MegaCloud', 'FMCloud'];
   const servers: Server[] = [];
 
   doc.querySelectorAll('.server').forEach((e) => {
     const id = e.getAttribute('data-link-id') || '';
-    const serverName = e.querySelector('span')?.textContent || '';
-    if (supportedServers.includes(serverName))
+    const dataId = e.getAttribute('data-id') || '';
+
+    if (Object.keys(serverIds).includes(dataId))
       servers.push({
-        name: `[softsub] ${serverName}`,
+        name: `[softsub] ${serverIds[dataId]}`,
         id,
         episodeId,
+        dataId,
       });
   });
 
@@ -105,13 +111,11 @@ export async function getServers(episodeId: string): Promise<Server[]> {
 }
 
 export async function getVideo(server: Server): Promise<Video> {
-  const target = await getTarget(ext);
-  const vidplay = await getTarget('vidplay');
-  const vrf = encrypt(target, server.id);
+  const vrf = encrypt(targets[ext], server.id);
   const reqUrl = `${baseURL}/ajax/server/${server.id}?vrf=${vrf}`;
   const res = await fetch(reqUrl);
   const { result } = await res.json();
-  const embedURL = decrypt(target, result.url);
+  const embedURL = decrypt(targets[ext], result.url);
   const skips = result.skip_data;
   const origin = `https://${new URL(embedURL).hostname}`;
   const subsURL = `${baseURL}/ajax/episode/subtitles/${server.episodeId}`;
@@ -119,13 +123,14 @@ export async function getVideo(server: Server): Promise<Video> {
 
   electron.ipcRenderer.sendMessage('change-origin', origin);
 
-  switch (server.name.split(' ')[1]) {
-    case 'VidCloud':
-    case 'MegaCloud': {
-      const { sources } = await vidsrc(embedURL, vidplay);
+  // switch (server.name.split(' ')[1]) {
+  switch (server.dataId) {
+    case '41':
+    case '28': {
+      const { sources } = await vidplay(embedURL, targets.vidplay);
       return { sources, tracks, skips };
     }
-    case 'FMCloud': {
+    case '45': {
       const { sources } = await filemoon(embedURL);
       return { sources, tracks, skips };
     }

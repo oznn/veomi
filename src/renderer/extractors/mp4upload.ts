@@ -6,5 +6,5 @@ export default async function extractor(embedUrl: string) {
   const arr = /\WHEIGHT=(\d+)/.exec(txt);
   const qual = arr ? Number(arr[1]) : 0;
 
-  return [{ file, qual }];
+  return { sources: [{ file, qual }] };
 }
