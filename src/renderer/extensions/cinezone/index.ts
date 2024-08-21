@@ -1,6 +1,7 @@
 import { Details, Episode, Result, Server, Video } from '../../types';
 import { decrypt, encrypt } from '../../utils/vrf';
-import vidsrcExtractor from '../../extractors/vidsrc';
+import vidsrc from '../../extractors/vidsrc';
+import filemoon from '../../extractors/filemoon';
 
 const baseURL = 'https://cinezone.to';
 const ext = 'cinezone';
@@ -86,7 +87,7 @@ export async function getServers(episodeId: string): Promise<Server[]> {
   const res = await fetch(reqUrl);
   const { result } = await res.json();
   const doc = parse(result);
-  const supportedServers = ['VidCloud', 'MegaCloud'];
+  const supportedServers = ['VidCloud', 'MegaCloud', 'FMCloud'];
   const servers: Server[] = [];
 
   doc.querySelectorAll('.server').forEach((e) => {
@@ -102,6 +103,7 @@ export async function getServers(episodeId: string): Promise<Server[]> {
 
   return servers;
 }
+
 export async function getVideo(server: Server): Promise<Video> {
   const target = await getTarget(ext);
   const vidplay = await getTarget('vidplay');
@@ -109,18 +111,22 @@ export async function getVideo(server: Server): Promise<Video> {
   const reqUrl = `${baseURL}/ajax/server/${server.id}?vrf=${vrf}`;
   const res = await fetch(reqUrl);
   const { result } = await res.json();
-  const embedUrl = decrypt(target, result.url);
+  const embedURL = decrypt(target, result.url);
   const skips = result.skip_data;
-  const origin = `https://${new URL(embedUrl).hostname}`;
+  const origin = `https://${new URL(embedURL).hostname}`;
+  const subsURL = `${baseURL}/ajax/episode/subtitles/${server.episodeId}`;
+  const tracks = await (await fetch(subsURL)).json();
 
   electron.ipcRenderer.sendMessage('change-origin', origin);
 
   switch (server.name.split(' ')[1]) {
     case 'VidCloud':
     case 'MegaCloud': {
-      const { sources } = await vidsrcExtractor(embedUrl, vidplay);
-      const subsURL = `${baseURL}/ajax/episode/subtitles/${server.episodeId}`;
-      const tracks = await (await fetch(subsURL)).json();
+      const { sources } = await vidsrc(embedURL, vidplay);
+      return { sources, tracks, skips };
+    }
+    case 'FMCloud': {
+      const { sources } = await filemoon(embedURL);
       return { sources, tracks, skips };
     }
     default:

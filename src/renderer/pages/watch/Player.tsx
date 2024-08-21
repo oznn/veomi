@@ -56,12 +56,8 @@ export default function Player({
         debug: false,
       });
 
-      const fileType = src.file.slice(
-        src.file.lastIndexOf('.') + 1,
-        src.file.length,
-      );
       if (videoRef.current) {
-        if (Hls.isSupported() && fileType === 'm3u8') {
+        if (Hls.isSupported() && src.file.includes('.m3u8')) {
           hls.loadSource(src.file);
           hls.attachMedia(videoRef.current);
           hls.on(Hls.Events.ERROR, (err) => {

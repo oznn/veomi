@@ -68,7 +68,6 @@ export async function getEpisodes(result: Result): Promise<Episode[]> {
   const reqUrl = `${baseURL}/ajax/episode/list/${dataId}?vrf=${vrf}`;
   const res = await fetch(reqUrl);
   const data = await res.json();
-  console.log(data);
   const doc = parse(data.result);
 
   const episodes: Episode[] = [];
@@ -136,7 +135,6 @@ query ($id: Int, $search: String, $season: MediaSeason, $seasonYear: Int) {
 
 export async function getServers(episodeId: string): Promise<Server[]> {
   const target = await getTarget(ext);
-  console.log('target', target);
   const vrf = encrypt(target, episodeId);
   const reqUrl = `${baseURL}/ajax/server/list/${episodeId}?vrf=${vrf}`;
   const res = await fetch(reqUrl);
