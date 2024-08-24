@@ -28,9 +28,7 @@ export type Episode = {
   isFiller?: boolean;
 };
 export type Details = {
-  posterURL: string;
-  status: string;
-  studio: string;
+  info: string[];
   description: string;
 };
 export type Entry = {

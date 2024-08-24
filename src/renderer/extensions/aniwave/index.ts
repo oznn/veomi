@@ -154,7 +154,6 @@ export async function getServers(episodeId: string): Promise<Server[]> {
     server.querySelectorAll('li').forEach((li) => {
       const id = li.getAttribute('data-link-id') || '';
       const dataId = li.getAttribute('data-sv-id') || '';
-      console.log(dataId);
       if (Object.keys(serverIds).includes(dataId))
         servers.push({ name: `[${type}] ${serverIds[dataId]}`, id, dataId });
     });
@@ -175,7 +174,6 @@ export async function getVideo(server: Server): Promise<Video> {
 
   electron.ipcRenderer.sendMessage('change-origin', origin);
 
-  console.log(server.dataId);
   switch (server.dataId) {
     case '41':
     case '28': {

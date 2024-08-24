@@ -17,11 +17,13 @@ export default function ActionButtons({ entry, rerender }: Props) {
   async function update() {
     setIsLoading(true);
 
-    const { getEpisodes } = await import(
+    const { getDetails, getEpisodes } = await import(
       `../../extensions/${entry.result.ext}`
     );
     const episodes = (await getEpisodes(entry.result)) || [];
+    const details = (await getDetails(entry.result)) || [];
 
+    entry.details = details;
     for (let i = 0; i < entry.episodes.length; i += 1) {
       entry.episodes[i].title = episodes[i].title;
       entry.episodes[i].info = episodes[i].info;
@@ -44,7 +46,11 @@ export default function ActionButtons({ entry, rerender }: Props) {
     }
   }
   return (
-    <div>
+    <div
+      style={{
+        display: 'flex',
+      }}
+    >
       <button
         className={styles.action}
         type="button"
@@ -58,7 +64,7 @@ export default function ActionButtons({ entry, rerender }: Props) {
         className={styles.action}
         onClick={() => nav(`/watch?key=${entry.key}`)}
       >
-        {entry.episodes.some((e) => e.isSeen) ? 'Resume' : 'Start'}
+        Watch
       </button>
       <button
         type="button"

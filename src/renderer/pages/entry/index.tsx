@@ -191,8 +191,8 @@ export default function Entry() {
               {selectedEpisodes.filter((e) => entry.episodes[e].isSeen).length *
                 2 >
               selectedEpisodes.length
-                ? 'Mark as unseen'
-                : 'Mark as seen'}
+                ? 'Unseen'
+                : 'Seen'}
             </button>
             <button type="button" onClick={download} className={styles.action}>
               {selectedEpisodes.filter(

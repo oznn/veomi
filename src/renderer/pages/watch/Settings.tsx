@@ -172,7 +172,7 @@ export default function Settings({
   function toggleIsSkip(part: 'intro' | 'outro') {
     const toggle = !entry.settings.isSkip[part];
     entry.settings.isSkip[part] = toggle;
-    store.set(`entries.${entry.key}.isSkip.${part}`, toggle);
+    store.set(`entries.${entry.key}.settings.isSkip.${part}`, toggle);
     rerender();
   }
 

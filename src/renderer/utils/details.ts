@@ -17,6 +17,9 @@ query ($id: Int) {
     }
     status(version: 2)
     description(asHtml: false)
+    averageScore
+    format
+    seasonYear
   }
 }
 `;
@@ -33,8 +36,13 @@ query ($id: Int) {
 
   return {
     posterURL: Media.coverImage.extraLarge as string,
-    status: Media.status as string,
-    studio: Media.studios.nodes[0]?.name as string,
+    info: [
+      Media.status as string,
+      Media.seasonYear as string,
+      Media.studios.nodes[0]?.name as string,
+      Media.format as string,
+      (Number(Media.averageScore as number) / 10).toFixed(2),
+    ],
     description: Media.description as string,
   };
 }

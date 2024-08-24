@@ -67,7 +67,6 @@ ipcMain.handle('ffmpeg-download', async (_, video: Video) => {
   const folder = `${downloadsDir}/${video.folderName}`;
   if (!existsSync(folder)) await mkdir(folder);
 
-  console.log('video', video);
   ffmpeg
     .input(video.source.file)
     .output(`${folder}/${video.fileName}.mp4`)

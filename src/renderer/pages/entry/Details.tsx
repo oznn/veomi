@@ -15,22 +15,18 @@ export default function Details({ entry, rerender }: Props) {
       <div className={styles.banner}>
         <div>
           <img
-            height={400}
-            src={entry.posterPath || details.posterURL}
+            src={entry.posterPath || entry.result.posterURL}
+            height={396}
             alt="poster"
           />
         </div>
         <div>
           <div className={styles.info}>
-            <span title={entry.result.title} className={styles.title}>
+            <h1 title={entry.result.title} className={styles.title}>
               {entry.result.title}
-            </span>
+            </h1>
             <span>
-              {[
-                details.status,
-                details.studio,
-                extensions[entry.result.ext].name,
-              ].join(' • ')}
+              {[extensions[entry.result.ext].name, ...details.info].join(' • ')}
             </span>
             <p dangerouslySetInnerHTML={{ __html: details.description }} />
           </div>
@@ -43,7 +39,7 @@ export default function Details({ entry, rerender }: Props) {
     <div className={styles.banner}>
       <div>
         <img
-          height={400}
+          height={396}
           src={entry.posterPath || entry.result.posterURL}
           alt="poster"
         />
@@ -53,6 +49,8 @@ export default function Details({ entry, rerender }: Props) {
           <span title={entry.result.title} className={styles.title}>
             {entry.result.title}
           </span>
+          <span>{extensions[entry.result.ext].name}</span>
+          <p />
         </div>
         <ActionButtons entry={entry} rerender={() => rerender()} />
       </div>

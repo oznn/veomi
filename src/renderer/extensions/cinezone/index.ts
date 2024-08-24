@@ -48,7 +48,15 @@ export async function getResults(query: string): Promise<Result[]> {
   return results;
 }
 export async function getDetails(result: Result): Promise<Details | undefined> {
-  return undefined;
+  const res = await fetch(`${baseURL}/ajax/film/tooltip/${result.dataId}`);
+  const doc = parse(await res.text());
+  const description = doc.querySelector('.description')?.innerHTML || '';
+  const meta = doc.querySelector('.meta')?.innerHTML || '';
+  const [year] = /(\d{4})/.exec(meta) || [''];
+  const [score] = /\d\.\d/.exec(meta) || [''];
+  const type = result.path.includes('/TV/') ? 'Series' : 'Movie';
+
+  return { info: [year, type, score], description };
 }
 export async function getEpisodes(result: Result): Promise<Episode[]> {
   const { dataId } = result;
