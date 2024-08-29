@@ -161,6 +161,7 @@ export default function Watch() {
             episodeIdx < entry.episodes.length - 1 &&
             changeEpisode(episodeIdx + 1)
           }
+          prev={() => changeEpisode(Math.max(0, episodeIdx - 1))}
         />
       )}
     </div>

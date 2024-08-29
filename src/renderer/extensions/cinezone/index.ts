@@ -54,7 +54,7 @@ export async function getDetails(result: Result): Promise<Details | undefined> {
   const meta = doc.querySelector('.meta')?.innerHTML || '';
   const [year] = /(\d{4})/.exec(meta) || [''];
   const [score] = /\d\.\d/.exec(meta) || [''];
-  const type = result.path.includes('/TV/') ? 'Series' : 'Movie';
+  const type = result.path.includes('/tv/') ? 'Series' : 'Movie';
 
   return { info: [year, type, score], description };
 }

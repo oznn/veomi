@@ -19,6 +19,7 @@ type Props = {
   isShowServers: boolean;
   setIsShowServers: (b: boolean) => void;
   next: () => void;
+  prev: () => void;
 };
 
 const { floor, max, min } = Math;
@@ -32,6 +33,7 @@ export default function Player({
   isShowServers,
   setIsShowServers,
   next,
+  prev,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { sources, tracks, skips } = video;
@@ -180,6 +182,12 @@ export default function Player({
           break;
         case ' ':
           playPause();
+          break;
+        case 'n':
+          next();
+          break;
+        case 'p':
+          prev();
           break;
         default:
         // no default
