@@ -9,6 +9,7 @@
  * When running `npm run build` or `npm run build:main`, this file is compiled to
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
+import crypto from 'crypto';
 import path from 'path';
 import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
 import { autoUpdater } from 'electron-updater';
@@ -20,6 +21,7 @@ import { Readable } from 'stream';
 import { finished } from 'stream/promises';
 import Ffmpeg from 'fluent-ffmpeg';
 import { resolveHtmlPath } from './util';
+import megacloudExtractor from './megacloudExtractor';
 
 class AppUpdater {
   constructor() {
@@ -130,6 +132,10 @@ ipcMain.handle(
   async (_, posterPath) =>
     posterPath && unlink(posterPath, (e) => console.log(e)),
 );
+ipcMain.handle('extractor-megacloud', (_, ciphered) =>
+  megacloudExtractor(ciphered),
+);
+
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
@@ -234,6 +240,7 @@ app
   .whenReady()
   .then(() => {
     createWindow();
+
     session.defaultSession.webRequest.onBeforeSendHeaders(
       { urls: ['*://*/*'] },
       (details, callback) => {

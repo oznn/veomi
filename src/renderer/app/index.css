@@ -1,0 +1,51 @@
+@font-face {
+  font-family: 'baloo2';
+  src: url('/assets/baloo2.ttf');
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: #111;
+  color: white;
+  font-size: 2em;
+  font-family: 'baloo2';
+  font-variant-numeric: tabular-nums;
+}
+
+a {
+  text-decoration: none;
+  outline: none;
+}
+
+button,
+input[type='text'] {
+  all: unset;
+}
+button:disabled{
+  opacity: .5;
+  pointer-events: none;
+}
+
+a,
+button {
+  cursor: pointer;
+}
+
+::-webkit-scrollbar {
+  width: 0.2em;
+  height: 0.2em;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-corner {
+  background: rgba(0, 0, 0, 0);
+}

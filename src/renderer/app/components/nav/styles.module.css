@@ -1,0 +1,45 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 1;
+  position: sticky;
+  top: 0;
+  background-color: #111111cc;
+  backdrop-filter: blur(20px);
+  padding: .5em;
+}
+
+.container div {
+  display: flex;
+  gap: .4em;
+}
+
+.container button {
+  display: grid;
+  place-items: center;
+}
+
+.container button img {
+  opacity: .5;
+}
+
+.container button img:hover,
+.container button:focus-visible>img {
+  opacity: 1;
+}
+
+.container a {
+  color: grey;
+}
+
+.container a:hover,
+.container a:focus-visible {
+  color: white;
+}
+
+.container input[type='text'] {
+  border: solid 3px grey;
+  border-radius: 10px;
+  padding: 0 .2em;
+}

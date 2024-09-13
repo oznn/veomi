@@ -1,0 +1,128 @@
+.container {
+  padding: .5em 1em;
+}
+
+.details {
+  display: flex;
+  gap: .5em;
+}
+
+.info span {
+  text-overflow: scroll;
+  display: -webkit-box;
+  line-clamp: 1;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.info p {
+  height: 200px;
+  overflow: scroll;
+  color: lightgrey;
+  line-height: 1.2em;
+  margin: .4em 0 0 0;
+  font-size: .8em;
+}
+
+.title {
+  line-height: 1em;
+  font-size: 1.5em;
+  font-weight: 500;
+  margin: 0;
+  padding: 0;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  line-clamp: 1;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.container ul {
+  padding: 0 1em;
+}
+
+
+
+
+.button {
+  background-color: #333;
+  color: silver;
+  font-weight: 500;
+  border-radius: 9px;
+  transition: background 100ms ease;
+  margin: .4em .1em;
+  padding: .1em 1em;
+}
+
+.button:hover,
+.button:focus-visible {
+  background-color: #555;
+}
+
+.button:disabled {
+  background-color: #222;
+  color: grey;
+}
+
+.episodes button,
+.options button {
+  color: grey;
+  transition: color 200ms ease-in;
+  padding: 0 .1em;
+}
+
+.episodes button:hover,
+.options button:hover,
+.episodes button:focus-visible,
+.options button:focus-visible {
+  color: white;
+  transition: color 0s;
+}
+
+.episodes button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 .2em;
+}
+
+.episodes button span:nth-child(1) {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.options {
+  display: flex;
+  justify-content: space-between;
+  background-color: rgba(255, 255, 255, .1);
+  backdrop-filter: blur(20px);
+  padding: .2em .5em;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  width: 100%;
+  translate: -50% 0;
+  animation: pop 100ms ease 1;
+  transform-origin: bottom;
+}
+
+.options button {
+  display: inline;
+  margin: 0 .2em;
+}
+
+@keyframes pop {
+  0% {
+    scale: 1 0
+  }
+
+  100% {
+    scale: 1 1
+  }
+}

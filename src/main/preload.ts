@@ -53,6 +53,10 @@ const electronHandler = {
     // delete: (path: string | undefined) =>
     //   ipcRenderer.invoke('ffmpeg-delete', path),
   },
+  extractor: {
+    megacloud: (ciphered: string) =>
+      ipcRenderer.invoke('extractor-megacloud', ciphered),
+  },
   ipcRenderer: {
     sendMessage(channel: Channels, ...args: unknown[]) {
       ipcRenderer.send(channel, ...args);

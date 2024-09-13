@@ -1,0 +1,36 @@
+.details {
+  display: flex;
+  gap: .5em;
+}
+
+.info span {
+  text-overflow: scroll;
+  display: -webkit-box;
+  line-clamp: 1;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.info p {
+  height: 200px;
+  overflow: scroll;
+  color: lightgrey;
+  line-height: 1.2em;
+  margin: .4em 0 0 0;
+  font-size: .8em;
+}
+
+.title {
+  line-height: 1em;
+  font-size: 1.5em;
+  font-weight: 500;
+  margin: 0;
+  padding: 0;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  line-clamp: 1;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -1,0 +1,82 @@
+.container {
+  position: absolute;
+  bottom: 0em;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 2em;
+  opacity: 0;
+  transition: opacity 200ms;
+  gap: .8em;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 70%);
+  padding: 2em .5em 1.2em .5em;
+}
+
+.container:hover,
+.container:focus {
+  opacity: 1;
+}
+
+.bar {
+  height: .6em;
+  width: 100%;
+  position: relative;
+  cursor: pointer;
+  margin-bottom: .4em;
+}
+
+.bar>span:nth-child(1) {
+  background-color: rgba(255, 255, 255, .2);
+  height: .2em;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  border-radius: .1em;
+  overflow: hidden;
+}
+
+.bar>.progress>span {
+  background-color: white;
+  height: .4em;
+  position: absolute;
+  bottom: 0;
+  z-index: 1;
+  width: 100%;
+  scale: 0;
+  transform-origin: left;
+}
+
+.bar>.thumb {
+  background-color: white;
+  width: .2em;
+  height: .2em;
+  position: absolute;
+  transition: scale 200ms ease, opacity 200ms ease;
+  opacity: 0;
+  bottom: 0;
+  border-radius: 50%;
+}
+
+.bar:hover>.thumb {
+  scale: 3;
+  opacity: 1;
+}
+
+.bar>.timestamp {
+  position: relative;
+  display: inline-block;
+  inset: 0;
+  translate: -50% -2em;
+  background-color: rgba(0, 0, 0, .8);
+  padding: 0 .6em;
+  border-radius: .5em;
+  font-size: .8em;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  pointer-events: none;
+}
+
+.bar:hover>.timestamp {
+  opacity: 1;
+}

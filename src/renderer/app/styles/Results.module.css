@@ -1,0 +1,49 @@
+.container {
+  list-style-type: none;
+  margin:0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, max-content));
+  grid-gap: 1.5em 1em;
+  padding: 0 1em;
+}
+.link{
+  display:block;
+  margin: auto;
+  width:242px;
+  height:100%;
+  padding:10px;
+  transition: scale 100ms ease;
+  position:relative;
+  color:white;
+  background:rgba(255,255,255,.1);
+}
+/* the following hover animation was inspired by 4nglp */
+.link:hover,.link:focus-visible{
+  scale: 1.2;
+}
+.link span{
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size:.8em;
+}
+.container .link div{
+  width:222px;
+  height:333px;
+}
+.container img{
+  width:100%;
+  height:100%;
+}
+.remaining {
+  position:absolute;
+  right:.5em;
+  top:.5em;
+  padding: 0 .3em;
+  border-radius:.3em;
+  background:rgba(0,0,0,.8);
+  font-size:1px;
+}
