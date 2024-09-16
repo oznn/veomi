@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import arrowBack from '@assets/arrowback.png';
 import extensions from '../../../extensions';
 import styles from './styles.module.css';
@@ -10,6 +10,7 @@ export default function Nav() {
   const [selectedExt, setSelectedExt] = useState('');
   const [isShowOptions, setIsShowOptions] = useState(false);
   const nav = useNavigate();
+  const { pathname } = useLocation();
 
   useEffect(() => {
     document.onkeyup = ({ key }) => key === '/' && searchRef.current?.focus();
@@ -28,6 +29,7 @@ export default function Nav() {
             tabIndex={0}
             onClick={() => nav(-1)}
             onKeyUp={({ key }) => key === 'Enter' && nav(-1)}
+            disabled={pathname === '/'}
           >
             <img src={arrowBack} alt="icon" />
           </button>

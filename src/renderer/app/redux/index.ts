@@ -152,6 +152,13 @@ const app = createSlice({
         });
       }
     },
+    setMarkAsSeenPercent(state, action: PayloadAction<number>) {
+      if (state.entry) {
+        state.entry.settings.markAsSeenPercent = action.payload;
+        const k = `entries.${state.entry.key}.settings.markAsSeenPercent`;
+        electron.store.set(k, action.payload);
+      }
+    },
   },
 });
 
@@ -170,5 +177,6 @@ export const {
   setServerIdx,
   setEpisodes,
   toggleIsSeen,
+  setMarkAsSeenPercent,
 } = app.actions;
 export default app.reducer;

@@ -31,7 +31,8 @@ export default function Watch() {
 
   useEffect(() => {
     (async () => {
-      const { getServers } = await import(
+      // eslint-disable-next-line
+      const { getVideo, getServers } = await import(
         `../../../ext/extensions/${entry.result.ext}`
       );
       const list = (await getServers(

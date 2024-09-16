@@ -4,8 +4,8 @@
   background-color: #111111cc;
   backdrop-filter: blur(20px);
   padding: .5em 0;
-  height: 400px;
-  width: 400px;
+  height: 500px;
+  width: 500px;
   overflow: scroll;
   border-radius: .5em;
   transform-origin: top left;

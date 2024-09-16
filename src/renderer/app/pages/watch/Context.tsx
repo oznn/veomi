@@ -11,6 +11,7 @@ import {
   setPlayback,
   toggleAutoSkip,
   setEpisodeIdx,
+  setMarkAsSeenPercent,
 } from '../../redux';
 
 function Servers() {
@@ -124,7 +125,7 @@ function Playback() {
 
   return (
     <div style={{ padding: '0 .5em' }}>
-      <span style={{ color: 'grey', display: 'block', textAlign: 'center' }}>
+      <span style={{ display: 'block', textAlign: 'center' }}>
         {playback.toFixed(2)}x
       </span>
       <input
@@ -141,17 +142,51 @@ function Playback() {
   );
 }
 
+function MarkAsSeenPercent() {
+  const app = useAppSelector((state) => state.app);
+  const entry = app.entry as Entry;
+  const dispatch = useDispatch();
+
+  return (
+    <div style={{ textAlign: 'center' }}>
+      {'Mark as seen at '}
+      <input
+        style={{
+          border: 'solid 3px grey',
+          width: '3ch',
+          padding: '0 .2em',
+          borderRadius: '10px',
+          color: 'grey',
+        }}
+        type="number"
+        defaultValue={entry.settings.markAsSeenPercent}
+        onChange={(e) => {
+          e.target.value = `${Math.max(0, Math.min(+e.target.value, 100))}`;
+          dispatch(setMarkAsSeenPercent(+e.target.value));
+        }}
+      />
+      %
+    </div>
+  );
+}
+
 export default function Context({ x, y }: { x: number; y: number }) {
   const dispatch = useDispatch();
   const [settingIdx, setSettingIdx] = useState(-1);
-  const settings = [<Servers />, <Qualities />, <Playback />, <Subtitles />];
+  const settings = [
+    <Servers />,
+    <Qualities />,
+    <Playback />,
+    <MarkAsSeenPercent />,
+    <Subtitles />,
+  ];
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
   const video = app.video as Video;
   const server = app.server as { list: Server[]; idx: number };
   const { sourceIdx, trackIdx } = app;
-  const translateX = x + 400 > window.innerWidth ? '-100%' : '0';
-  const translateY = y + 400 > window.innerHeight ? '-100%' : '0';
+  const translateX = x + 500 > window.innerWidth ? '-100%' : '0';
+  const translateY = y + 500 > window.innerHeight ? '-100%' : '0';
   const transformOriginX = translateX === '0' ? 'left' : 'right';
   const transformOriginY = translateY === '0' ? 'top' : 'bottom';
   const transformOrigin = `${transformOriginX} ${transformOriginY}`;
@@ -234,9 +269,15 @@ export default function Context({ x, y }: { x: number; y: number }) {
           {entry.settings.playback.toFixed(2)}x
         </button>
       </div>
+      <div>
+        <button type="button" onClick={() => setSettingIdx(3)}>
+          <span className={styles.arrow} />
+          {entry.settings.markAsSeenPercent}%
+        </button>
+      </div>
       {video.tracks && (
         <div>
-          <button type="button" onClick={() => setSettingIdx(3)}>
+          <button type="button" onClick={() => setSettingIdx(4)}>
             <span className={styles.arrow} />
             {trackIdx > -1 ? video.tracks[trackIdx].label : 'Subtitles'}
           </button>

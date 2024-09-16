@@ -1,15 +1,16 @@
 import { useDispatch } from 'react-redux';
 import { Entry } from '@types';
+import { useNavigate } from 'react-router-dom';
 import extensions from '../../../extensions';
 import styles from './styles.module.css';
 import { useAppSelector } from '../../redux/store';
 import { addToLib, setEpisodeIdx } from '../../redux';
-// import ActionButtons from './ActionButtons';
 
 export default function Details() {
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
   const dispatch = useDispatch();
+  const nav = useNavigate();
 
   return (
     <div className={styles.details}>
@@ -57,6 +58,7 @@ export default function Details() {
                 ),
               ),
             );
+            nav('/watch');
           }}
         >
           {entry.episodes.some((e) => e.isSeen) ? 'RESUME' : 'START'}

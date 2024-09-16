@@ -3,7 +3,7 @@
   margin:0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, max-content));
-  grid-gap: 1.5em 1em;
+  gap: 42px;
   padding: 0 1em;
 }
 .link{

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Result, Entry as T } from '@types';
+import { Episode, Result, Entry as T } from '@types';
 import Details from './Details';
 import { useAppSelector } from '../../redux/store';
 import {
@@ -23,6 +23,7 @@ export default function Entry() {
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdatingEpisodes, setIsUpdatingEpisodes] = useState(false);
   const [selected, setSelected] = useState<number[]>([]);
+  const [order, setOrder] = useState(1);
   const nav = useNavigate();
 
   async function updateEpisodes() {
@@ -58,17 +59,17 @@ export default function Entry() {
       if (e) return dispatch(setEntry(e));
 
       setIsLoading(true);
-      const { getDetails, getEpisodes } = await import(
+      const { getEpisodes } = await import(
         `../../../ext/extensions/${result.ext}`
       );
-      const details = await getDetails(result);
+      // const details = await getDetails(result);
       const episodes = (await getEpisodes(result)) || [];
       const settings = await electron.store.get('settings');
       const res: T = {
         key: entryKey,
         result,
         episodes,
-        details,
+        details: undefined,
         isInLibary: false,
         settings: settings || {
           volume: 10,
@@ -104,23 +105,39 @@ export default function Entry() {
         >
           UPDATE
         </button>
+        <button
+          type="button"
+          className={styles.button}
+          style={{ fontSize: '.8em' }}
+          onClick={() => setOrder((v) => (v - 1 ? 1 : -1))}
+        >
+          {order - 1 ? 'ASC' : 'DESC'}
+        </button>
         <div className={styles.episodes}>
-          {entry.episodes.map((episode, i) => (
-            <button
-              type="button"
-              key={episode.title}
-              onClick={() => {
-                dispatch(setEpisodeIdx(i));
-                nav('/watch');
-              }}
-              title={episode.info && episode.info.join(' • ')}
-              onAuxClick={() => toggleSelect(i)}
-              style={{ background: selected.includes(i) ? '#333' : 'none' }}
-            >
-              <span style={{ background: episode.isSeen ? 'grey' : 'white' }} />
-              <span>{episode.title}</span>
-            </button>
-          ))}
+          {entry.episodes
+            .toSorted(() => order)
+            .map((episode, i) => (
+              <button
+                type="button"
+                key={episode.title}
+                onClick={() => {
+                  dispatch(
+                    setEpisodeIdx(
+                      order - 1 ? entry.episodes.length - i - 1 : i,
+                    ),
+                  );
+                  nav('/watch');
+                }}
+                title={episode.info && episode.info.join(' • ')}
+                onAuxClick={() => toggleSelect(i)}
+                style={{ background: selected.includes(i) ? '#333' : 'none' }}
+              >
+                <span
+                  style={{ background: episode.isSeen ? 'grey' : 'white' }}
+                />
+                <span>{episode.title}</span>
+              </button>
+            ))}
         </div>
 
         {selected.length > 0 && (
@@ -129,7 +146,13 @@ export default function Entry() {
               <button
                 type="button"
                 onClick={() => {
-                  dispatch(toggleIsSeen(selected));
+                  dispatch(
+                    toggleIsSeen(
+                      order - 1
+                        ? selected.map((e) => entry.episodes.length - e - 1)
+                        : selected,
+                    ),
+                  );
                   setSelected([]);
                 }}
               >
@@ -142,6 +165,7 @@ export default function Entry() {
             <div>
               <button
                 type="button"
+                disabled={selected.length === entry.episodes.length}
                 onClick={() =>
                   setSelected(
                     [...Array(entry.episodes.length)].map((_, i) => i),
@@ -165,7 +189,11 @@ export default function Entry() {
               </button>
               <button
                 type="button"
-                disabled={selected.length <= 1}
+                disabled={
+                  selected.length <= 1 ||
+                  Math.max(...selected) - Math.min(...selected) <
+                    selected.length
+                }
                 onClick={() => {
                   const max = Math.max(...selected);
                   const min = Math.min(...selected);
@@ -182,7 +210,3 @@ export default function Entry() {
       </div>
     );
 }
-
-// 12
-// [3,4] => [1,2,5,6,...,12]
-//

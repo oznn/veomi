@@ -23,10 +23,18 @@ a {
 }
 
 button,
+input[type='number'],
 input[type='text'] {
   all: unset;
 }
-button:disabled{
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+button:disabled {
   opacity: .5;
   pointer-events: none;
 }

@@ -18,15 +18,13 @@
 .container button {
   display: grid;
   place-items: center;
-}
-
-.container button img {
   opacity: .5;
 }
-
-.container button img:hover,
-.container button:focus-visible>img {
+.container button:hover{
   opacity: 1;
+}
+.container button:disabled{
+  opacity: .2;
 }
 
 .container a {
