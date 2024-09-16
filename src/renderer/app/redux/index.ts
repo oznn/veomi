@@ -12,6 +12,7 @@ type InitialState = {
   server: {
     idx: number;
     list: Server[] | null;
+    retries: 0;
   };
 };
 
@@ -110,6 +111,9 @@ const app = createSlice({
         electron.store.set(k, state.server.list[state.server.idx].name);
       }
     },
+    serverRetry: (state) => {
+      state.server.retries += 1;
+    },
     setVideo: (
       state,
       action: PayloadAction<{
@@ -178,5 +182,6 @@ export const {
   setEpisodes,
   toggleIsSeen,
   setMarkAsSeenPercent,
+  serverRetry,
 } = app.actions;
 export default app.reducer;

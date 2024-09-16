@@ -6,7 +6,12 @@ import { Video, Entry, Server } from '@types';
 import { useEffect, useRef, useState } from 'react';
 import ProgressBar from './ProgressBar';
 import { useAppSelector } from '../../redux/store';
-import { setEpisodeCurrentTime, setVolume, setEpisodeIdx } from '../../redux';
+import {
+  setEpisodeCurrentTime,
+  setVolume,
+  setEpisodeIdx,
+  serverRetry,
+} from '../../redux';
 import Context from './Context';
 import styles from './styles.module.css';
 
@@ -34,6 +39,7 @@ export default function Player() {
   const [context, setContext] = useState({ isShow: false, x: 0, y: 0 });
   const [isVideoLoading, setIsVideoLoading] = useState(false);
   const [textTracks, setTextTracks] = useState<TextTrack[] | null>(null);
+  const hls = new Hls({ debug: false });
 
   function changeVolume(v: number) {
     if (videoRef.current) {
@@ -51,13 +57,6 @@ export default function Player() {
       else if (!context.isShow) videoRef.current.pause();
     }
     setContext({ isShow: false, x: 0, y: 0 });
-  }
-  function next() {
-    if (episodeIdx < entry.episodes.length - 1)
-      dispatch(setEpisodeIdx(episodeIdx + 1));
-  }
-  function prev() {
-    if (episodeIdx > 0) dispatch(setEpisodeIdx(episodeIdx + 1));
   }
   document.onkeydown = ({ key }) => {
     if (videoRef.current)
@@ -91,11 +90,13 @@ export default function Player() {
           break;
         case 'n':
         case 'N':
-          next();
+          dispatch(
+            setEpisodeIdx(Math.min(entry.episodes.length - 1, episodeIdx + 1)),
+          );
           break;
         case 'p':
         case 'P':
-          prev();
+          dispatch(setEpisodeIdx(Math.max(0, episodeIdx + 1)));
           break;
         case 'e':
         case 'E':
@@ -105,15 +106,15 @@ export default function Player() {
         // no default
       }
   };
+
   useEffect(() => {
-    const hls = new Hls({ debug: false });
+    window.ononline = () => dispatch(serverRetry());
     if (videoRef.current) {
       if (source.file.includes('.m3u8')) {
+        console.log('source file', source.file);
         hls.loadSource(source.file);
         hls.attachMedia(videoRef.current);
-        hls.on(Hls.Events.ERROR, (err) => {
-          console.log(err);
-        });
+        hls.on(Hls.Events.ERROR, (_, data) => console.log('hlsErr', data.type));
       }
 
       videoRef.current.currentTime = episode.currentTime;
@@ -121,8 +122,10 @@ export default function Player() {
       videoRef.current.playbackRate = entry.settings.playback;
       videoRef.current.play();
     }
-
-    return () => hls.destroy();
+    return () => {
+      hls.destroy();
+      window.ononline = () => {};
+    };
   }, [source]);
   useEffect(() => {
     (async () => {
@@ -193,7 +196,9 @@ export default function Player() {
         }}
         onEnded={() => {
           electron.store.set(`${episodeKey}.currentTime`, 0);
-          next();
+          dispatch(
+            setEpisodeIdx(Math.min(entry.episodes.length - 1, episodeIdx + 1)),
+          );
         }}
         onMouseMove={() => {
           setIsShowCursor(true);

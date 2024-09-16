@@ -6,8 +6,9 @@ import { useNavigate } from 'react-router-dom';
 import { ReactNode, useEffect, useRef } from 'react';
 import { Entry, Server, Video } from '@types';
 import { useAppSelector } from '../../redux/store';
-import { setServer, setVideo } from '../../redux';
+import { setServer, setServerIdx, setVideo } from '../../redux';
 import Player from './Player';
+import styles from './styles.module.css';
 
 function Container({ children }: { children: ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -91,7 +92,28 @@ export default function Watch() {
   if (video === undefined)
     return (
       <Container>
+        <br />
+        <br />
         <Message msg="Selected server failed, try another" />
+        <div className={styles.servers}>
+          {server.list?.map(({ name }, i) => (
+            <button
+              type="button"
+              key={name}
+              onClick={() => dispatch(setServerIdx(i))}
+              disabled={server.idx === i}
+            >
+              <span
+                style={{
+                  opacity: server.idx === i ? 1 : 0,
+                  transform: `scale(${server.idx === i ? 1 : 3})`,
+                  borderRadius: '50%',
+                }}
+              />
+              {name}
+            </button>
+          ))}
+        </div>
       </Container>
     );
 

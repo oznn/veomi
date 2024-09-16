@@ -44,11 +44,6 @@
   transition: color 0s;
 }
 
-.container button:disabled {
-  opacity: .5;
-  pointer-events: none;
-}
-
 .container button>span {
   background: grey;
   width: .5em;

@@ -137,11 +137,7 @@ export async function getVideo(server: Server): Promise<Video> {
     : data.sources[0].file;
   const sources = await getSources(file);
 
-  console.log({
-    sources,
-    tracks,
-    skips: { intro: [intro.start, intro.end], outro: [outro.start, outro.end] },
-  });
+  console.log('sources', sources);
   return {
     sources,
     tracks,
