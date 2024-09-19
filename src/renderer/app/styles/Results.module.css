@@ -15,7 +15,7 @@
   transition: scale 100ms ease;
   position:relative;
   color:white;
-  background:rgba(255,255,255,.1);
+  background:#ffffff11;
 }
 /* the following hover animation was inspired by 4nglp */
 .link:hover,.link:focus-visible{

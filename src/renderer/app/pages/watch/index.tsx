@@ -31,19 +31,31 @@ export default function Watch() {
   const { episodeIdx, server, video } = app;
 
   useEffect(() => {
+    const { downloaded } = entry.episodes[episodeIdx];
     (async () => {
+      if (downloaded && !navigator.onLine) {
+        return dispatch(
+          setServer({ list: [{ name: 'local', id: '' }], idx: 0, retries: 0 }),
+        );
+      }
       // eslint-disable-next-line
       const { getVideo, getServers } = await import(
         `../../../ext/extensions/${entry.result.ext}`
       );
-      const list = (await getServers(
-        entry.episodes[episodeIdx].id,
-      )) as Server[];
-      const idx = list.findIndex(
-        ({ name }) => name === entry.settings.preferredServer,
-      );
+      const { preferredServer } = entry.settings;
+      const { id } = entry.episodes[episodeIdx];
+      const list = (await getServers(id)) as Server[];
+      const idx = list.findIndex(({ name }) => name === preferredServer);
 
-      dispatch(setServer({ list, idx: Math.max(0, idx) }));
+      if (downloaded)
+        dispatch(
+          setServer({
+            list: [{ name: 'local', id: '' }, ...list],
+            idx: 0,
+            retries: 0,
+          }),
+        );
+      else dispatch(setServer({ list, idx: Math.max(0, idx), retries: 0 }));
     })();
 
     return () => {
@@ -52,6 +64,9 @@ export default function Watch() {
   }, [episodeIdx]);
 
   useDidMountEffect(() => {
+    const { downloaded } = entry.episodes[episodeIdx];
+    if (downloaded && server.idx === 0)
+      return dispatch(setVideo({ video: downloaded, sourceIdx: 0 }));
     (async () => {
       try {
         const { getVideo } = await import(

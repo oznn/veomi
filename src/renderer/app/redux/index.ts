@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { Entry, Episode, Server, Video } from '../../types.d.ts';
+import type { Entry, Episode, Queue, Server, Video } from '../../types.d.ts';
 
 const { electron } = window;
 
@@ -14,6 +14,7 @@ type InitialState = {
     list: Server[] | null;
     retries: 0;
   };
+  queue: Queue | [];
 };
 
 const initialState = {
@@ -23,6 +24,7 @@ const initialState = {
   sourceIdx: 0,
   trackIdx: 0,
   server: { idx: 0, list: null },
+  queue: [],
 } as InitialState;
 
 const app = createSlice({
@@ -104,7 +106,11 @@ const app = createSlice({
     setServerIdx: (state, action: PayloadAction<number>) => {
       state.server.idx = action.payload;
       state.video = null;
-      if (state.server.list && state.entry) {
+      if (
+        state.entry &&
+        state.server.list &&
+        state.server.list[state.server.idx].name !== 'local'
+      ) {
         const k = `entries.${state.entry.key}.settings.preferredServer`;
         state.entry.settings.preferredServer =
           state.server.list[state.server.idx].name;
@@ -138,6 +144,9 @@ const app = createSlice({
         }
         for (let i = episodes.length; i < action.payload.length; i += 1)
           episodes.push(action.payload[i]);
+
+        const k = `entries.${state.entry.key}.episodes`;
+        electron.store.set(k, JSON.parse(JSON.stringify(state.entry.episodes)));
       }
     },
     toggleIsSeen(state, action: PayloadAction<number[]>) {
@@ -163,6 +172,22 @@ const app = createSlice({
         electron.store.set(k, action.payload);
       }
     },
+    setQueue(state, action: PayloadAction<Queue>) {
+      state.queue = action.payload;
+      electron.store.set('queue', action.payload);
+    },
+    setQueueProgress(state, action: PayloadAction<number>) {
+      state.queue[0].progress = action.payload;
+    },
+    resetEpisodesDownloads(state) {
+      if (state.entry) {
+        state.entry.episodes.forEach((e) => {
+          e.downloaded = undefined;
+        });
+        const k = `entries.${state.entry.key}.episodes`;
+        electron.store.set(k, JSON.parse(JSON.stringify(state.entry.episodes)));
+      }
+    },
   },
 });
 
@@ -183,5 +208,8 @@ export const {
   toggleIsSeen,
   setMarkAsSeenPercent,
   serverRetry,
+  setQueue,
+  setQueueProgress,
+  resetEpisodesDownloads,
 } = app.actions;
 export default app.reducer;

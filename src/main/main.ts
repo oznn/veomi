@@ -15,10 +15,11 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import Store from 'electron-store';
 import { existsSync, createWriteStream, unlink } from 'fs';
-import { mkdir } from 'fs/promises';
+import { mkdir, rm } from 'fs/promises';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
 import Ffmpeg from 'fluent-ffmpeg';
+import type { Video } from '../renderer/types.d.ts';
 import { resolveHtmlPath } from './util';
 import megacloudExtractor from './megacloudExtractor';
 
@@ -34,81 +35,59 @@ let mw: BrowserWindow | null = null;
 let origin: string | null = 'https://hianime.to';
 const store = new Store();
 
-type Video = {
+type VideoFile = {
   folderName: string;
   fileName: string;
-  episodeId: string;
   episodeKey: string;
-  source: {
-    file: string;
-    qual: string;
-  };
-  track: {
-    file: string;
-    label: string;
-  } | null;
-  skips: { intro: number[]; outro: number[] };
+  video: Video;
 };
 
 let ffmpeg: null | Ffmpeg.FfmpegCommand = null;
 ipcMain.handle('ffmpeg-start', () => mw?.webContents.send('ffmpeg-download'));
-ipcMain.handle('ffmpeg-stop', () => {
-  if (ffmpeg) {
-    ffmpeg.kill('SIGKILL');
-    store.set('ffmpegDownloading', '');
-    mw?.webContents.send('ffmpeg-download');
-  }
-});
-ipcMain.handle('ffmpeg-download', async (_, video: Video) => {
+ipcMain.handle('ffmpeg-download', async (_, videoFile: VideoFile) => {
   ffmpeg = Ffmpeg();
 
   const appDataDir = app.getPath('userData');
   const downloadsDir = path.join(appDataDir, 'downloads');
   if (!existsSync(downloadsDir)) await mkdir(downloadsDir);
-  const folder = `${downloadsDir}/${video.folderName}`;
+  const folder = `${downloadsDir}/${videoFile.folderName}`;
   if (!existsSync(folder)) await mkdir(folder);
 
   ffmpeg
-    .input(video.source.file)
-    .output(`${folder}/${video.fileName}.mp4`)
+    .input(videoFile.video.sources[0].file)
+    .output(`${folder}/${videoFile.fileName}.mp4`)
     // .addOption('-threads 1')
     .on('error', (err) => mw?.webContents.send('console-log', err))
     .on('progress', (progress) => {
-      // video.progress = Math.floor(progress.percent);
-      console.log(video.fileName, progress.percent);
-      mw?.webContents.send(
-        'ffmpeg-progress',
-        video.episodeId,
-        video.episodeKey,
-        progress.percent,
-      );
+      console.log(videoFile.fileName, progress.percent);
+      mw?.webContents.send('ffmpeg-progress', progress.percent);
     })
     .on('end', async () => {
-      store.set('ffmpegDownloading', '');
-      store.set(`${video.episodeKey}.download.isPending`, false);
-      store.set(`${video.episodeKey}.download.isCompleted`, true);
-      const vid = {
-        sources: [
-          { file: `${folder}/${video.fileName}.mp4`, qual: video.source.qual },
-        ],
-        skips: video.skips,
-      };
-      store.set(`${video.episodeKey}.download.video`, vid);
-      mw?.webContents.send('ffmpeg-ended', video.episodeId, video.episodeKey);
-      mw?.webContents.send('ffmpeg-download');
+      videoFile.video.sources[0].file = `${folder}/${videoFile.fileName}.mp4`;
+      if (videoFile.video.tracks) {
+        const { tracks } = videoFile.video;
+        const { body } = await fetch(tracks[0].file);
+        const filePath = `${folder}/${videoFile.fileName}.vtt`;
+        const stream = createWriteStream(filePath);
+
+        if (body) await finished(Readable.fromWeb(body as any).pipe(stream));
+        videoFile.video.tracks[0].file = filePath;
+      }
+      store.set(`${videoFile.episodeKey}.downloaded`, videoFile.video);
+      mw?.webContents.send('ffmpeg-download', true);
     })
     .run();
-  store.set('ffmpegDownloading', video.episodeKey);
+});
+ipcMain.handle('ffmpeg-stop', () => {
+  if (ffmpeg) {
+    ffmpeg.kill('SIGKILL');
+    mw?.webContents.send('ffmpeg-download');
+  }
 });
 ipcMain.on('change-origin', (_, newOrigin) => (origin = newOrigin)); //eslint-disable-line
 ipcMain.handle('store-get', (_, k) => store.get(k));
 ipcMain.handle('store-set', (_, k, v) => store.set(k, v));
 ipcMain.handle('store-delete', (_, k) => store.delete(k));
-ipcMain.handle('store-push', (_, k, v) => {
-  const a = (store.get(k) as unknown[]) || [];
-  a.push(v);
-  store.set(k, a);
-});
 ipcMain.handle('poster-download', async (_, url, entryKey) => {
   try {
     const appDataDir = app.getPath('userData');
@@ -134,6 +113,11 @@ ipcMain.handle(
 ipcMain.handle('extractor-megacloud', (_, ciphered) =>
   megacloudExtractor(ciphered),
 );
+ipcMain.handle('fs-remove', (_, folderPath) => {
+  rm(path.join(app.getPath('userData'), 'downloads', folderPath), {
+    recursive: true,
+  });
+});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -205,7 +189,6 @@ const createWindow = async () => {
   });
 
   mw.on('closed', () => {
-    // store.set('ffmpegDownloading', '');
     mw = null;
   });
 

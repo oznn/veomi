@@ -1,22 +1,26 @@
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Episode, Result, Entry as T } from '@types';
+import { Queue, Result, Entry as T } from '@types';
 import Details from './Details';
 import { useAppSelector } from '../../redux/store';
 import {
+  resetEpisodesDownloads,
   setEntry,
   setEpisodeIdx,
   setEpisodes,
+  setQueue,
   toggleIsSeen,
 } from '../../redux';
 import Loading from '../../components/loading';
 import styles from './styles.module.css';
+import extensions from '../../../extensions';
 
 const { electron } = window;
 
 export default function Entry() {
-  const { entry } = useAppSelector(({ app }) => app);
+  const app = useAppSelector((state) => state.app);
+  const { entry, queue } = app;
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const result = JSON.parse(searchParams.get('result') || '{}') as Result;
@@ -25,6 +29,9 @@ export default function Entry() {
   const [selected, setSelected] = useState<number[]>([]);
   const [order, setOrder] = useState(1);
   const nav = useNavigate();
+  const isCanDownload = selected
+    .map((e) => `entries.${entry?.key}.episodes.${e}`)
+    .some((k) => queue.findIndex((q) => q.episodeKey === k) === -1);
 
   async function updateEpisodes() {
     if (entry) {
@@ -38,7 +45,6 @@ export default function Entry() {
       if (episodes) {
         dispatch(setEpisodes(episodes));
         setIsUpdatingEpisodes(false);
-        electron.store.set(`entries.${entry.key}.episodes`, entry.episodes);
       }
     }
   }
@@ -89,8 +95,41 @@ export default function Entry() {
     })();
   }, []);
 
-  if (isLoading) return <Loading />;
+  function download() {
+    if (entry) {
+      const items: Queue = selected
+        .map((i) => (order - 1 ? entry.episodes.length - i - 1 : i))
+        .map((episodeIdx) => ({
+          entryKey: entry.key,
+          episodeIdx,
+          entryTitle: entry.result.title,
+          episodeKey: `entries.${entry.key}.episodes.${episodeIdx}`,
+          episodeTitle: entry.episodes[episodeIdx].title,
+          progress: 0,
+        }))
+        .filter(
+          (e) => queue.findIndex((q) => q.episodeKey === e.episodeKey) === -1,
+        );
 
+      dispatch(setQueue((queue as Queue).concat(items)));
+      setSelected([]);
+      electron.ffmpeg.start();
+    }
+  }
+
+  function removeDownloads() {
+    if (entry) {
+      electron.fs.remove(
+        `[${extensions[entry.result.ext].name}] ${entry.result.title.replace(
+          /[<>:"/\\|?*]/g,
+          ' ',
+        )}`,
+      );
+      dispatch(resetEpisodesDownloads());
+    }
+  }
+
+  if (isLoading) return <Loading />;
   if (entry)
     return (
       <div className={styles.container}>
@@ -112,6 +151,15 @@ export default function Entry() {
           onClick={() => setOrder((v) => (v - 1 ? 1 : -1))}
         >
           {order - 1 ? 'ASC' : 'DESC'}
+        </button>
+        <button
+          type="button"
+          onClick={removeDownloads}
+          disabled={!entry.episodes.some((e) => e.downloaded)}
+          style={{ fontSize: '.8em' }}
+          className={styles.button}
+        >
+          DELETE DOWNLOADS
         </button>
         <div className={styles.episodes}>
           {entry.episodes
@@ -135,6 +183,10 @@ export default function Entry() {
                 <span
                   style={{ background: episode.isSeen ? 'grey' : 'white' }}
                 />
+                {episode.downloaded && <span>DOWNLOADED</span>}
+                {queue.findIndex(
+                  (q) => q.episodeKey === `entries.${entry.key}.episodes.${i}`,
+                ) !== -1 && <span>IN QUEUE</span>}
                 <span>{episode.title}</span>
               </button>
             ))}
@@ -157,6 +209,13 @@ export default function Entry() {
                 }}
               >
                 toggle seen
+              </button>
+              <button
+                type="button"
+                onClick={download}
+                disabled={!isCanDownload}
+              >
+                download
               </button>
             </div>
             <div>

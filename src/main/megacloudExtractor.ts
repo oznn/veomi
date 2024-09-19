@@ -47,10 +47,10 @@ async function generateIndexPairs() {
     scriptText.indexOf('=partKey'),
   );
 
-  const indexes = [];
+  const indexes: number[] = [];
   const variableMatches = [...switchCode.matchAll(/=(\w+)/g)];
 
-  for (const variableMatch of variableMatches) {
+  variableMatches.forEach((variableMatch) => {
     const variable = variableMatch[1];
     const regex = new RegExp(`,${variable}=((?:0x)?([0-9a-fA-F]+))`);
     const match = scriptText.match(regex);
@@ -63,7 +63,7 @@ async function generateIndexPairs() {
         indexes.push(parseInt(value, 10));
       }
     }
-  }
+  });
 
   return chunked(indexes, 2);
 }
@@ -85,5 +85,5 @@ export default async function processCipheredData(ciphered: string) {
     index += length;
   }
 
-  return await decryptAESCryptoJS(ciphertext, password);
+  return decryptAESCryptoJS(ciphertext, password);
 }

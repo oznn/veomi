@@ -61,11 +61,6 @@
   background-color: #555;
 }
 
-.button:disabled {
-  background-color: #222;
-  color: grey;
-}
-
 .episodes button,
 .options button {
   color: grey;

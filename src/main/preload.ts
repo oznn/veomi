@@ -1,6 +1,7 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import type { Video } from '../renderer/types.d.ts';
 
 export type Channels =
   | 'change-origin'
@@ -9,22 +10,11 @@ export type Channels =
   | 'ffmpeg-download'
   | 'console-log';
 
-type Video = {
+type VideoFile = {
   folderName: string;
   fileName: string;
-  episodeId: string;
   episodeKey: string;
-  source: {
-    file: string;
-    qual: number;
-  };
-  track:
-    | {
-        file: string;
-        label: string;
-      }
-    | undefined;
-  skips: { intro: number[]; outro: number[] };
+  video: Video;
 };
 
 const electronHandler = {
@@ -49,13 +39,17 @@ const electronHandler = {
   ffmpeg: {
     start: () => ipcRenderer.invoke('ffmpeg-start'),
     stop: () => ipcRenderer.invoke('ffmpeg-stop'),
-    download: (video: Video) => ipcRenderer.invoke('ffmpeg-download', video),
+    download: (videoFile: VideoFile) =>
+      ipcRenderer.invoke('ffmpeg-download', videoFile),
     // delete: (path: string | undefined) =>
     //   ipcRenderer.invoke('ffmpeg-delete', path),
   },
   extractor: {
     megacloud: (ciphered: string) =>
       ipcRenderer.invoke('extractor-megacloud', ciphered),
+  },
+  fs: {
+    remove: (path: string) => ipcRenderer.invoke('fs-remove', path),
   },
   ipcRenderer: {
     sendMessage(channel: Channels, ...args: unknown[]) {

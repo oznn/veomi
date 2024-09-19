@@ -37,7 +37,7 @@
 }
 
 .bar>.progress>span {
-  background-color: white;
+  background: linear-gradient(to left, white 0%, silver 10%);
   height: .4em;
   position: absolute;
   bottom: 0;

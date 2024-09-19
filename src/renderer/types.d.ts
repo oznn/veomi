@@ -48,3 +48,12 @@ export type Server = {
   id: string;
   [key: string]: any;
 };
+
+export type Queue = {
+  entryKey: string;
+  episodeKey: string;
+  episodeIdx: number;
+  entryTitle: string;
+  episodeTitle: string;
+  progress: number;
+}[];

@@ -1,0 +1,38 @@
+.options {
+  display: flex;
+  justify-content: space-between;
+  background: #222;
+  padding: .2em .5em;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  width: 100%;
+  translate: -50% 0;
+  animation: pop 100ms ease 1;
+  transform-origin: bottom;
+}
+
+.options button {
+  color: grey;
+  transition: color 200ms ease-in;
+  padding: 0 .1em;
+  padding: 0 .2em;
+}
+
+.options button:hover,
+.options button:focus-visible {
+  color: white;
+  transition: color 0s;
+}
+
+@keyframes pop {
+  0% {
+    scale: 1 0
+  }
+
+  100% {
+    scale: 1 1
+  }
+}

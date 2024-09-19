@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import arrowBack from '@assets/arrowback.png';
 import extensions from '../../../extensions';
 import styles from './styles.module.css';
+import { useAppSelector } from '../../redux/store';
 
 const { electron } = window;
 export default function Nav() {
@@ -11,6 +12,8 @@ export default function Nav() {
   const [isShowOptions, setIsShowOptions] = useState(false);
   const nav = useNavigate();
   const { pathname } = useLocation();
+  const app = useAppSelector((state) => state.app);
+  const { queue } = app;
 
   useEffect(() => {
     document.onkeyup = ({ key }) => key === '/' && searchRef.current?.focus();
@@ -34,7 +37,7 @@ export default function Nav() {
             <img src={arrowBack} alt="icon" />
           </button>
           <Link to="/">Libary</Link>
-          <Link to="/downloads">Downloads</Link>
+          <Link to="/downloads">Downloads({queue.length})</Link>
         </div>
         <div>
           {/* <div>

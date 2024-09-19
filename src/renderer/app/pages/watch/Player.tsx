@@ -220,7 +220,7 @@ export default function Player() {
       </span>
 
       {textTracks && trackIdx > -1 && (
-        <pre
+        <span
           className={styles.subtitles}
           // eslint-disable-next-line
           dangerouslySetInnerHTML={{
