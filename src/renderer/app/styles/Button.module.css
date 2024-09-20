@@ -1,0 +1,14 @@
+.container {
+  background-color: #333;
+  color: silver;
+  font-weight: 500;
+  border-radius: 9px;
+  transition: background 100ms ease;
+  margin: .4em .1em;
+  padding: .1em 1em;
+}
+
+.container:hover,
+.container:focus-visible {
+  background-color: #555;
+}

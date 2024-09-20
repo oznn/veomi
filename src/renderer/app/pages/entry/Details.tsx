@@ -1,6 +1,7 @@
 import { useDispatch } from 'react-redux';
 import { Entry } from '@types';
 import { useNavigate } from 'react-router-dom';
+import buttonStyles from '@styles/Button.module.css';
 import extensions from '../../../extensions';
 import styles from './styles.module.css';
 import { useAppSelector } from '../../redux/store';
@@ -40,7 +41,7 @@ export default function Details() {
         </div>
         <button
           type="button"
-          className={styles.button}
+          className={buttonStyles.container}
           disabled={entry.isInLibary}
           onClick={() => dispatch(addToLib())}
         >
@@ -48,7 +49,7 @@ export default function Details() {
         </button>
         <button
           type="button"
-          className={styles.button}
+          className={buttonStyles.container}
           onClick={() => {
             dispatch(
               setEpisodeIdx(

@@ -8,7 +8,7 @@ import {
   setServerIdx,
   setSourceIdx,
   setTrackIdx,
-  setPlayback,
+  setPlaybackRate,
   toggleAutoSkip,
   setEpisodeIdx,
   setMarkAsSeenPercent,
@@ -121,21 +121,21 @@ function Playback() {
   const dispatch = useDispatch();
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
-  const { playback } = entry.settings;
+  const { playbackRate } = entry.settings;
 
   return (
     <div style={{ padding: '0 .5em' }}>
       <span style={{ display: 'block', textAlign: 'center' }}>
-        {playback.toFixed(2)}x
+        {playbackRate.toFixed(2)}x
       </span>
       <input
         type="range"
         step={1}
         max={12}
-        defaultValue={(playback - 1) / 0.25}
+        defaultValue={(playbackRate - 1) / 0.25}
         onChange={({ target }) => {
           const speed = +target.value * 0.25 + 1;
-          dispatch(setPlayback(speed));
+          dispatch(setPlaybackRate(speed));
         }}
       />
     </div>
@@ -266,7 +266,7 @@ export default function Context({ x, y }: { x: number; y: number }) {
       <div>
         <button type="button" onClick={() => setSettingIdx(2)}>
           <span className={styles.arrow} />
-          {entry.settings.playback.toFixed(2)}x
+          {entry.settings.playbackRate.toFixed(2)}x
         </button>
       </div>
       <div>

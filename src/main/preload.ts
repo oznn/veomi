@@ -51,6 +51,9 @@ const electronHandler = {
   fs: {
     remove: (path: string) => ipcRenderer.invoke('fs-remove', path),
   },
+  dialog: {
+    showMessage: (msg: string) => ipcRenderer.invoke('dialog-showMessage', msg),
+  },
   ipcRenderer: {
     sendMessage(channel: Channels, ...args: unknown[]) {
       ipcRenderer.send(channel, ...args);

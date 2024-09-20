@@ -84,7 +84,12 @@ export default function Libary() {
         <div className={styles.options}>
           <div>
             <button type="button">pin</button>
-            <button type="button">change poster</button>
+            <button
+              type="button"
+              onClick={() => electron.dialog.showMessage('change poster')}
+            >
+              change poster
+            </button>
             <button type="button">entry</button>
             <button type="button">catogorize</button>
             <button type="button">update</button>

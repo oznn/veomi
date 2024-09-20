@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Queue, Result, Entry as T } from '@types';
+import buttonStyles from '@styles/Button.module.css';
 import Details from './Details';
 import { useAppSelector } from '../../redux/store';
 import {
@@ -28,6 +29,8 @@ export default function Entry() {
   const [isUpdatingEpisodes, setIsUpdatingEpisodes] = useState(false);
   const [selected, setSelected] = useState<number[]>([]);
   const [order, setOrder] = useState(1);
+  const [isShowDeleteConfirmation, setIsShowDeleteConfirmation] =
+    useState(false);
   const nav = useNavigate();
   const isCanDownload = selected
     .map((e) => `entries.${entry?.key}.episodes.${e}`)
@@ -79,7 +82,7 @@ export default function Entry() {
         isInLibary: false,
         settings: settings || {
           volume: 10,
-          playback: 1,
+          playbackRate: 1,
           isAutoSkip: { intro: true, outro: true },
           markAsSeenPercent: 85,
           preferredQuality: 0,
@@ -117,7 +120,7 @@ export default function Entry() {
     }
   }
 
-  function removeDownloads() {
+  function deleteDownloads() {
     if (entry) {
       electron.fs.remove(
         `[${extensions[entry.result.ext].name}] ${entry.result.title.replace(
@@ -133,11 +136,11 @@ export default function Entry() {
   if (entry)
     return (
       <div className={styles.container}>
-        <Details />
+        {/* <Details /> */}
         <span>{entry.episodes.length} Episodes </span>
         <button
           type="button"
-          className={styles.button}
+          className={buttonStyles.container}
           style={{ fontSize: '.8em' }}
           disabled={isUpdatingEpisodes}
           onClick={updateEpisodes}
@@ -146,18 +149,22 @@ export default function Entry() {
         </button>
         <button
           type="button"
-          className={styles.button}
+          className={buttonStyles.container}
           style={{ fontSize: '.8em' }}
-          onClick={() => setOrder((v) => (v - 1 ? 1 : -1))}
+          onClick={() => {
+            setOrder((v) => (v - 1 ? 1 : -1));
+            setSelected((a) => a.map((i) => entry.episodes.length - i - 1));
+          }}
         >
           {order - 1 ? 'ASC' : 'DESC'}
         </button>
         <button
           type="button"
-          onClick={removeDownloads}
+          // onClick={deleteDownloads}
+          onClick={() => setIsShowDeleteConfirmation(true)}
           disabled={!entry.episodes.some((e) => e.downloaded)}
           style={{ fontSize: '.8em' }}
-          className={styles.button}
+          className={buttonStyles.container}
         >
           DELETE DOWNLOADS
         </button>
@@ -263,6 +270,37 @@ export default function Entry() {
               >
                 fill
               </button>
+            </div>
+          </div>
+        )}
+        {isShowDeleteConfirmation && (
+          <div className={styles.deleteConfirmation}>
+            <div>
+              <span style={{ fontWeight: 'bold' }}>
+                Delete all{' '}
+                {entry.episodes.reduce((p, c) => p + (c.downloaded ? 1 : 0), 0)}{' '}
+                downloaded episodes?
+              </span>
+              <br />
+              <div style={{ textAlign: 'center' }}>
+                <button
+                  className={buttonStyles.container}
+                  type="button"
+                  onClick={() => {
+                    deleteDownloads();
+                    setIsShowDeleteConfirmation(false);
+                  }}
+                >
+                  CONFIRM
+                </button>
+                <button
+                  className={buttonStyles.container}
+                  type="button"
+                  onClick={() => setIsShowDeleteConfirmation(false)}
+                >
+                  CANCEL
+                </button>
+              </div>
             </div>
           </div>
         )}

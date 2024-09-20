@@ -35,7 +35,7 @@ export type Entry = {
   posterPath?: string;
   settings: {
     volume: number;
-    playback: number;
+    playbackRate: number;
     isAutoSkip: { intro: boolean; outro: boolean };
     markAsSeenPercent: number;
     preferredQuality: number;

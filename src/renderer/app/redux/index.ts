@@ -93,10 +93,10 @@ const app = createSlice({
         electron.store.set(k, preferredSubtitles);
       }
     },
-    setPlayback: (state, action: PayloadAction<number>) => {
+    setPlaybackRate: (state, action: PayloadAction<number>) => {
       if (state.entry) {
-        state.entry.settings.playback = action.payload;
-        const key = `entries.${state.entry.key}.settings.playback`;
+        state.entry.settings.playbackRate = action.payload;
+        const key = `entries.${state.entry.key}.settings.playbackRate`;
         electron.store.set(key, action.payload);
       }
     },
@@ -188,6 +188,21 @@ const app = createSlice({
         electron.store.set(k, JSON.parse(JSON.stringify(state.entry.episodes)));
       }
     },
+    setEntryProp(state, action: PayloadAction<{ k: string; v: any }>) {
+      if (state.entry) {
+        const { k, v } = action.payload;
+
+        k.split('.').reduce((obj: any, key: any, idx, arr) => {
+          if (idx === arr.length - 1) obj[key] = v;
+          return obj[key];
+        }, state.entry);
+
+        electron.store.set(
+          `entries.${state.entry.key}`,
+          JSON.parse(JSON.stringify(state.entry)),
+        );
+      }
+    },
   },
 });
 
@@ -196,7 +211,7 @@ export const {
   addToLib,
   setVolume,
   setEpisodeCurrentTime,
-  setPlayback,
+  setPlaybackRate,
   toggleAutoSkip,
   setEpisodeIdx,
   setServer,
@@ -211,5 +226,6 @@ export const {
   setQueue,
   setQueueProgress,
   resetEpisodesDownloads,
+  setEntryProp,
 } = app.actions;
 export default app.reducer;

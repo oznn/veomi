@@ -36,8 +36,16 @@ export default function Nav() {
           >
             <img src={arrowBack} alt="icon" />
           </button>
-          <Link to="/">Libary</Link>
-          <Link to="/downloads">Downloads({queue.length})</Link>
+          <Link to="/">
+            Libary
+            <sup style={{ color: 'grey' }}>69</sup>
+          </Link>
+          <Link to="/downloads">
+            Downloads
+            {queue.length && (
+              <sup style={{ color: 'grey' }}>{queue.length}</sup>
+            )}
+          </Link>
         </div>
         <div>
           {/* <div>

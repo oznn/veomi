@@ -10,7 +10,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, session, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import Store from 'electron-store';
@@ -117,6 +117,9 @@ ipcMain.handle('fs-remove', (_, folderPath) => {
   rm(path.join(app.getPath('userData'), 'downloads', folderPath), {
     recursive: true,
   });
+});
+ipcMain.handle('dialog-showMessage', (_, message) => {
+  if (mw) dialog.showMessageBox(mw, { message });
 });
 
 if (process.env.NODE_ENV === 'production') {
