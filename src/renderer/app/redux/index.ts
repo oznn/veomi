@@ -146,7 +146,7 @@ const app = createSlice({
           episodes.push(action.payload[i]);
 
         const k = `entries.${state.entry.key}.episodes`;
-        electron.store.set(k, JSON.parse(JSON.stringify(state.entry.episodes)));
+        electron.store.set(k, JSON.parse(JSON.stringify(episodes)));
       }
     },
     toggleIsSeen(state, action: PayloadAction<number[]>) {
@@ -177,7 +177,8 @@ const app = createSlice({
       electron.store.set('queue', action.payload);
     },
     setQueueProgress(state, action: PayloadAction<number>) {
-      state.queue[0].progress = action.payload;
+      const idx = state.queue.findIndex(({ isFailed }) => !isFailed);
+      if (idx > -1) state.queue[idx].progress = action.payload;
     },
     resetEpisodesDownloads(state) {
       if (state.entry) {

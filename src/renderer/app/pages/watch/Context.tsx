@@ -185,8 +185,8 @@ export default function Context({ x, y }: { x: number; y: number }) {
   const video = app.video as Video;
   const server = app.server as { list: Server[]; idx: number };
   const { sourceIdx, trackIdx } = app;
-  const translateX = x + 400 > window.innerWidth ? '-100%' : '0';
-  const translateY = y + 400 > window.innerHeight ? '-100%' : '0';
+  const translateX = x + 420 > window.innerWidth ? '-100%' : '0';
+  const translateY = y + 420 > window.innerHeight ? '-100%' : '0';
   const transformOriginX = translateX === '0' ? 'left' : 'right';
   const transformOriginY = translateY === '0' ? 'top' : 'bottom';
   const transformOrigin = `${transformOriginX} ${transformOriginY}`;

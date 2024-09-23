@@ -109,6 +109,7 @@ export default function Entry() {
           episodeKey: `entries.${entry.key}.episodes.${episodeIdx}`,
           episodeTitle: entry.episodes[episodeIdx].title,
           progress: 0,
+          isFailed: false,
         }))
         .filter(
           (e) => queue.findIndex((q) => q.episodeKey === e.episodeKey) === -1,
@@ -136,7 +137,7 @@ export default function Entry() {
   if (entry)
     return (
       <div className={styles.container}>
-        {/* <Details /> */}
+        <Details />
         <span>{entry.episodes.length} Episodes </span>
         <button
           type="button"
@@ -160,7 +161,6 @@ export default function Entry() {
         </button>
         <button
           type="button"
-          // onClick={deleteDownloads}
           onClick={() => setIsShowDeleteConfirmation(true)}
           disabled={!entry.episodes.some((e) => e.downloaded)}
           style={{ fontSize: '.8em' }}

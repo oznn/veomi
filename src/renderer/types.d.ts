@@ -56,4 +56,5 @@ export type Queue = {
   entryTitle: string;
   episodeTitle: string;
   progress: number;
+  isFailed: boolean;
 }[];

@@ -84,7 +84,7 @@
   left: 50%;
   width: 100%;
   translate: -50% 0;
-  animation: pop 100ms ease 1;
+  animation: slide 100ms ease 1;
   transform-origin: bottom;
 }
 
@@ -93,7 +93,7 @@
   margin: 0 .2em;
 }
 
-@keyframes pop {
+@keyframes slide {
   0% {
     scale: 1 0
   }

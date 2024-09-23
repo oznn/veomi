@@ -42,9 +42,7 @@ export default function Nav() {
           </Link>
           <Link to="/downloads">
             Downloads
-            {queue.length && (
-              <sup style={{ color: 'grey' }}>{queue.length}</sup>
-            )}
+            <sup style={{ color: 'grey' }}>{queue.length}</sup>
           </Link>
         </div>
         <div>

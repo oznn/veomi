@@ -29,6 +29,11 @@ export default function Downloads() {
               className={buttonStyles.container}
               style={{ fontSize: '.7em' }}
               onClick={() => {
+                dispatch(
+                  setQueue(
+                    queue.filter(({ entryTitle }) => entryTitle !== key),
+                  ),
+                );
                 if (!i) electron.ffmpeg.stop();
               }}
             >
@@ -45,12 +50,12 @@ export default function Downloads() {
             </span>
           </div>
           {(groupedQueue[key] as Queue).map((e, j) => (
-            <ul>
+            <ul key={e.episodeTitle}>
               <li key={e.episodeTitle} style={{ color: '#ccc' }}>
                 <button
                   type="button"
                   className={buttonStyles.container}
-                  style={{ fontSize: '.6em' }}
+                  style={{ fontSize: '.6em', margin: '0' }}
                   onClick={() => {
                     dispatch(setQueue(queue.filter((_, k) => j !== k)));
                     if (!i && !j) electron.ffmpeg.stop();
@@ -58,8 +63,26 @@ export default function Downloads() {
                 >
                   CANCEL
                 </button>
-                <span>
-                  {e.progress.toFixed(2)}% {e.episodeTitle}
+                <button
+                  type="button"
+                  className={buttonStyles.container}
+                  style={{ fontSize: '.6em' }}
+                  disabled={!e.isFailed}
+                  onClick={() => {
+                    dispatch(
+                      setQueue(
+                        queue.map((item, idx) =>
+                          j === idx ? { ...item, isFailed: false } : item,
+                        ),
+                      ),
+                    );
+                    electron.ffmpeg.start();
+                  }}
+                >
+                  RETRY
+                </button>
+                <span style={{ color: e.isFailed ? 'crimson' : '#eee' }}>
+                  {e.progress ? e.progress.toFixed(2) : 0}% {e.episodeTitle}
                 </span>
               </li>
             </ul>

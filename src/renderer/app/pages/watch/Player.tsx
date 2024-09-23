@@ -119,7 +119,7 @@ export default function Player() {
 
       videoRef.current.currentTime = episode.currentTime;
       videoRef.current.volume = entry.settings.volume * 0.05;
-      videoRef.current.playbackRate = entry.settings.playback;
+      videoRef.current.playbackRate = entry.settings.playbackRate;
       videoRef.current.play();
     }
     return () => {
