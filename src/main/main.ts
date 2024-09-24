@@ -114,9 +114,11 @@ ipcMain.handle('extractor-megacloud', (_, ciphered) =>
   megacloudExtractor(ciphered),
 );
 ipcMain.handle('fs-remove', (_, folderPath) => {
-  rm(path.join(app.getPath('userData'), 'downloads', folderPath), {
-    recursive: true,
-  });
+  const p = path.join(app.getPath('userData'), 'downloads', folderPath);
+  if (!existsSync(p))
+    rm(p, {
+      recursive: true,
+    });
 });
 ipcMain.handle('dialog-showMessage', (_, message) => {
   if (mw) dialog.showMessageBox(mw, { message });

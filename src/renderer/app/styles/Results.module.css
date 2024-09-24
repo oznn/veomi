@@ -11,11 +11,9 @@
   margin: auto;
   width:242px;
   height:100%;
-  padding:10px;
   transition: scale 100ms ease;
   position:relative;
   color:white;
-  background:#ffffff11;
 }
 /* the following hover animation was inspired by 4nglp */
 .link:hover,.link:focus-visible{
@@ -29,10 +27,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   font-size:.8em;
+  padding: 0 5px;
 }
-.container .link div{
+.link div{
   width:222px;
   height:333px;
+  margin: 10px;
 }
 .container img{
   width:100%;

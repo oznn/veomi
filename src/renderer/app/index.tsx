@@ -28,8 +28,6 @@ function A() {
         idx = queue.findIndex(({ isFailed }) => !isFailed);
         const item = queue[idx];
 
-        console.log(queue, idx, item);
-
         dispatch(setQueue(queue));
         if (!item) return;
 

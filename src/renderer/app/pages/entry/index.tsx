@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Queue, Result, Entry as T } from '@types';
 import buttonStyles from '@styles/Button.module.css';
+import confirmStyles from '@styles/Confirm.module.css';
 import Details from './Details';
 import { useAppSelector } from '../../redux/store';
 import {
@@ -29,7 +30,7 @@ export default function Entry() {
   const [isUpdatingEpisodes, setIsUpdatingEpisodes] = useState(false);
   const [selected, setSelected] = useState<number[]>([]);
   const [order, setOrder] = useState(1);
-  const [isShowDeleteConfirmation, setIsShowDeleteConfirmation] =
+  const [isShowRemoveConfirmation, setIsShowRemoveConfirmation] =
     useState(false);
   const nav = useNavigate();
   const isCanDownload = selected
@@ -121,7 +122,7 @@ export default function Entry() {
     }
   }
 
-  function deleteDownloads() {
+  function removeDownloads() {
     if (entry) {
       electron.fs.remove(
         `[${extensions[entry.result.ext].name}] ${entry.result.title.replace(
@@ -161,12 +162,12 @@ export default function Entry() {
         </button>
         <button
           type="button"
-          onClick={() => setIsShowDeleteConfirmation(true)}
+          onClick={() => setIsShowRemoveConfirmation(true)}
           disabled={!entry.episodes.some((e) => e.downloaded)}
           style={{ fontSize: '.8em' }}
           className={buttonStyles.container}
         >
-          DELETE DOWNLOADS
+          REMOVE DOWNLOADS
         </button>
         <div className={styles.episodes}>
           {entry.episodes
@@ -273,8 +274,8 @@ export default function Entry() {
             </div>
           </div>
         )}
-        {isShowDeleteConfirmation && (
-          <div className={styles.deleteConfirmation}>
+        {isShowRemoveConfirmation && (
+          <div className={confirmStyles.container}>
             <div>
               <span style={{ fontWeight: 'bold' }}>
                 Delete all{' '}
@@ -287,8 +288,8 @@ export default function Entry() {
                   className={buttonStyles.container}
                   type="button"
                   onClick={() => {
-                    deleteDownloads();
-                    setIsShowDeleteConfirmation(false);
+                    removeDownloads();
+                    setIsShowRemoveConfirmation(false);
                   }}
                 >
                   CONFIRM
@@ -296,7 +297,7 @@ export default function Entry() {
                 <button
                   className={buttonStyles.container}
                   type="button"
-                  onClick={() => setIsShowDeleteConfirmation(false)}
+                  onClick={() => setIsShowRemoveConfirmation(false)}
                 >
                   CANCEL
                 </button>
