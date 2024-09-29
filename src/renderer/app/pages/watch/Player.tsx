@@ -96,7 +96,7 @@ export default function Player() {
           break;
         case 'p':
         case 'P':
-          dispatch(setEpisodeIdx(Math.max(0, episodeIdx + 1)));
+          dispatch(setEpisodeIdx(Math.max(0, episodeIdx - 1)));
           break;
         case 'e':
         case 'E':
@@ -142,6 +142,10 @@ export default function Player() {
       }
     })();
   }, [trackIdx]);
+  useEffect(() => {
+    if (videoRef.current)
+      videoRef.current.playbackRate = entry.settings.playbackRate;
+  }, [entry.settings.playbackRate]);
 
   function skip(part: 'intro' | 'outro', time: number) {
     const { skips } = video;

@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Queue, Result, Entry as T } from '@types';
 import buttonStyles from '@styles/Button.module.css';
-import confirmStyles from '@styles/Confirm.module.css';
+import Confirm from '@components/confirm';
 import Details from './Details';
 import { useAppSelector } from '../../redux/store';
 import {
@@ -81,6 +81,7 @@ export default function Entry() {
         episodes,
         details: undefined,
         isInLibary: false,
+        category: '',
         settings: settings || {
           volume: 10,
           playbackRate: 1,
@@ -275,35 +276,18 @@ export default function Entry() {
           </div>
         )}
         {isShowRemoveConfirmation && (
-          <div className={confirmStyles.container}>
-            <div>
-              <span style={{ fontWeight: 'bold' }}>
-                Delete all{' '}
-                {entry.episodes.reduce((p, c) => p + (c.downloaded ? 1 : 0), 0)}{' '}
-                downloaded episodes?
-              </span>
-              <br />
-              <div style={{ textAlign: 'center' }}>
-                <button
-                  className={buttonStyles.container}
-                  type="button"
-                  onClick={() => {
-                    removeDownloads();
-                    setIsShowRemoveConfirmation(false);
-                  }}
-                >
-                  CONFIRM
-                </button>
-                <button
-                  className={buttonStyles.container}
-                  type="button"
-                  onClick={() => setIsShowRemoveConfirmation(false)}
-                >
-                  CANCEL
-                </button>
-              </div>
-            </div>
-          </div>
+          <Confirm
+            title={`DELETE ALL ${entry.episodes.reduce(
+              (p, c) => p + (c.downloaded ? 1 : 0),
+              0,
+            )} DOWNLOADED EPISODES?`}
+            msg="SUBTITLES WILL ALSO BE REMOVED"
+            cancel={() => setIsShowRemoveConfirmation(false)}
+            confirm={() => {
+              removeDownloads();
+              setIsShowRemoveConfirmation(false);
+            }}
+          />
         )}
       </div>
     );

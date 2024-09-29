@@ -2,24 +2,27 @@ import Message from '@components/message';
 import { Entry } from '@types';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import buttonStyles from '@styles/Button.module.css';
-import confirmStyles from '@styles/Confirm.module.css';
+import Confirm from '@components/confirm';
 import resultsStyles from '@styles/Results.module.css';
+import buttonStyles from '@styles/Button.module.css';
 import { useDispatch } from 'react-redux';
 import { setEntry, setEpisodeIdx } from '../../redux';
 import styles from './styles.module.css';
 import extensions from '../../../extensions';
+import Categorize from './Categorize';
 
 const { electron } = window;
 let entries: (Entry & { isUpdating: boolean })[] | null = null;
+
 export default function Libary() {
   const nav = useNavigate();
   const [, rerender] = useReducer((n) => n + 1, 0);
   const dispatch = useDispatch();
-  const [selected, setSelected] = useState<number[]>([]);
-  const [isShowRemoveConfirmation, setIsShowRemoveConfirmation] =
-    useState(false);
-  // const [isLoading, setIsLoading] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isShowConfirmation, setIsShowConfirmation] = useState(false);
+  const [isShowCategorization, setIsShowCategorization] = useState(false);
+  const [categoryIdx, setCategoryIdx] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -32,7 +35,10 @@ export default function Libary() {
         entries = allEntries
           .filter((entry) => entry.isInLibary)
           .map((e) => ({ ...e, isUpdating: false }));
-        rerender();
+
+        const c = (await electron.store.get('categories')) || [];
+        if (entries.some((e) => !e.category)) setCategories(['', ...c]);
+        else setCategories(c);
       } catch (err) {
         console.log(`${err}`);
       }
@@ -43,10 +49,12 @@ export default function Libary() {
   if (!entries.length) return <Message msg="Libary is empty" />;
 
   async function update(s: number[]) {
+    setSelected([]);
     if (entries && s.length) {
       const [e] = s;
       entries[e].isUpdating = true;
       rerender();
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // eslint-disable-line
       const { getEpisodes } = await import(
         `../../../ext/extensions/${entries[e].result.ext}`
       );
@@ -63,66 +71,99 @@ export default function Libary() {
         electron.store.set(k, entries[e].episodes);
 
         entries[e].isUpdating = false;
+        update(s.filter((_, i) => i !== 0));
         rerender();
-        setTimeout(() => update(s.filter((_, i) => i !== 0)), 1000);
       }
     }
   }
 
   function remove() {
-    selected.forEach((i) => {
+    selected.forEach((k, i) => {
       if (entries) {
-        electron.store.delete(`entries.${entries[i].key}`);
-        electron.poster.delete(entries[i].posterPath);
+        const e = entries.findIndex(({ key }) => key === k);
+        electron.store.delete(`entries.${entries[e - i].key}`);
+        electron.poster.delete(entries[e - i].posterPath);
 
-        const extensionName = extensions[entries[i].result.ext].name;
-        const folderName = entries[i].result.title;
+        const extensionName = extensions[entries[e - i].result.ext].name;
+        const folderName = entries[e - i].result.title;
         electron.fs.remove(
           `[${extensionName}] ${folderName.replace(/[<>:"/\\|?*]/g, ' ')}`,
         );
-        entries.splice(i, 1);
+
+        entries.splice(e - i, 1);
       }
     });
-    rerender();
+
+    setSelected([]);
   }
 
-  function toggleSelect(i: number) {
-    if (selected.includes(i)) setSelected(selected.filter((n) => n !== i));
-    else setSelected((arr) => [...arr, i]);
+  function toggleSelect(key: string) {
+    if (selected.includes(key)) setSelected(selected.filter((k) => k !== key));
+    else setSelected((arr) => [...arr, key]);
+  }
+  function categorize(c: string) {
+    selected.forEach((k) => {
+      if (entries) {
+        const e = entries.findIndex(({ key }) => key === k);
+        entries[e].category = c;
+        electron.store.set(`entries.${entries[e].key}.category`, c);
+      }
+    });
+    if (entries && entries.every((e) => e.category))
+      setCategories(categories.filter((_) => _));
+    rerender();
   }
 
   return (
     <>
-      <ul className={resultsStyles.container}>
-        {entries.map((entry, i) => (
+      {categories.length > 0 &&
+        categories.map((c, i) => (
           <button
+            disabled={i === categoryIdx}
+            className={buttonStyles.container}
+            key={c}
             type="button"
-            style={{
-              background: selected.includes(i) ? '#444' : '#ffffff11',
-              border: `solid 2px ${
-                entry.isUpdating ? 'silver' : 'transparent'
-              }`,
-            }}
-            key={entry.key}
-            className={resultsStyles.link}
-            onClick={() => {
-              const n = entry.episodes.findIndex((e) => !e.isSeen);
-
-              dispatch(setEpisodeIdx(Math.max(0, n)));
-              dispatch(setEntry(entry));
-              nav('/watch');
-            }}
-            onAuxClick={() => toggleSelect(i)}
+            onClick={() => setCategoryIdx(i)}
           >
-            <div>
-              <img src={entry.posterPath} alt="poster" />
-            </div>
-            <span title={entry.result.title}>{entry.result.title}</span>
-            <span className={resultsStyles.remaining}>
-              {entry.episodes.filter((e) => !e.isSeen).length}
-            </span>
+            {c || 'DEFAULT'}
           </button>
         ))}
+      <br />
+      <br />
+      <ul className={resultsStyles.container}>
+        {entries
+          .filter((e) => e.category === categories[categoryIdx])
+          .map((entry) => (
+            <button
+              type="button"
+              style={{
+                background: selected.includes(entry.key) ? '#444' : '#ffffff11',
+                border: `solid 3px ${
+                  entry.isUpdating ? 'silver' : 'transparent'
+                }`,
+              }}
+              key={entry.key}
+              className={resultsStyles.link}
+              onClick={() => {
+                const n = entry.episodes.findIndex((e) => !e.isSeen);
+
+                dispatch(setEpisodeIdx(Math.max(0, n)));
+                dispatch(setEntry(entry));
+                nav('/watch');
+              }}
+              onAuxClick={() => toggleSelect(entry.key)}
+            >
+              <div>
+                <img src={entry.posterPath} alt="poster" />
+              </div>
+              <span className={resultsStyles.title} title={entry.result.title}>
+                {entry.result.title}
+              </span>
+              <span className={resultsStyles.remaining}>
+                {entry.episodes.filter((e) => !e.isSeen).length}
+              </span>
+            </button>
+          ))}
       </ul>
       {selected.length > 0 && (
         <div className={styles.options}>
@@ -134,7 +175,8 @@ export default function Libary() {
                 entries &&
                 nav(
                   `/entry?result=${JSON.stringify(
-                    entries[selected[0]].result,
+                    entries[entries.findIndex(({ key }) => key === selected[0])]
+                      .result,
                   )}`,
                 )
               }
@@ -143,12 +185,23 @@ export default function Libary() {
             </button>
             <button
               type="button"
-              onClick={() => setIsShowRemoveConfirmation(true)}
+              onClick={() =>
+                update(
+                  selected
+                    .map((k) =>
+                      (entries as Entry[]).findIndex(({ key }) => key === k),
+                    )
+                    .toSorted(),
+                )
+              }
             >
-              remove
-            </button>
-            <button type="button" onClick={() => update(selected)}>
               update
+            </button>
+            <button type="button" onClick={() => setIsShowCategorization(true)}>
+              categorize
+            </button>
+            <button type="button" onClick={() => setIsShowConfirmation(true)}>
+              remove
             </button>
           </div>
           <div>
@@ -157,10 +210,18 @@ export default function Libary() {
           <div>
             <button
               type="button"
-              disabled={selected.length === entries.length}
+              /* disabled={selected.length === entries.length} */
+              disabled={
+                selected.length ===
+                entries.filter(
+                  ({ category }) => category === categories[categoryIdx],
+                ).length
+              }
               onClick={() =>
                 setSelected(
-                  [...Array((entries as Entry[]).length)].map((_, i) => i),
+                  (entries as Entry[])
+                    .filter((e) => e.category === categories[categoryIdx])
+                    .map(({ key }) => key),
                 )
               }
             >
@@ -168,68 +229,42 @@ export default function Libary() {
             </button>
             <button
               type="button"
-              // the following function was made by 4nglp
               onClick={() => {
-                const { length } = entries as Entry[];
-                const all = [...Array(length)].map((_, i) => i);
-                const arr = all.filter((e) => !selected.includes(e));
+                const arr = (entries as Entry[])
+                  .filter((e) => e.category === categories[categoryIdx])
+                  .map(({ key }) => key)
+                  .filter((k) => !selected.includes(k));
 
                 setSelected(arr);
               }}
             >
               inverse
             </button>
-            <button
-              type="button"
-              disabled={
-                selected.length <= 1 ||
-                Math.max(...selected) - Math.min(...selected) < selected.length
-              }
-              onClick={() => {
-                const max = Math.max(...selected);
-                const min = Math.min(...selected);
-                const arr = [...Array(max - min), max].map((_, i) => i + min);
-
-                setSelected(arr);
-              }}
-            >
-              fill
-            </button>
           </div>
         </div>
       )}
-      {isShowRemoveConfirmation && (
-        <div className={confirmStyles.container}>
-          <div>
-            <span style={{ fontWeight: 'bold' }}>
-              REMOVE ALL {selected.length} SELCETED ENTRIES
-              <br />
-              <span style={{ color: 'grey', fontSize: '.7em' }}>
-                DOWNLOADED EPISODES, POSTER AND PROGRESS WILL ALSO BE REMOVED!
-              </span>
-            </span>
-            <br />
-            <div style={{ textAlign: 'center' }}>
-              <button
-                className={buttonStyles.container}
-                type="button"
-                onClick={() => {
-                  remove();
-                  setIsShowRemoveConfirmation(false);
-                }}
-              >
-                CONFIRM
-              </button>
-              <button
-                className={buttonStyles.container}
-                type="button"
-                onClick={() => setIsShowRemoveConfirmation(false)}
-              >
-                CANCEL
-              </button>
-            </div>
-          </div>
-        </div>
+      {categories.length && isShowCategorization && (
+        <Categorize
+          categories={categories}
+          setCategories={(c) => setCategories(c)}
+          categorize={(c) => {
+            categorize(c);
+            setSelected([]);
+            setIsShowCategorization(false);
+          }}
+          close={() => setIsShowCategorization(false)}
+        />
+      )}
+      {isShowConfirmation && (
+        <Confirm
+          title={`Remove all ${selected.length} selceted entries?`}
+          msg="Downloaded episodes, poster and progress will also be removed!"
+          cancel={() => setIsShowConfirmation(false)}
+          confirm={() => {
+            remove();
+            setIsShowConfirmation(false);
+          }}
+        />
       )}
     </>
   );

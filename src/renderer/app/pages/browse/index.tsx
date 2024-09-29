@@ -34,7 +34,9 @@ export default function Browse() {
           <div>
             <img loading="lazy" src={result.posterURL} alt="poster" />
           </div>
-          <span title={result.title}>{result.title}</span>
+          <span className={resultsStyles.title} title={result.title}>
+            {result.title}
+          </span>
         </Link>
       ))}
     </ul>

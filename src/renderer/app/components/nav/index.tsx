@@ -1,3 +1,4 @@
+import { Entry } from '@types';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import arrowBack from '@assets/arrowback.png';
@@ -6,10 +7,12 @@ import styles from './styles.module.css';
 import { useAppSelector } from '../../redux/store';
 
 const { electron } = window;
+let libaryCount = 0;
+
 export default function Nav() {
   const searchRef = useRef<HTMLInputElement>(null);
   const [selectedExt, setSelectedExt] = useState('');
-  const [isShowOptions, setIsShowOptions] = useState(false);
+  // const [isShowOptions, setIsShowOptions] = useState(false);
   const nav = useNavigate();
   const { pathname } = useLocation();
   const app = useAppSelector((state) => state.app);
@@ -19,6 +22,7 @@ export default function Nav() {
     document.onkeyup = ({ key }) => key === '/' && searchRef.current?.focus();
     (async () => {
       const res = await electron.store.get('selectedExt');
+
       setSelectedExt(res || Object.keys(extensions)[0]);
     })();
   }, []);
@@ -38,7 +42,7 @@ export default function Nav() {
           </button>
           <Link to="/">
             Libary
-            <sup style={{ color: 'grey' }}>69</sup>
+            <sup style={{ color: 'transparent', userSelect: 'none' }}>0</sup>
           </Link>
           <Link to="/downloads">
             Downloads

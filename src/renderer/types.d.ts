@@ -30,9 +30,8 @@ export type Entry = {
   key: string;
   result: Result;
   episodes: Episode[];
-  details?: Details;
   isInLibary: boolean;
-  posterPath?: string;
+  category: string;
   settings: {
     volume: number;
     playbackRate: number;
@@ -42,6 +41,8 @@ export type Entry = {
     preferredSubtitles: string;
     preferredServer: string;
   };
+  details?: Details;
+  posterPath?: string;
 };
 export type Server = {
   name: string;

@@ -1,49 +1,60 @@
 .container {
   list-style-type: none;
-  margin:0;
+  margin: 0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, max-content));
-  gap: 42px;
-  padding: 0 1em;
+  gap: 50px;
+  place-content: center;
 }
-.link{
-  display:block;
+
+.link {
+  display: block;
   margin: auto;
-  width:242px;
-  height:100%;
+  width: 242px;
+  height: 100%;
   transition: scale 100ms ease;
-  position:relative;
-  color:white;
+  position: relative;
+  background: #ffffff11;
 }
-/* the following hover animation was inspired by 4nglp */
-.link:hover,.link:focus-visible{
-  scale: 1.2;
+
+.link:hover,
+.link:focus-visible {
+  scale: 1.15;
 }
-.link span{
+
+.link span {
+  font-size: .8em;
+}
+
+.title {
+  height: 69px;
   display: -webkit-box;
-  line-clamp: 2;
+  overflow: hidden;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size:.8em;
+  color: white;
+  line-clamp: 2;
   padding: 0 5px;
+  line-height: 1.25;
+  overflow: none;
 }
-.link div{
-  width:222px;
-  height:333px;
+
+.link div {
+  width: 222px;
+  height: 333px;
   margin: 10px;
 }
-.container img{
-  width:100%;
-  height:100%;
+
+.container img {
+  width: 100%;
+  height: 100%;
 }
+
 .remaining {
-  position:absolute;
-  right:.5em;
-  top:.5em;
-  padding: 0 .3em;
-  border-radius:.3em;
-  background:rgba(0,0,0,.8);
-  font-size:1px;
+  position: absolute;
+  right: .5em;
+  top: .6em;
+  border-radius: .3em;
+  background: rgba(0, 0, 0, .6);
+  padding: 0 .2em;
 }
