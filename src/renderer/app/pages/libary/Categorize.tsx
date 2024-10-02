@@ -8,6 +8,7 @@ type Props = {
   categories: string[];
   setCategories: (c: string[]) => void;
   categorize: (c: string) => void;
+  clearCategory: (c: string) => void;
 };
 
 export default function Categorize({
@@ -15,13 +16,12 @@ export default function Categorize({
   setCategories,
   close,
   categorize,
+  clearCategory,
 }: Props) {
-  useDidMountEffect(() => {
-    electron.store.set(
-      'categories',
-      categories.filter((c) => c),
-    );
-  }, [categories]);
+  useDidMountEffect(
+    () => electron.store.set('categories', categories),
+    [categories],
+  );
 
   return (
     <div className={styles.category}>
@@ -29,6 +29,7 @@ export default function Categorize({
       <span onClick={close} />
       <div>
         Move selected entries
+        <br />
         {categories
           .filter((c) => c)
           .map((c, i) => (
@@ -40,9 +41,10 @@ export default function Categorize({
               <button
                 type="button"
                 style={{ width: 'auto' }}
-                onClick={() =>
-                  setCategories(categories.filter((_, j) => i !== j))
-                }
+                onClick={() => {
+                  setCategories(categories.filter((_, j) => i !== j));
+                  clearCategory(c);
+                }}
               >
                 RM
               </button>

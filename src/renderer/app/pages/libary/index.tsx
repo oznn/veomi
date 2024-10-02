@@ -23,6 +23,9 @@ export default function Libary() {
   const [isShowConfirmation, setIsShowConfirmation] = useState(false);
   const [isShowCategorization, setIsShowCategorization] = useState(false);
   const [categoryIdx, setCategoryIdx] = useState(0);
+  const isUseCategories = entries
+    ? entries.some((e) => !categories.includes(e.category))
+    : false;
 
   useEffect(() => {
     (async () => {
@@ -36,9 +39,7 @@ export default function Libary() {
           .filter((entry) => entry.isInLibary)
           .map((e) => ({ ...e, isUpdating: false }));
 
-        const c = (await electron.store.get('categories')) || [];
-        if (entries.some((e) => !e.category)) setCategories(['', ...c]);
-        else setCategories(c);
+        setCategories((await electron.store.get('categories')) || []);
       } catch (err) {
         console.log(`${err}`);
       }
@@ -109,15 +110,23 @@ export default function Libary() {
         electron.store.set(`entries.${entries[e].key}.category`, c);
       }
     });
-    if (entries && entries.every((e) => e.category))
-      setCategories(categories.filter((_) => _));
     rerender();
   }
 
+  function clearCategory(c: string) {
+    if (entries)
+      entries.forEach((_, i) => {
+        if (entries && entries[i].category === c) {
+          entries[i].category = '';
+          electron.store.set(`entries.${entries[i].key}.category`, '');
+        }
+      });
+    setCategoryIdx(0);
+  }
   return (
     <>
-      {categories.length > 0 &&
-        categories.map((c, i) => (
+      {entries.some((e) => e.category) &&
+        (isUseCategories ? ['', ...categories] : categories).map((c, i) => (
           <button
             disabled={i === categoryIdx}
             className={buttonStyles.container}
@@ -132,7 +141,11 @@ export default function Libary() {
       <br />
       <ul className={resultsStyles.container}>
         {entries
-          .filter((e) => e.category === categories[categoryIdx])
+          .filter(
+            (e) =>
+              e.category ===
+              (isUseCategories ? ['', ...categories] : categories)[categoryIdx],
+          )
           .map((entry) => (
             <button
               type="button"
@@ -243,7 +256,7 @@ export default function Libary() {
           </div>
         </div>
       )}
-      {categories.length && isShowCategorization && (
+      {isShowCategorization && (
         <Categorize
           categories={categories}
           setCategories={(c) => setCategories(c)}
@@ -252,6 +265,7 @@ export default function Libary() {
             setSelected([]);
             setIsShowCategorization(false);
           }}
+          clearCategory={(c: string) => clearCategory(c)}
           close={() => setIsShowCategorization(false)}
         />
       )}
