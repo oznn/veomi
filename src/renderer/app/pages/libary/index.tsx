@@ -125,20 +125,31 @@ export default function Libary() {
   }
   return (
     <>
-      {entries.some((e) => e.category) &&
-        (isUseCategories ? ['', ...categories] : categories).map((c, i) => (
-          <button
-            disabled={i === categoryIdx}
-            className={buttonStyles.container}
-            key={c}
-            type="button"
-            onClick={() => setCategoryIdx(i)}
-          >
-            {c || 'DEFAULT'}
-          </button>
-        ))}
-      <br />
-      <br />
+      <div
+        style={{
+          overflow: 'scroll',
+          display: 'flex',
+          paddingInline: '2em',
+          gap: '.4em',
+        }}
+      >
+        {entries.some((e) => e.category) &&
+          (isUseCategories ? ['', ...categories] : categories).map((c, i) => (
+            <button
+              disabled={i === categoryIdx}
+              className={buttonStyles.container}
+              style={{
+                fontSize: '.8em',
+                transform: `scale(${i === categoryIdx ? 1.2 : 1})`,
+              }}
+              key={c}
+              type="button"
+              onClick={() => setCategoryIdx(i)}
+            >
+              {c || 'DEFAULT'}
+            </button>
+          ))}
+      </div>
       <ul className={resultsStyles.container}>
         {entries
           .filter(

@@ -224,14 +224,14 @@ export default function Player() {
       </span>
 
       {textTracks && trackIdx > -1 && (
-        <span
+        <pre
           className={styles.subtitles}
           // eslint-disable-next-line
           dangerouslySetInnerHTML={{
             __html: textTracks
               .filter((t) => currentTime >= t.start && currentTime <= t.end)
               .map((t) => t.text)
-              .join('\n'),
+              .join('\n\n'),
           }}
         />
       )}

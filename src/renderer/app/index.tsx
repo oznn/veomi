@@ -99,7 +99,6 @@ export default function App() {
       <Provider store={store}>
         <Nav />
         <A />
-        <br />
         <Routes>
           <Route path="/" element={<Libary />} />
           <Route path="/browse" element={<Browse />} />

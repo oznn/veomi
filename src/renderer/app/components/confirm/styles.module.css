@@ -14,8 +14,14 @@
   background: #222;
   animation: pop 100ms ease 1;
 }
+
 .buttons {
   text-align: right;
+}
+
+
+.container span{
+  display: block;
 }
 
 @keyframes pop {

@@ -12,12 +12,8 @@ export default function Confirm({ title, msg, cancel, confirm }: Props) {
   return (
     <div className={styles.container}>
       <div>
-        <span style={{ fontWeight: 'bold' }}>
-          {title}
-          <br />
-          <span style={{ color: 'grey', fontSize: '.7em' }}>{msg}</span>
-        </span>
-        <br />
+        <span style={{ fontWeight: 'bold' }}>{title}</span>
+        <span style={{ fontSize: '.8em', color: 'silver' }}>{msg}</span>
         <div className={styles.buttons}>
           <button
             className={buttonStyles.container}
