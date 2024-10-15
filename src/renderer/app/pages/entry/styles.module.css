@@ -43,22 +43,22 @@
   padding: 0 1em;
 }
 
-.episodes button,
+.media button,
 .options button {
   color: grey;
   transition: color 200ms ease-in;
   padding: 0 .1em;
 }
 
-.episodes button:hover,
+.media button:hover,
 .options button:hover,
-.episodes button:focus-visible,
+.media button:focus-visible,
 .options button:focus-visible {
   color: white;
   transition: color 0s;
 }
 
-.episodes button {
+.media button {
   width: 100%;
   display: flex;
   align-items: center;
@@ -66,7 +66,7 @@
   padding: 0 .2em;
 }
 
-.episodes button span:nth-child(1) {
+.media button span:nth-child(1) {
   width: 10px;
   height: 10px;
   border-radius: 50%;

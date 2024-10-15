@@ -10,5 +10,5 @@
 
 .container:hover,
 .container:focus-visible {
-  background-color: #555;
+  background-color: #555 !important;
 }

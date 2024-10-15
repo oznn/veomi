@@ -1,4 +1,3 @@
-import { Entry } from '@types';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import arrowBack from '@assets/arrowback.png';
@@ -7,12 +6,14 @@ import styles from './styles.module.css';
 import { useAppSelector } from '../../redux/store';
 
 const { electron } = window;
-let libaryCount = 0;
+const width = `${
+  Math.max(...Object.values(extensions).map(({ name }) => name.length)) + 1
+}ch`;
 
 export default function Nav() {
   const searchRef = useRef<HTMLInputElement>(null);
   const [selectedExt, setSelectedExt] = useState('');
-  // const [isShowOptions, setIsShowOptions] = useState(false);
+  const [isShowOptions, setIsShowOptions] = useState(false);
   const nav = useNavigate();
   const { pathname } = useLocation();
   const app = useAppSelector((state) => state.app);
@@ -50,48 +51,33 @@ export default function Nav() {
           </Link>
         </div>
         <div>
-          {/* <div>
-             <div
-              className={styles.select}
-              onBlur={() => setIsShowOptions(false)}
-            >
-              <button type="button" onClick={() => setIsShowOptions((b) => !b)}>
-                {extensions[selectedExt].name}
-                <img
-                  src={arrowDown}
-                  width={24}
-                  height={24}
-                  alt="icon"
-                  style={{ rotate: isShowOptions ? '180deg' : '0deg' }}
-                />
-              </button>
-              <div className={styles.optoins}>
-                {Object.keys(extensions)
-                  .filter((k) => k !== selectedExt)
-                  .map((k, i) => (
-                    <button
-                      style={{
-                        opacity: Number(isShowOptions),
-                        transitionDelay: `${12 * i}ms`,
-                        pointerEvents: isShowOptions ? 'auto' : 'none',
-                      }}
-                      key={k}
-                      type="button"
-                      onMouseDown={() => setSelectedExt(k)}
-                    >
-                      {extensions[k].name}
-                      <img
-                        src={arrowDown}
-                        width={24}
-                        height={24}
-                        alt="icon"
-                        style={{ opacity: 0 }}
-                      />
-                    </button>
-                  ))}
-              </div>
-            </div>
-          </div> */}
+          <div
+            className={styles.select}
+            style={{
+              width,
+              background: isShowOptions ? '#111' : 'transparent',
+            }}
+            onBlur={() => setIsShowOptions(false)}
+          >
+            <button type="button" onClick={() => setIsShowOptions((b) => !b)}>
+              {extensions[selectedExt].name}
+            </button>
+            {isShowOptions &&
+              Object.keys(extensions)
+                .filter((k) => k !== selectedExt)
+                .map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    onMouseDown={() => {
+                      setSelectedExt(k);
+                      electron.store.set('selectedExt', k);
+                    }}
+                  >
+                    {extensions[k].name}
+                  </button>
+                ))}
+          </div>
           <input
             ref={searchRef}
             type="text"
@@ -100,7 +86,7 @@ export default function Nav() {
               if (key === 'Enter') {
                 const q = (target as HTMLInputElement).value;
                 (target as HTMLInputElement).value = '';
-                if (q) nav(`/browse?query=${q}&ext=${'hianime'}`);
+                if (q) nav(`/browse?query=${q}&ext=${selectedExt}`);
               }
             }}
           />

@@ -22,12 +22,13 @@ export async function getResults(query: string) {
       title,
       path: path.slice(0, path.indexOf('?')),
       posterURL,
+      type: 'VIDEO',
       ext,
     });
   });
   return results;
 }
-export async function getEpisodes(result: Result) {
+export async function getMedia(result: Result) {
   const { path } = result;
   const entryId = path.slice(path.lastIndexOf('-') + 1, path.length);
   const res = await fetch(`${baseURL}/ajax/v2/episode/list/${entryId}`);
@@ -45,7 +46,7 @@ export async function getEpisodes(result: Result) {
 
     episodes.push({
       id,
-      title: isNoTitle ? `Episode ${number}` : `${number}. ${title}`,
+      title: isNoTitle ? `${number}. Episode` : `${number}. ${title}`,
       isSeen: false,
       currentTime: 0,
       isFiller,

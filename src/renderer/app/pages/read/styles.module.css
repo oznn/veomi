@@ -1,0 +1,109 @@
+.reader {
+  margin: 0;
+  position: absolute;
+}
+
+.slider {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  transition: transform 300ms ease;
+}
+
+.slider button {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  overflow: hidden;
+}
+
+.reader img {
+  max-width: 100%;
+  max-height: 100%;
+  transform-origin: top;
+  transition: 200ms ease;
+}
+
+.context {
+  position: absolute;
+  animation: pop 100ms ease 1;
+  background-color: #111111cc;
+  backdrop-filter: blur(10px);
+  padding: .5em 0;
+  height: 420px;
+  width: 420px;
+  border-radius: .5em;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    scale: 0
+  }
+
+  100% {
+    opacity: 1;
+    scale: 1
+  }
+}
+
+.context button {
+  display: flex;
+  align-items: center;
+  gap: .4em;
+  cursor: pointer;
+  transition: color 200ms ease-in;
+  color: grey;
+  background: none;
+  width: 100%;
+  margin: 0 .4em;
+  font-weight: 500;
+}
+
+.context button:hover,
+.context button:focus-visible {
+  color: white;
+  transition: color 0s;
+}
+
+.context button>span {
+  background: grey;
+  width: .5em;
+  height: .5em;
+  transition: 200ms;
+}
+
+.context button>.arrow {
+  background: none;
+  border-right: solid 4px grey;
+  border-top: solid 4px grey;
+  rotate: 45deg;
+}
+
+.context button img {
+  opacity: .5;
+  transition: opacity 200ms ease-in;
+  cursor: pointer;
+}
+
+.context button:hover>img,
+.context button:focus-visible>img {
+  opacity: 1;
+  transition: color 0s;
+}
+
+.context input[type='range'] {
+  accent-color: grey;
+  width: 100%;
+}
+
+.number {
+  position: fixed;
+  inset: auto auto .5em 0;
+  font-size: .8em;
+  margin: 0 .4em;
+  text-shadow: 0 0 4px #000, 0 0 4px #000, 0 0 4px #000, 0 0 4px #000;
+}

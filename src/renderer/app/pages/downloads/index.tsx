@@ -50,8 +50,8 @@ export default function Downloads() {
             </span>
           </div>
           {(groupedQueue[key] as Queue).map((e, j) => (
-            <ul key={e.episodeTitle}>
-              <li key={e.episodeTitle} style={{ color: '#ccc' }}>
+            <ul key={e.mediaTitle}>
+              <li key={e.mediaTitle} style={{ color: '#ccc' }}>
                 <button
                   type="button"
                   className={buttonStyles.container}
@@ -76,13 +76,13 @@ export default function Downloads() {
                         ),
                       ),
                     );
-                    electron.ffmpeg.start();
+                    electron.download.start();
                   }}
                 >
                   RETRY
                 </button>
                 <span style={{ color: e.isFailed ? 'crimson' : '#eee' }}>
-                  {e.progress ? e.progress.toFixed(2) : 0}% {e.episodeTitle}
+                  {e.progress ? e.progress.toFixed(2) : 0}% {e.mediaTitle}
                 </span>
               </li>
             </ul>

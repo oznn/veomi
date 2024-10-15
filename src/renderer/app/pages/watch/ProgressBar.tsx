@@ -25,14 +25,14 @@ type Props = {
 
 export default function ProgressBar({ videoRef }: Props) {
   const dispatch = useDispatch();
-  const { episodeIdx } = useAppSelector((state) => state.app);
+  const { mediaIdx } = useAppSelector((state) => state.app);
   const seekerRef = useRef<HTMLDivElement>(null);
   const [hoveredTimestamp, setHoveredTimestamp] = useState(0);
 
   function seek() {
     if (videoRef.current) {
       videoRef.current.currentTime = hoveredTimestamp;
-      dispatch(setEpisodeCurrentTime({ episodeIdx, time: hoveredTimestamp }));
+      dispatch(setEpisodeCurrentTime({ mediaIdx, time: hoveredTimestamp }));
     }
   }
 

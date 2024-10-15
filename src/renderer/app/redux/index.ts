@@ -1,12 +1,22 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { Entry, Episode, Queue, Server, Video } from '../../types.d.ts';
+import type {
+  Chapter,
+  Entry,
+  Episode,
+  PlayerSettings,
+  Queue,
+  ReaderSettings,
+  ReadingMode,
+  Server,
+  Video,
+} from '@types';
 
 const { electron } = window;
 
 type InitialState = {
   entry: Entry | null;
   video: Video | null | undefined;
-  episodeIdx: number;
+  mediaIdx: number;
   sourceIdx: number;
   trackIdx: number;
   server: {
@@ -20,7 +30,7 @@ type InitialState = {
 const initialState = {
   entry: null,
   video: null,
-  episodeIdx: 0,
+  mediaIdx: 0,
   sourceIdx: 0,
   trackIdx: 0,
   server: { idx: 0, list: null },
@@ -45,30 +55,33 @@ const app = createSlice({
     },
     setVolume: (state, action: PayloadAction<number>) => {
       if (state.entry) {
-        state.entry.settings.volume = action.payload;
+        (state.entry.settings as PlayerSettings).volume = action.payload;
         const key = `entries.${state.entry.key}.settings.volume`;
         electron.store.set(key, action.payload);
       }
     },
     setEpisodeCurrentTime: (
       state,
-      action: PayloadAction<{ episodeIdx: number; time: number }>,
+      action: PayloadAction<{ mediaIdx: number; time: number }>,
     ) => {
       if (state.entry) {
-        const { episodeIdx, time } = action.payload;
-        state.entry.episodes[episodeIdx].currentTime = time;
+        const { mediaIdx, time } = action.payload;
+        (state.entry.media[mediaIdx] as Episode).currentTime = time;
       }
     },
     toggleAutoSkip: (state, action: PayloadAction<'intro' | 'outro'>) => {
       if (state.entry) {
-        const value = !state.entry.settings.isAutoSkip[action.payload];
-        state.entry.settings.isAutoSkip[action.payload] = value;
+        const value = !(state.entry.settings as PlayerSettings).isAutoSkip[
+          action.payload
+        ];
+        (state.entry.settings as PlayerSettings).isAutoSkip[action.payload] =
+          value;
         const key = `entries.${state.entry.key}.settings.isAutoSkip.${action.payload}`;
         electron.store.set(key, value);
       }
     },
-    setEpisodeIdx: (state, action: PayloadAction<number>) => {
-      state.episodeIdx = action.payload;
+    setMediaIdx: (state, action: PayloadAction<number>) => {
+      state.mediaIdx = action.payload;
       state.video = null;
     },
     setSourceIdx: (state, action: PayloadAction<number>) => {
@@ -77,7 +90,7 @@ const app = createSlice({
         const k = `entries.${state.entry.key}.settings.preferredQuality`;
         const { qual } = state.video.sources[action.payload];
 
-        state.entry.settings.preferredQuality = qual;
+        (state.entry.settings as PlayerSettings).preferredQuality = qual;
         electron.store.set(k, qual);
       }
     },
@@ -89,13 +102,14 @@ const app = createSlice({
           action.payload > -1
             ? state.video.tracks[action.payload].label.split(' ')[0]
             : '-';
-        state.entry.settings.preferredSubtitles = preferredSubtitles;
+        (state.entry.settings as PlayerSettings).preferredSubtitles =
+          preferredSubtitles;
         electron.store.set(k, preferredSubtitles);
       }
     },
     setPlaybackRate: (state, action: PayloadAction<number>) => {
       if (state.entry) {
-        state.entry.settings.playbackRate = action.payload;
+        (state.entry.settings as PlayerSettings).playbackRate = action.payload;
         const key = `entries.${state.entry.key}.settings.playbackRate`;
         electron.store.set(key, action.payload);
       }
@@ -112,7 +126,7 @@ const app = createSlice({
         state.server.list[state.server.idx].name !== 'local'
       ) {
         const k = `entries.${state.entry.key}.settings.preferredServer`;
-        state.entry.settings.preferredServer =
+        (state.entry.settings as PlayerSettings).preferredServer =
           state.server.list[state.server.idx].name;
         electron.store.set(k, state.server.list[state.server.idx].name);
       }
@@ -134,32 +148,32 @@ const app = createSlice({
       if (typeof action.payload.trackIdx === 'number')
         state.trackIdx = action.payload.trackIdx;
     },
-    setEpisodes: (state, action: PayloadAction<Episode[]>) => {
+    setMedia: (state, action: PayloadAction<Episode[] | Chapter[]>) => {
       if (state.entry) {
-        const { episodes } = state.entry;
+        const { media } = state.entry;
 
-        for (let i = 0; i < state.entry.episodes.length; i += 1) {
-          episodes[i].title = action.payload[i].title;
-          episodes[i].info = action.payload[i].info;
+        for (let i = 0; i < state.entry.media.length; i += 1) {
+          media[i].title = action.payload[i].title;
+          media[i].info = action.payload[i].info;
         }
-        for (let i = episodes.length; i < action.payload.length; i += 1)
-          episodes.push(action.payload[i]);
+        for (let i = media.length; i < action.payload.length; i += 1)
+          (media as Episode[]).push(action.payload[i] as Episode);
 
-        const k = `entries.${state.entry.key}.episodes`;
-        electron.store.set(k, JSON.parse(JSON.stringify(episodes)));
+        const k = `entries.${state.entry.key}.media`;
+        electron.store.set(k, JSON.parse(JSON.stringify(media)));
       }
     },
     toggleIsSeen(state, action: PayloadAction<number[]>) {
       if (state.entry) {
         const seenLength = action.payload.filter(
-          (e) => state.entry?.episodes[e].isSeen,
+          (e) => state.entry?.media[e].isSeen,
         ).length;
         const toggle = seenLength * 2 > action.payload.length;
 
         action.payload.forEach((n) => {
           if (state.entry) {
-            const k = `entries.${state.entry.key}.episodes.${n}.isSeen`;
-            state.entry.episodes[n].isSeen = !toggle;
+            const k = `entries.${state.entry.key}.media.${n}.isSeen`;
+            state.entry.media[n].isSeen = !toggle;
             electron.store.set(k, !toggle);
           }
         });
@@ -167,7 +181,8 @@ const app = createSlice({
     },
     setMarkAsSeenPercent(state, action: PayloadAction<number>) {
       if (state.entry) {
-        state.entry.settings.markAsSeenPercent = action.payload;
+        (state.entry.settings as PlayerSettings).markAsSeenPercent =
+          action.payload;
         const k = `entries.${state.entry.key}.settings.markAsSeenPercent`;
         electron.store.set(k, action.payload);
       }
@@ -180,13 +195,13 @@ const app = createSlice({
       const idx = state.queue.findIndex(({ isFailed }) => !isFailed);
       if (idx > -1) state.queue[idx].progress = action.payload;
     },
-    resetEpisodesDownloads(state) {
+    removeDownloadedMedia(state) {
       if (state.entry) {
-        state.entry.episodes.forEach((e) => {
+        state.entry.media.forEach((e) => {
           e.downloaded = undefined;
         });
-        const k = `entries.${state.entry.key}.episodes`;
-        electron.store.set(k, JSON.parse(JSON.stringify(state.entry.episodes)));
+        const k = `entries.${state.entry.key}.media`;
+        electron.store.set(k, JSON.parse(JSON.stringify(state.entry.media)));
       }
     },
     setEntryProp(state, action: PayloadAction<{ k: string; v: any }>) {
@@ -198,10 +213,22 @@ const app = createSlice({
           return obj[key];
         }, state.entry);
 
-        electron.store.set(
-          `entries.${state.entry.key}`,
-          JSON.parse(JSON.stringify(state.entry)),
-        );
+        electron.store.set(`entries.${state.entry.key}.${k}`, v);
+      }
+    },
+    setReadingMode: (state, action: PayloadAction<ReadingMode>) => {
+      if (state.entry) {
+        (state.entry.settings as ReaderSettings).mode = action.payload;
+        const key = `entries.${state.entry.key}.settings.mode`;
+        electron.store.set(key, action.payload);
+      }
+    },
+    setCurrentPage: (state, action: PayloadAction<number>) => {
+      if (state.entry) {
+        (state.entry.media[state.mediaIdx] as Chapter).currentPage =
+          action.payload;
+        const k = `entries.${state.entry.key}.media.${state.mediaIdx}`;
+        electron.store.set(`${k}.currentPage`, action.payload);
       }
     },
   },
@@ -214,19 +241,21 @@ export const {
   setEpisodeCurrentTime,
   setPlaybackRate,
   toggleAutoSkip,
-  setEpisodeIdx,
+  setMediaIdx,
   setServer,
   setVideo,
   setTrackIdx,
   setSourceIdx,
   setServerIdx,
-  setEpisodes,
+  setMedia,
   toggleIsSeen,
   setMarkAsSeenPercent,
   serverRetry,
   setQueue,
   setQueueProgress,
-  resetEpisodesDownloads,
+  removeDownloadedMedia,
   setEntryProp,
+  setReadingMode,
+  setCurrentPage,
 } = app.actions;
 export default app.reducer;

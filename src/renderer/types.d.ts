@@ -3,6 +3,7 @@ export type Result = {
   posterURL: string;
   ext: string;
   path: string;
+  type: 'VIDEO' | 'IMAGE';
   [key: string]: any;
 };
 export type Source = { file: string; qual: number };
@@ -26,21 +27,37 @@ export type Details = {
   info: string[];
   description: string;
 };
+export type PlayerSettings = {
+  volume: number;
+  playbackRate: number;
+  isAutoSkip: { intro: boolean; outro: boolean };
+  markAsSeenPercent: number;
+  preferredQuality: number;
+  preferredSubtitles: string;
+  preferredServer: string;
+};
+export type Chapter = {
+  id: string;
+  title: string;
+  isSeen: boolean;
+  currentPage: number;
+  downloaded?: string[];
+  info?: string[];
+};
+export type ReadingMode = 'ltr' | 'rtl' | 'ttb' | 'btt' | 'scroll';
+export type ReaderSettings = {
+  mode: ReadingMode;
+  zoom: number;
+  yScrollFactor: number;
+};
+
 export type Entry = {
   key: string;
   result: Result;
-  episodes: Episode[];
   isInLibary: boolean;
   category: string;
-  settings: {
-    volume: number;
-    playbackRate: number;
-    isAutoSkip: { intro: boolean; outro: boolean };
-    markAsSeenPercent: number;
-    preferredQuality: number;
-    preferredSubtitles: string;
-    preferredServer: string;
-  };
+  media: Episode[] | Chapter[];
+  settings: PlayerSettings | ReaderSettings;
   details?: Details;
   posterPath?: string;
 };
@@ -52,10 +69,11 @@ export type Server = {
 
 export type Queue = {
   entryKey: string;
-  episodeKey: string;
-  episodeIdx: number;
+  mediaKey: string;
+  mediaIdx: number;
   entryTitle: string;
-  episodeTitle: string;
+  mediaTitle: string;
+  mediaType: 'VIDEO' | 'IMAGE';
   progress: number;
   isFailed: boolean;
 }[];

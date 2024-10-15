@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Entry, Server, Video } from '@types';
+import { Entry, PlayerSettings, Server, Video } from '@types';
 import arrowBack from '@assets/arrowback.png';
 import { useAppSelector } from '../../redux/store';
 import styles from './Context.module.css';
@@ -10,7 +10,7 @@ import {
   setTrackIdx,
   setPlaybackRate,
   toggleAutoSkip,
-  setEpisodeIdx,
+  setMediaIdx,
   setMarkAsSeenPercent,
 } from '../../redux';
 
@@ -121,7 +121,7 @@ function Playback() {
   const dispatch = useDispatch();
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
-  const { playbackRate } = entry.settings;
+  const { playbackRate } = entry.settings as PlayerSettings;
 
   return (
     <div style={{ padding: '0 .5em' }}>
@@ -145,6 +145,7 @@ function Playback() {
 function MarkAsSeenPercent() {
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
+  const settings = entry.settings as PlayerSettings;
   const dispatch = useDispatch();
 
   return (
@@ -159,7 +160,7 @@ function MarkAsSeenPercent() {
           color: 'grey',
         }}
         type="number"
-        defaultValue={entry.settings.markAsSeenPercent}
+        defaultValue={settings.markAsSeenPercent}
         onChange={(e) => {
           e.target.value = `${Math.max(0, Math.min(+e.target.value, 100))}`;
           dispatch(setMarkAsSeenPercent(+e.target.value));
@@ -184,6 +185,7 @@ export default function Context({ x, y }: { x: number; y: number }) {
   const entry = app.entry as Entry;
   const video = app.video as Video;
   const server = app.server as { list: Server[]; idx: number };
+  const entrySettings = entry.settings as PlayerSettings;
   const { sourceIdx, trackIdx } = app;
   const translateX = x + 420 > window.innerWidth ? '-100%' : '0';
   const translateY = y + 420 > window.innerHeight ? '-100%' : '0';
@@ -216,18 +218,18 @@ export default function Context({ x, y }: { x: number; y: number }) {
         <div style={{ display: 'flex' }}>
           <button
             type="button"
-            disabled={app.episodeIdx === 0}
-            onClick={() => dispatch(setEpisodeIdx(app.episodeIdx - 1))}
+            disabled={app.mediaIdx === 0}
+            onClick={() => dispatch(setMediaIdx(app.mediaIdx - 1))}
           >
             [P]rev
           </button>
           <button type="button" onClick={() => document.exitFullscreen()}>
-            [E]xit
+            [Esc]ape
           </button>
           <button
             type="button"
-            disabled={app.episodeIdx === entry.episodes.length - 1}
-            onClick={() => dispatch(setEpisodeIdx(app.episodeIdx + 1))}
+            disabled={app.mediaIdx === entry.media.length - 1}
+            onClick={() => dispatch(setMediaIdx(app.mediaIdx + 1))}
           >
             [N]ext
           </button>
@@ -235,8 +237,8 @@ export default function Context({ x, y }: { x: number; y: number }) {
         <button type="button" onClick={() => dispatch(toggleAutoSkip('intro'))}>
           <span
             style={{
-              opacity: entry.settings.isAutoSkip.intro ? 1 : 0,
-              transform: `scale(${entry.settings.isAutoSkip.intro ? 1 : 3})`,
+              opacity: entrySettings.isAutoSkip.intro ? 1 : 0,
+              transform: `scale(${entrySettings.isAutoSkip.intro ? 1 : 3})`,
             }}
           />
           Auto skip intro
@@ -244,8 +246,8 @@ export default function Context({ x, y }: { x: number; y: number }) {
         <button type="button" onClick={() => dispatch(toggleAutoSkip('outro'))}>
           <span
             style={{
-              opacity: entry.settings.isAutoSkip.outro ? 1 : 0,
-              transform: `scale(${entry.settings.isAutoSkip.outro ? 1 : 3})`,
+              opacity: entrySettings.isAutoSkip.outro ? 1 : 0,
+              transform: `scale(${entrySettings.isAutoSkip.outro ? 1 : 3})`,
             }}
           />
           Auto skip outro
@@ -266,13 +268,13 @@ export default function Context({ x, y }: { x: number; y: number }) {
       <div>
         <button type="button" onClick={() => setSettingIdx(2)}>
           <span className={styles.arrow} />
-          {entry.settings.playbackRate.toFixed(2)}x
+          {entrySettings.playbackRate.toFixed(2)}x
         </button>
       </div>
       <div>
         <button type="button" onClick={() => setSettingIdx(3)}>
           <span className={styles.arrow} />
-          {entry.settings.markAsSeenPercent}%
+          {entrySettings.markAsSeenPercent}%
         </button>
       </div>
       {video.tracks && (

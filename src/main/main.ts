@@ -32,7 +32,7 @@ class AppUpdater {
 }
 
 let mw: BrowserWindow | null = null;
-let origin: string | null = 'https://hianime.to';
+let origin: string | null = null;
 const store = new Store();
 
 type VideoFile = {
@@ -43,7 +43,7 @@ type VideoFile = {
 };
 
 let ffmpeg: null | Ffmpeg.FfmpegCommand = null;
-ipcMain.handle('ffmpeg-start', () => mw?.webContents.send('ffmpeg-download'));
+ipcMain.handle('download-start', () => mw?.webContents.send('download-start'));
 ipcMain.handle('ffmpeg-download', async (_, videoFile: VideoFile) => {
   ffmpeg = Ffmpeg();
 
@@ -60,7 +60,7 @@ ipcMain.handle('ffmpeg-download', async (_, videoFile: VideoFile) => {
     .on('error', (err) => mw?.webContents.send('console-log', err))
     .on('progress', (progress) => {
       console.log(videoFile.fileName, progress.percent);
-      mw?.webContents.send('ffmpeg-progress', progress.percent);
+      mw?.webContents.send('download-progress', progress.percent);
     })
     .on('end', async () => {
       videoFile.video.sources[0].file = `${folder}/${videoFile.fileName}.mp4`;
@@ -74,7 +74,7 @@ ipcMain.handle('ffmpeg-download', async (_, videoFile: VideoFile) => {
         videoFile.video.tracks[0].file = filePath;
       }
       store.set(`${videoFile.episodeKey}.downloaded`, videoFile.video);
-      mw?.webContents.send('ffmpeg-download', true);
+      mw?.webContents.send('download-start', true);
     })
     .run();
 });
@@ -82,6 +82,45 @@ ipcMain.handle('ffmpeg-stop', () => {
   if (ffmpeg) {
     ffmpeg.kill('SIGKILL');
     mw?.webContents.send('ffmpeg-download');
+  }
+});
+
+type ImagesFolder = {
+  folderName: string;
+  fileName: string;
+  chapterKey: string;
+  pages: string[];
+};
+
+ipcMain.handle('images-download', async (_, imagesFolder: ImagesFolder) => {
+  const appDataDir = app.getPath('userData');
+  const downloadsDir = path.join(appDataDir, 'downloads');
+  if (!existsSync(downloadsDir)) await mkdir(downloadsDir);
+  const entryFolder = `${downloadsDir}/${imagesFolder.folderName}`;
+  if (!existsSync(entryFolder)) await mkdir(entryFolder);
+  const chapterFolder = `${entryFolder}/${imagesFolder.fileName}`;
+  if (!existsSync(chapterFolder)) await mkdir(chapterFolder);
+
+  const pagesPaths = [];
+  const { length } = imagesFolder.pages;
+  for (let i = 0; i < length; i += 1) {
+    const url = imagesFolder.pages[i];
+    const { body } = await fetch(url); //eslint-disable-line
+    const fileType = url.slice(url.lastIndexOf('.'), url.length);
+    const pagePath = `${chapterFolder}/${i + 1}${fileType}`;
+    const stream = createWriteStream(pagePath);
+
+    if (body) {
+      await finished(Readable.fromWeb(body as any).pipe(stream)); //eslint-disable-line
+      console.log(imagesFolder.fileName, (i / (length - 1)) * 100);
+      mw?.webContents.send('download-progress', (i / (length - 1)) * 100);
+      pagesPaths.push(pagePath);
+      if (i === length - 1) {
+        store.set(`${imagesFolder.chapterKey}.downloaded`, pagesPaths);
+        console.log('downloaded', imagesFolder.fileName);
+        mw?.webContents.send('download-start', true);
+      }
+    }
   }
 });
 ipcMain.on('change-origin', (_, newOrigin) => (origin = newOrigin)); //eslint-disable-line
@@ -115,10 +154,7 @@ ipcMain.handle('extractor-megacloud', (_, ciphered) =>
 );
 ipcMain.handle('fs-remove', (_, folderPath) => {
   const p = path.join(app.getPath('userData'), 'downloads', folderPath);
-  if (!existsSync(p))
-    rm(p, {
-      recursive: true,
-    });
+  if (existsSync(p)) rm(p, { recursive: true });
 });
 ipcMain.handle('dialog-showMessage', (_, message) => {
   if (mw) dialog.showMessageBox(mw, { message });

@@ -7,10 +7,10 @@ import Confirm from '@components/confirm';
 import Details from './Details';
 import { useAppSelector } from '../../redux/store';
 import {
-  resetEpisodesDownloads,
+  removeDownloadedMedia,
   setEntry,
-  setEpisodeIdx,
-  setEpisodes,
+  setMediaIdx,
+  setMedia,
   setQueue,
   toggleIsSeen,
 } from '../../redux';
@@ -27,28 +27,28 @@ export default function Entry() {
   const [searchParams] = useSearchParams();
   const result = JSON.parse(searchParams.get('result') || '{}') as Result;
   const [isLoading, setIsLoading] = useState(false);
-  const [isUpdatingEpisodes, setIsUpdatingEpisodes] = useState(false);
+  const [isUpdatingMedia, setIsUpdatingMedia] = useState(false);
   const [selected, setSelected] = useState<number[]>([]);
   const [order, setOrder] = useState(1);
   const [isShowRemoveConfirmation, setIsShowRemoveConfirmation] =
     useState(false);
   const nav = useNavigate();
   const isCanDownload = selected
-    .map((e) => `entries.${entry?.key}.episodes.${e}`)
-    .some((k) => queue.findIndex((q) => q.episodeKey === k) === -1);
+    .map((e) => `entries.${entry?.key}.media.${e}`)
+    .some((k) => queue.findIndex((q) => q.mediaKey === k) === -1);
 
-  async function updateEpisodes() {
+  async function updateMedia() {
     if (entry) {
-      setIsUpdatingEpisodes(true);
+      setIsUpdatingMedia(true);
 
-      const { getEpisodes } = await import(
+      const { getMedia } = await import(
         `../../../ext/extensions/${result.ext}`
       );
-      const episodes = (await getEpisodes(result)) || [];
+      const media = (await getMedia(result)) || [];
 
-      if (episodes) {
-        dispatch(setEpisodes(episodes));
-        setIsUpdatingEpisodes(false);
+      if (media) {
+        dispatch(setMedia(media));
+        setIsUpdatingMedia(false);
       }
     }
   }
@@ -62,35 +62,39 @@ export default function Entry() {
     dispatch(setEntry(null));
     // eslint-disable-next-line
     (async () => {
-      const entryKey = (result.ext + result.path).replace(/\./g, ' ');
-      const e = (await electron.store.get(`entries.${entryKey}`)) as
-        | T
-        | undefined;
+      const key = (result.ext + result.path).replace(/\./g, ' ');
+      const e = (await electron.store.get(`entries.${key}`)) as T | undefined;
       if (e) return dispatch(setEntry(e));
 
       setIsLoading(true);
-      const { getEpisodes } = await import(
+      const { getMedia } = await import(
         `../../../ext/extensions/${result.ext}`
       );
-      // const details = await getDetails(result);
-      const episodes = (await getEpisodes(result)) || [];
-      const settings = await electron.store.get('settings');
+      const media = (await getMedia(result)) || [];
+      const defaultPlayerSettings = {
+        volume: 10,
+        playbackRate: 1,
+        isAutoSkip: { intro: true, outro: true },
+        markAsSeenPercent: 85,
+        preferredQuality: 0,
+        preferredSubtitles: 'English',
+        preferredServer: '',
+      };
+      const defaultReaderSettings = { mode: 'rtl', zoom: 0, yScrollFactor: 1 };
+      const settings =
+        result.type === 'VIDEO'
+          ? (await electron.store.get('playerSettings')) ||
+            defaultPlayerSettings
+          : (await electron.store.get('readerSettings')) ||
+            defaultReaderSettings;
       const res: T = {
-        key: entryKey,
+        key,
         result,
-        episodes,
+        media,
+        settings,
         details: undefined,
         isInLibary: false,
         category: '',
-        settings: settings || {
-          volume: 10,
-          playbackRate: 1,
-          isAutoSkip: { intro: true, outro: true },
-          markAsSeenPercent: 85,
-          preferredQuality: 0,
-          preferredSubtitles: 'English',
-          preferredServer: '',
-        },
       };
 
       if (res) {
@@ -103,23 +107,23 @@ export default function Entry() {
   function download() {
     if (entry) {
       const items: Queue = selected
-        .map((i) => (order - 1 ? entry.episodes.length - i - 1 : i))
-        .map((episodeIdx) => ({
+        .map((i) => (order - 1 ? entry.media.length - i - 1 : i))
+        .map((mediaIdx) => ({
           entryKey: entry.key,
-          episodeIdx,
+          mediaIdx,
           entryTitle: entry.result.title,
-          episodeKey: `entries.${entry.key}.episodes.${episodeIdx}`,
-          episodeTitle: entry.episodes[episodeIdx].title,
+          mediaKey: `entries.${entry.key}.media.${mediaIdx}`,
+          mediaTitle: entry.media[mediaIdx].title,
+          mediaType: entry.result.type,
           progress: 0,
           isFailed: false,
         }))
         .filter(
-          (e) => queue.findIndex((q) => q.episodeKey === e.episodeKey) === -1,
+          (e) => queue.findIndex((q) => q.mediaKey === e.mediaKey) === -1,
         );
-
       dispatch(setQueue((queue as Queue).concat(items)));
       setSelected([]);
-      electron.ffmpeg.start();
+      if (!queue.length) electron.download.start();
     }
   }
 
@@ -131,7 +135,7 @@ export default function Entry() {
           ' ',
         )}`,
       );
-      dispatch(resetEpisodesDownloads());
+      dispatch(removeDownloadedMedia());
     }
   }
 
@@ -140,13 +144,16 @@ export default function Entry() {
     return (
       <div className={styles.container}>
         <Details />
-        <span>{entry.episodes.length} Episodes </span>
+        <span>
+          {entry.media.length}{' '}
+          {entry.result.type === 'VIDEO' ? 'Episodes' : 'Chapters'}{' '}
+        </span>
         <button
           type="button"
           className={buttonStyles.container}
           style={{ fontSize: '.8em' }}
-          disabled={isUpdatingEpisodes}
-          onClick={updateEpisodes}
+          disabled={isUpdatingMedia}
+          onClick={updateMedia}
         >
           UPDATE
         </button>
@@ -156,7 +163,7 @@ export default function Entry() {
           style={{ fontSize: '.8em' }}
           onClick={() => {
             setOrder((v) => (v - 1 ? 1 : -1));
-            setSelected((a) => a.map((i) => entry.episodes.length - i - 1));
+            setSelected((a) => a.map((i) => entry.media.length - i - 1));
           }}
         >
           {order - 1 ? 'ASC' : 'DESC'}
@@ -164,39 +171,35 @@ export default function Entry() {
         <button
           type="button"
           onClick={() => setIsShowRemoveConfirmation(true)}
-          disabled={!entry.episodes.some((e) => e.downloaded)}
+          disabled={!entry.media.some((e) => e.downloaded)}
           style={{ fontSize: '.8em' }}
           className={buttonStyles.container}
         >
           REMOVE DOWNLOADS
         </button>
-        <div className={styles.episodes}>
-          {entry.episodes
+        <div className={styles.media}>
+          {entry.media
             .toSorted(() => order)
-            .map((episode, i) => (
+            .map((media, i) => (
               <button
                 type="button"
-                key={episode.title}
+                key={media.id + media.title}
                 onClick={() => {
                   dispatch(
-                    setEpisodeIdx(
-                      order - 1 ? entry.episodes.length - i - 1 : i,
-                    ),
+                    setMediaIdx(order - 1 ? entry.media.length - i - 1 : i),
                   );
-                  nav('/watch');
+                  nav(entry.result.type === 'VIDEO' ? '/watch' : '/read');
                 }}
-                title={episode.info && episode.info.join(' • ')}
+                title={media.info && media.info.join(' • ')}
                 onAuxClick={() => toggleSelect(i)}
                 style={{ background: selected.includes(i) ? '#333' : 'none' }}
               >
-                <span
-                  style={{ background: episode.isSeen ? 'grey' : 'white' }}
-                />
-                {episode.downloaded && <span>DOWNLOADED</span>}
+                <span style={{ background: media.isSeen ? 'grey' : 'white' }} />
+                {media.downloaded && <span>DOWNLOADED</span>}
                 {queue.findIndex(
-                  (q) => q.episodeKey === `entries.${entry.key}.episodes.${i}`,
+                  (q) => q.mediaKey === `entries.${entry.key}.media.${i}`,
                 ) !== -1 && <span>IN QUEUE</span>}
-                <span>{episode.title}</span>
+                <span>{media.title}</span>
               </button>
             ))}
         </div>
@@ -210,7 +213,7 @@ export default function Entry() {
                   dispatch(
                     toggleIsSeen(
                       order - 1
-                        ? selected.map((e) => entry.episodes.length - e - 1)
+                        ? selected.map((e) => entry.media.length - e - 1)
                         : selected,
                     ),
                   );
@@ -233,11 +236,9 @@ export default function Entry() {
             <div>
               <button
                 type="button"
-                disabled={selected.length === entry.episodes.length}
+                disabled={selected.length === entry.media.length}
                 onClick={() =>
-                  setSelected(
-                    [...Array(entry.episodes.length)].map((_, i) => i),
-                  )
+                  setSelected([...Array(entry.media.length)].map((_, i) => i))
                 }
               >
                 all
@@ -246,7 +247,7 @@ export default function Entry() {
                 type="button"
                 // the following function was made by 4nglp
                 onClick={() => {
-                  const { length } = entry.episodes;
+                  const { length } = entry.media;
                   const all = [...Array(length)].map((_, i) => i);
                   const arr = all.filter((e) => !selected.includes(e));
 
@@ -277,11 +278,15 @@ export default function Entry() {
         )}
         {isShowRemoveConfirmation && (
           <Confirm
-            title={`DELETE ALL ${entry.episodes.reduce(
+            title={`Delete all ${entry.media.reduce(
               (p, c) => p + (c.downloaded ? 1 : 0),
               0,
-            )} DOWNLOADED EPISODES?`}
-            msg="SUBTITLES WILL ALSO BE REMOVED"
+            )} downloads?`}
+            msg={
+              entry.result.type === 'VIDEO'
+                ? 'SUBTITLES WILL ALSO BE REMOVED'
+                : ''
+            }
             cancel={() => setIsShowRemoveConfirmation(false)}
             confirm={() => {
               removeDownloads();

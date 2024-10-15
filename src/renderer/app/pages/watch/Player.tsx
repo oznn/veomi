@@ -2,14 +2,14 @@ import Hls from 'hls.js';
 import { WebVTTParser } from 'webvtt-parser';
 import Loading from '@components/loading';
 import { useDispatch } from 'react-redux';
-import { Video, Entry, Server } from '@types';
+import { Video, Entry, Server, PlayerSettings, Episode } from '@types';
 import { useEffect, useRef, useState } from 'react';
 import ProgressBar from './ProgressBar';
 import { useAppSelector } from '../../redux/store';
 import {
   setEpisodeCurrentTime,
   setVolume,
-  setEpisodeIdx,
+  setMediaIdx,
   serverRetry,
 } from '../../redux';
 import Context from './Context';
@@ -27,13 +27,14 @@ export default function Player() {
   const entry = app.entry as Entry;
   const video = app.video as Video;
   const server = app.server as { list: Server[]; idx: number };
-  const { episodeIdx, sourceIdx, trackIdx } = app;
+  const { mediaIdx, sourceIdx, trackIdx } = app;
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const source = video.sources[sourceIdx];
   const track = video.tracks ? video.tracks[trackIdx] : null;
-  const episode = entry.episodes[episodeIdx];
-  const episodeKey = `entries.${entry.key}.episodes.${episodeIdx}`;
+  const episode = entry.media[mediaIdx] as Episode;
+  const episodeKey = `entries.${entry.key}.media.${mediaIdx}`;
+  const settings = entry.settings as PlayerSettings;
   const [isShowCursor, setIsShowCursor] = useState(false);
   const [isShowVolume, setIsShowVolume] = useState(false);
   const [context, setContext] = useState({ isShow: false, x: 0, y: 0 });
@@ -43,7 +44,7 @@ export default function Player() {
 
   function changeVolume(v: number) {
     if (videoRef.current) {
-      const volume = Math.max(0, Math.min(entry.settings.volume + v, 20));
+      const volume = Math.max(0, Math.min(settings.volume + v, 20));
       videoRef.current.volume = volume * 0.05;
       dispatch(setVolume(volume));
       setIsShowVolume(true);
@@ -61,28 +62,38 @@ export default function Player() {
   document.onkeydown = ({ key }) => {
     if (videoRef.current)
       switch (key) {
-        case 'l':
         case 'ArrowRight':
+        case 'l':
+        case 'L':
+        case 'd':
+        case 'D':
           videoRef.current.currentTime = Math.min(
             videoRef.current.duration,
             videoRef.current.currentTime + 5,
           );
           break;
-        case 'h':
         case 'ArrowLeft':
+        case 'h':
+        case 'H':
+        case 'a':
+        case 'A':
           videoRef.current.currentTime = Math.max(
             0,
             videoRef.current.currentTime - 5,
           );
           break;
+        case 'ArrowUp':
         case 'k':
         case 'K':
-        case 'ArrowUp':
+        case 'w':
+        case 'W':
           changeVolume(1);
           break;
+        case 'ArrowDown':
         case 'j':
         case 'J':
-        case 'ArrowDown':
+        case 's':
+        case 'S':
           changeVolume(-1);
           break;
         case ' ':
@@ -90,17 +101,11 @@ export default function Player() {
           break;
         case 'n':
         case 'N':
-          dispatch(
-            setEpisodeIdx(Math.min(entry.episodes.length - 1, episodeIdx + 1)),
-          );
+          dispatch(setMediaIdx(Math.min(entry.media.length - 1, mediaIdx + 1)));
           break;
         case 'p':
         case 'P':
-          dispatch(setEpisodeIdx(Math.max(0, episodeIdx - 1)));
-          break;
-        case 'e':
-        case 'E':
-          document.exitFullscreen();
+          dispatch(setMediaIdx(Math.max(0, mediaIdx - 1)));
           break;
         default:
         // no default
@@ -111,15 +116,14 @@ export default function Player() {
     window.ononline = () => dispatch(serverRetry());
     if (videoRef.current) {
       if (source.file.includes('.m3u8')) {
-        console.log('source file', source.file);
         hls.loadSource(source.file);
         hls.attachMedia(videoRef.current);
         hls.on(Hls.Events.ERROR, (_, data) => console.log('hlsErr', data.type));
       }
 
       videoRef.current.currentTime = episode.currentTime;
-      videoRef.current.volume = entry.settings.volume * 0.05;
-      videoRef.current.playbackRate = entry.settings.playbackRate;
+      videoRef.current.volume = settings.volume * 0.05;
+      videoRef.current.playbackRate = settings.playbackRate;
       videoRef.current.play();
     }
     return () => {
@@ -143,9 +147,8 @@ export default function Player() {
     })();
   }, [trackIdx]);
   useEffect(() => {
-    if (videoRef.current)
-      videoRef.current.playbackRate = entry.settings.playbackRate;
-  }, [entry.settings.playbackRate]);
+    if (videoRef.current) videoRef.current.playbackRate = settings.playbackRate;
+  }, [settings.playbackRate]);
 
   function skip(part: 'intro' | 'outro', time: number) {
     const { skips } = video;
@@ -162,16 +165,13 @@ export default function Player() {
 
       if (currentTime > 0 && Math.floor(currentTime) % 5 === 0)
         electron.store.set(`${episodeKey}.currentTime`, currentTime);
-      if (entry.settings.isAutoSkip.intro) skip('intro', currentTime);
-      if (entry.settings.isAutoSkip.outro) skip('outro', currentTime);
-      if (
-        !episode.isSeen &&
-        progressPercent >= entry.settings.markAsSeenPercent
-      )
+      if (settings.isAutoSkip.intro) skip('intro', currentTime);
+      if (settings.isAutoSkip.outro) skip('outro', currentTime);
+      if (!episode.isSeen && progressPercent >= settings.markAsSeenPercent)
         electron.store.set(`${episodeKey}.isSeen`, true);
       dispatch(
         setEpisodeCurrentTime({
-          episodeIdx,
+          mediaIdx,
           time: videoRef.current.currentTime,
         }),
       );
@@ -200,9 +200,7 @@ export default function Player() {
         }}
         onEnded={() => {
           electron.store.set(`${episodeKey}.currentTime`, 0);
-          dispatch(
-            setEpisodeIdx(Math.min(entry.episodes.length - 1, episodeIdx + 1)),
-          );
+          dispatch(setMediaIdx(Math.min(entry.media.length - 1, mediaIdx + 1)));
         }}
         onMouseMove={() => {
           setIsShowCursor(true);
@@ -220,7 +218,7 @@ export default function Player() {
       </span>
       {isVideoLoading && <Loading centerY />}
       <span className={styles.volume} style={{ opacity: +isShowVolume }}>
-        {entry.settings.volume * 5}%
+        {settings.volume * 5}%
       </span>
 
       {textTracks && trackIdx > -1 && (

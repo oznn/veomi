@@ -6,7 +6,7 @@ import Confirm from '@components/confirm';
 import resultsStyles from '@styles/Results.module.css';
 import buttonStyles from '@styles/Button.module.css';
 import { useDispatch } from 'react-redux';
-import { setEntry, setEpisodeIdx } from '../../redux';
+import { setEntry, setMediaIdx } from '../../redux';
 import styles from './styles.module.css';
 import extensions from '../../../extensions';
 import Categorize from './Categorize';
@@ -56,20 +56,21 @@ export default function Libary() {
       entries[e].isUpdating = true;
       rerender();
       await new Promise((resolve) => setTimeout(resolve, 1000)); // eslint-disable-line
-      const { getEpisodes } = await import(
-        `../../../ext/extensions/${entries[e].result.ext}`
+      const { result } = entries[e];
+      const { getMedia } = await import(
+        `../../../ext/extensions/${result.ext}`
       );
-      const episodes = await getEpisodes(entries[e].result);
-      if (episodes) {
-        for (let i = 0; i < entries[e].episodes.length; i += 1) {
-          entries[e].episodes[i].title = episodes[i].title;
-          entries[e].episodes[i].info = episodes[i].info;
+      const media = await getMedia(result);
+      if (media) {
+        for (let i = 0; i < entries[e].media.length; i += 1) {
+          entries[e].media[i].title = media[i].title;
+          entries[e].media[i].info = media[i].info;
         }
-        for (let i = entries[e].episodes.length; i < episodes.length; i += 1)
-          entries[e].episodes.push(episodes[i]);
+        for (let i = entries[e].media.length; i < media.length; i += 1)
+          entries[e].media.push(media[i]);
 
-        const k = `entries.${entries[e].key}.episodes`;
-        electron.store.set(k, entries[e].episodes);
+        const k = `entries.${entries[e].key}.media`;
+        electron.store.set(k, entries[e].media);
 
         entries[e].isUpdating = false;
         update(s.filter((_, i) => i !== 0));
@@ -79,19 +80,19 @@ export default function Libary() {
   }
 
   function remove() {
-    selected.forEach((k, i) => {
+    selected.forEach((k) => {
       if (entries) {
         const e = entries.findIndex(({ key }) => key === k);
-        electron.store.delete(`entries.${entries[e - i].key}`);
-        electron.poster.delete(entries[e - i].posterPath);
+        electron.store.delete(`entries.${entries[e].key}`);
+        electron.poster.delete(entries[e].posterPath);
 
-        const extensionName = extensions[entries[e - i].result.ext].name;
-        const folderName = entries[e - i].result.title;
+        const extensionName = extensions[entries[e].result.ext].name;
+        const folderName = entries[e].result.title;
         electron.fs.remove(
           `[${extensionName}] ${folderName.replace(/[<>:"/\\|?*]/g, ' ')}`,
         );
 
-        entries.splice(e - i, 1);
+        entries.splice(e, 1);
       }
     });
 
@@ -110,7 +111,7 @@ export default function Libary() {
         electron.store.set(`entries.${entries[e].key}.category`, c);
       }
     });
-    rerender();
+    setCategoryIdx(0);
   }
 
   function clearCategory(c: string) {
@@ -130,18 +131,20 @@ export default function Libary() {
           overflow: 'scroll',
           display: 'flex',
           paddingInline: '2em',
-          gap: '.4em',
+          gap: '.2em',
         }}
       >
         {entries.some((e) => e.category) &&
           (isUseCategories ? ['', ...categories] : categories).map((c, i) => (
             <button
               disabled={i === categoryIdx}
-              className={buttonStyles.container}
               style={{
                 fontSize: '.8em',
-                transform: `scale(${i === categoryIdx ? 1.2 : 1})`,
+                background: i === categoryIdx ? 'white' : '#333',
+                color: i === categoryIdx ? 'black' : 'silver',
+                transition: 'all 200ms ease',
               }}
+              className={buttonStyles.container}
               key={c}
               type="button"
               onClick={() => setCategoryIdx(i)}
@@ -169,11 +172,11 @@ export default function Libary() {
               key={entry.key}
               className={resultsStyles.link}
               onClick={() => {
-                const n = entry.episodes.findIndex((e) => !e.isSeen);
+                const n = entry.media.findIndex((e) => !e.isSeen);
 
-                dispatch(setEpisodeIdx(Math.max(0, n)));
+                dispatch(setMediaIdx(Math.max(0, n)));
                 dispatch(setEntry(entry));
-                nav('/watch');
+                nav(entry.result.type === 'VIDEO' ? '/watch' : '/read');
               }}
               onAuxClick={() => toggleSelect(entry.key)}
             >
@@ -184,7 +187,7 @@ export default function Libary() {
                 {entry.result.title}
               </span>
               <span className={resultsStyles.remaining}>
-                {entry.episodes.filter((e) => !e.isSeen).length}
+                {entry.media.filter((e) => !e.isSeen).length}
               </span>
             </button>
           ))}
@@ -234,7 +237,6 @@ export default function Libary() {
           <div>
             <button
               type="button"
-              /* disabled={selected.length === entries.length} */
               disabled={
                 selected.length ===
                 entries.filter(
@@ -283,7 +285,7 @@ export default function Libary() {
       {isShowConfirmation && (
         <Confirm
           title={`Remove all ${selected.length} selceted entries?`}
-          msg="Downloaded episodes, poster and progress will also be removed!"
+          msg="Downloads, poster and progress will also be removed!"
           cancel={() => setIsShowConfirmation(false)}
           confirm={() => {
             remove();

@@ -5,7 +5,7 @@ import buttonStyles from '@styles/Button.module.css';
 import extensions from '../../../extensions';
 import styles from './styles.module.css';
 import { useAppSelector } from '../../redux/store';
-import { addToLib, setEpisodeIdx } from '../../redux';
+import { addToLib, setMediaIdx } from '../../redux';
 
 export default function Details() {
   const app = useAppSelector((state) => state.app);
@@ -52,17 +52,17 @@ export default function Details() {
           className={buttonStyles.container}
           onClick={() => {
             dispatch(
-              setEpisodeIdx(
+              setMediaIdx(
                 Math.max(
                   0,
-                  entry.episodes.findIndex((e) => !e.isSeen),
+                  entry.media.findIndex((e) => !e.isSeen),
                 ),
               ),
             );
-            nav('/watch');
+            nav(entry.result.type === 'VIDEO' ? '/watch' : '/read');
           }}
         >
-          {entry.episodes.some((e) => e.isSeen) ? 'RESUME' : 'START'}
+          {entry.media.some((e) => e.isSeen) ? 'RESUME' : 'START'}
         </button>
         {/* <ActionButtons entry={entry} rerender={() => rerender()} /> */}
       </div>

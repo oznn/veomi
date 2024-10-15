@@ -4,7 +4,7 @@ import Message from '@components/message';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ReactNode, useEffect, useRef } from 'react';
-import { Entry, Server, Video } from '@types';
+import { Entry, PlayerSettings, Server, Video } from '@types';
 import { useAppSelector } from '../../redux/store';
 import { setServer, setServerIdx, setVideo } from '../../redux';
 import Player from './Player';
@@ -28,10 +28,10 @@ export default function Watch() {
   const dispatch = useDispatch();
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
-  const { episodeIdx, server, video } = app;
+  const { mediaIdx, server, video } = app;
 
   useEffect(() => {
-    const { downloaded } = entry.episodes[episodeIdx];
+    const { downloaded } = entry.media[mediaIdx];
     (async () => {
       if (downloaded && !navigator.onLine) {
         return dispatch(
@@ -42,8 +42,8 @@ export default function Watch() {
       const { getVideo, getServers } = await import(
         `../../../ext/extensions/${entry.result.ext}`
       );
-      const { preferredServer } = entry.settings;
-      const { id } = entry.episodes[episodeIdx];
+      const { preferredServer } = entry.settings as PlayerSettings;
+      const { id } = entry.media[mediaIdx];
       const list = (await getServers(id)) as Server[];
       const idx = list.findIndex(({ name }) => name === preferredServer);
 
@@ -61,10 +61,10 @@ export default function Watch() {
     return () => {
       dispatch(setVideo({ video: null }));
     };
-  }, [episodeIdx]);
+  }, [mediaIdx]);
 
   useDidMountEffect(() => {
-    const { downloaded } = entry.episodes[episodeIdx];
+    const downloaded = entry.media[mediaIdx].downloaded as Video;
     if (downloaded && server.idx === 0)
       return dispatch(setVideo({ video: downloaded, sourceIdx: 0 }));
     (async () => {
@@ -75,17 +75,17 @@ export default function Watch() {
 
         if (server.list && server.list.length) {
           const res = (await getVideo(server.list[server.idx])) as Video;
+          const { preferredQuality, preferredSubtitles } =
+            entry.settings as PlayerSettings;
           const sourceIdx = Math.max(
             res.sources.findIndex(
-              ({ qual }: { qual: number }) =>
-                qual === entry.settings.preferredQuality,
+              ({ qual }: { qual: number }) => qual === preferredQuality,
             ),
             0,
           );
           const trackIdx = res.tracks
             ? res.tracks.findIndex(
-                ({ label }) =>
-                  label?.includes(entry.settings.preferredSubtitles),
+                ({ label }) => label?.includes(preferredSubtitles),
               )
             : -1;
 

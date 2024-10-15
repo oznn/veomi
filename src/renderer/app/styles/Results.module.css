@@ -1,6 +1,7 @@
 .container {
   list-style-type: none;
-  margin: 0;
+  padding: 1em 0;
+  margin: 0 2em;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, max-content));
   gap: 50px;

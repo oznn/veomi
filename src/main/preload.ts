@@ -5,9 +5,9 @@ import type { Video } from '../renderer/types.d.ts';
 
 export type Channels =
   | 'change-origin'
-  | 'ffmpeg-progress'
+  | 'download-progress'
   | 'ffmpeg-ended'
-  | 'ffmpeg-download'
+  | 'download-start'
   | 'console-log';
 
 type VideoFile = {
@@ -15,6 +15,12 @@ type VideoFile = {
   fileName: string;
   episodeKey: string;
   video: Video;
+};
+type ImagesFolder = {
+  folderName: string;
+  fileName: string;
+  chapterKey: string;
+  pages: string[];
 };
 
 const electronHandler = {
@@ -37,12 +43,18 @@ const electronHandler = {
       ipcRenderer.invoke('poster-delete', path),
   },
   ffmpeg: {
-    start: () => ipcRenderer.invoke('ffmpeg-start'),
     stop: () => ipcRenderer.invoke('ffmpeg-stop'),
     download: (videoFile: VideoFile) =>
       ipcRenderer.invoke('ffmpeg-download', videoFile),
     // delete: (path: string | undefined) =>
     //   ipcRenderer.invoke('ffmpeg-delete', path),
+  },
+  download: {
+    start: () => ipcRenderer.invoke('download-start'),
+  },
+  images: {
+    download: (imagesFolder: ImagesFolder) =>
+      ipcRenderer.invoke('images-download', imagesFolder),
   },
   extractor: {
     megacloud: (ciphered: string) =>
