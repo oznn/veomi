@@ -30,17 +30,17 @@ export async function getDetails() {
 }
 export async function getMedia(result: Result): Promise<Chapter[]> {
   const res = await fetch(
-    `${baseURL}/manga/${result.path}/feed?limit=500&translatedLanguage[]=en&order[chapter]=asc`,
+    `${baseURL}/manga/${result.path}/feed?limit=500&translatedLanguage[]=en&order[chapter]=asc&includeEmptyPages=0`,
   );
   const { data } = await res.json();
-  const scanaltionGroupIds = data.map((c: any) => c.relationships[0].id);
-  const scanaltionGroupId = scanaltionGroupIds.reduce(
-    (a: string, b: string, _: number, arr: string[]) =>
-      arr.filter((v) => v === a).length >= arr.filter((v) => v === b).length
-        ? a
-        : b,
-    '',
-  );
+  // const scanaltionGroupIds = data.map((c: any) => c.relationships[0].id);
+  // const scanaltionGroupId = scanaltionGroupIds.reduce(
+  //   (a: string, b: string, _: number, arr: string[]) =>
+  //     arr.filter((v) => v === a).length >= arr.filter((v) => v === b).length
+  //       ? a
+  //       : b,
+  //   '',
+  // );
 
   const chapters: Chapter[] = data
     // .filter((c: any) => c.relationships[0].id === scanaltionGroupId)

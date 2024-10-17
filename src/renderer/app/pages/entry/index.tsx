@@ -79,6 +79,11 @@ export default function Entry() {
         preferredQuality: 0,
         preferredSubtitles: 'English',
         preferredServer: '',
+        subtitlesFont: {
+          size: 5,
+          shadowStrokeSize: 5,
+          yAxisOffset: 0,
+        },
       };
       const defaultReaderSettings = { mode: 'rtl', zoom: 0, yScrollFactor: 1 };
       const settings =

@@ -59,6 +59,7 @@
   margin: 0 .4em;
   font-weight: 500;
 }
+
 .servers button:hover,
 .servers button:focus-visible {
   color: white;
@@ -86,14 +87,11 @@
 }
 
 .subtitles {
-  text-shadow: 0 0 6px #000, 0 0 6px #000, 0 0 6px #000, 0 0 6px #000;
   font-family: 'baloo2';
   font-weight: bold;
   position: absolute;
-  bottom: 7%;
   left: 50%;
   translate: -50% 0;
-  line-height: 1.2;
   text-align: center;
-  font-size: 1.5em;
+  line-height: 1.2;
 }

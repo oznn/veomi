@@ -53,9 +53,10 @@
 
 .remaining {
   position: absolute;
-  right: .5em;
-  top: .6em;
+  right: .6em;
+  top: .7em;
   border-radius: .3em;
-  background: rgba(0, 0, 0, .6);
-  padding: 0 .2em;
+  background: rgba(0, 0, 0, .8);
+  padding: 0 8px 0 8px;
+  font-size: 20px !important;
 }

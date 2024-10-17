@@ -15,27 +15,32 @@
   gap: 0 .4em;
 }
 
+.container a,
 .container button {
+  color: grey;
+  transition: color 200ms ease-in;
+}
+
+.container a:hover,
+.container button:hover,
+.container button:focus-visible,
+.container a:focus-visible {
+  color: white;
+  transition: color 0s;
+}
+
+.arrow {
   display: grid;
   place-items: center;
   opacity: .5;
 }
 
-.container button:hover {
+.arrow:hover {
   opacity: 1;
 }
 
-.container button:disabled {
+.arrow:disabled {
   opacity: .2;
-}
-
-.container a {
-  color: grey;
-}
-
-.container a:hover,
-.container a:focus-visible {
-  color: white;
 }
 
 .container input[type='text'] {
@@ -49,6 +54,38 @@
   translate: -105%;
   display: flex;
   flex-direction: column;
+  background: transparent !important;
+}
+
+.select button {
+  text-align: center;
+}
+
+.select>button {
   border: solid 3px grey;
   border-radius: 20px;
+  background: transparent !important;
+}
+
+.options {
+  transform-origin: top;
+  animation: pop 100ms ease 1;
+  border: solid 3px grey;
+  border-radius: 20px;
+  margin-top: 10px;
+  background: #111;
+  max-height: 400px;
+  overflow: scroll;
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    scale: 0
+  }
+
+  100% {
+    opacity: 1;
+    scale: 1
+  }
 }

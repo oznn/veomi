@@ -12,6 +12,7 @@ import {
   toggleAutoSkip,
   setMediaIdx,
   setMarkAsSeenPercent,
+  setEntryProp,
 } from '../../redux';
 
 function Servers() {
@@ -171,6 +172,144 @@ function MarkAsSeenPercent() {
   );
 }
 
+function SubtitlesFont() {
+  const app = useAppSelector((state) => state.app);
+  const entry = app.entry as Entry;
+  const { subtitlesFont } = entry.settings as PlayerSettings;
+  const dispatch = useDispatch();
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span
+          style={{ textAlign: 'center', display: 'block', padding: '0 .4em' }}
+        >
+          Size
+        </span>
+        <div style={{ display: 'flex', placeItems: 'center' }}>
+          <button
+            type="button"
+            className={styles.circleButton}
+            onClick={() =>
+              dispatch(
+                setEntryProp({
+                  k: 'settings.subtitlesFont.size',
+                  v: Math.max(-9, subtitlesFont.size - 1),
+                }),
+              )
+            }
+          >
+            -
+          </button>
+          <span style={{ padding: '0 .2em' }}>
+            {100 + subtitlesFont.size * 10}%
+          </span>
+          <button
+            type="button"
+            className={styles.circleButton}
+            onClick={() =>
+              dispatch(
+                setEntryProp({
+                  k: 'settings.subtitlesFont.size',
+                  v: Math.min(20, subtitlesFont.size + 1),
+                }),
+              )
+            }
+          >
+            +
+          </button>
+        </div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span
+          style={{
+            textAlign: 'center',
+            display: 'block',
+            padding: '0 .4em',
+            fontSize: '.9em',
+          }}
+        >
+          Shadow thickness
+        </span>
+        <div style={{ display: 'flex', placeItems: 'center' }}>
+          <button
+            type="button"
+            className={styles.circleButton}
+            onClick={() =>
+              dispatch(
+                setEntryProp({
+                  k: 'settings.subtitlesFont.shadowStrokeSize',
+                  v: Math.max(0, subtitlesFont.shadowStrokeSize - 1),
+                }),
+              )
+            }
+          >
+            -
+          </button>
+          <span style={{ padding: '0 .2em' }}>
+            {subtitlesFont.shadowStrokeSize}
+          </span>
+          <button
+            type="button"
+            className={styles.circleButton}
+            onClick={() =>
+              dispatch(
+                setEntryProp({
+                  k: 'settings.subtitlesFont.shadowStrokeSize',
+                  v: Math.min(20, subtitlesFont.shadowStrokeSize + 1),
+                }),
+              )
+            }
+          >
+            +
+          </button>
+        </div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span
+          style={{
+            textAlign: 'center',
+            display: 'block',
+            padding: '0 .4em',
+          }}
+        >
+          Y axis offset
+        </span>
+        <div style={{ display: 'flex', placeItems: 'center' }}>
+          <button
+            type="button"
+            className={styles.circleButton}
+            onClick={() =>
+              dispatch(
+                setEntryProp({
+                  k: 'settings.subtitlesFont.yAxisOffset',
+                  v: Math.max(0, subtitlesFont.yAxisOffset - 1),
+                }),
+              )
+            }
+          >
+            -
+          </button>
+          <span style={{ padding: '0 .2em' }}>{subtitlesFont.yAxisOffset}</span>
+          <button
+            type="button"
+            className={styles.circleButton}
+            onClick={() =>
+              dispatch(
+                setEntryProp({
+                  k: 'settings.subtitlesFont.yAxisOffset',
+                  v: Math.min(20, subtitlesFont.yAxisOffset + 1),
+                }),
+              )
+            }
+          >
+            +
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 export default function Context({ x, y }: { x: number; y: number }) {
   const dispatch = useDispatch();
   const [settingIdx, setSettingIdx] = useState(-1);
@@ -180,6 +319,7 @@ export default function Context({ x, y }: { x: number; y: number }) {
     <Playback />,
     <MarkAsSeenPercent />,
     <Subtitles />,
+    <SubtitlesFont />,
   ];
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
@@ -253,38 +393,32 @@ export default function Context({ x, y }: { x: number; y: number }) {
           Auto skip outro
         </button>
       </div>
-      <div>
-        <button type="button" onClick={() => setSettingIdx(0)}>
-          <span className={styles.arrow} />
-          {server.list[server.idx].name}
-        </button>
-      </div>
-      <div>
-        <button type="button" onClick={() => setSettingIdx(1)}>
-          <span className={styles.arrow} />
-          {video.sources[sourceIdx].qual}p
-        </button>
-      </div>
-      <div>
-        <button type="button" onClick={() => setSettingIdx(2)}>
-          <span className={styles.arrow} />
-          {entrySettings.playbackRate.toFixed(2)}x
-        </button>
-      </div>
-      <div>
-        <button type="button" onClick={() => setSettingIdx(3)}>
-          <span className={styles.arrow} />
-          {entrySettings.markAsSeenPercent}%
-        </button>
-      </div>
+      <button type="button" onClick={() => setSettingIdx(0)}>
+        <span className={styles.arrow} />
+        {server.list[server.idx].name}
+      </button>
+      <button type="button" onClick={() => setSettingIdx(1)}>
+        <span className={styles.arrow} />
+        {video.sources[sourceIdx].qual}p
+      </button>
+      <button type="button" onClick={() => setSettingIdx(2)}>
+        <span className={styles.arrow} />
+        {entrySettings.playbackRate.toFixed(2)}x
+      </button>
+      <button type="button" onClick={() => setSettingIdx(3)}>
+        <span className={styles.arrow} />
+        {entrySettings.markAsSeenPercent}%
+      </button>
       {video.tracks && (
-        <div>
-          <button type="button" onClick={() => setSettingIdx(4)}>
-            <span className={styles.arrow} />
-            {trackIdx > -1 ? video.tracks[trackIdx].label : 'Subtitles'}
-          </button>
-        </div>
+        <button type="button" onClick={() => setSettingIdx(4)}>
+          <span className={styles.arrow} />
+          {trackIdx > -1 ? video.tracks[trackIdx].label : 'Subtitles'}
+        </button>
       )}
+      <button type="button" onClick={() => setSettingIdx(5)}>
+        <span className={styles.arrow} />
+        Subtitles font
+      </button>
     </div>
   );
 }

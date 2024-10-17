@@ -7,7 +7,7 @@
   height: 420px;
   width: 420px;
   overflow: scroll;
-  border-radius: .5em;
+  border-radius: .8em;
   transform-origin: top left;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -69,7 +69,24 @@
   opacity: 1;
   transition: color 0s;
 }
-.container input[type='range']{
+
+.container input[type='range'] {
   accent-color: grey;
   width: 100%;
+}
+
+.container .circleButton {
+  display: grid;
+  place-content: center;
+  text-align: center;
+  width: 32px;
+  height: 32px;
+  background: #444;
+  color: silver;
+  border-radius: 50%;
+}
+
+.container .circleButton:hover {
+  background: #555;
+  color: silver;
 }

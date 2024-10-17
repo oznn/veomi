@@ -34,6 +34,7 @@ export default function Nav() {
         <div>
           <button
             type="button"
+            className={styles.arrow}
             tabIndex={0}
             onClick={() => nav(-1)}
             onKeyUp={({ key }) => key === 'Enter' && nav(-1)}
@@ -62,21 +63,30 @@ export default function Nav() {
             <button type="button" onClick={() => setIsShowOptions((b) => !b)}>
               {extensions[selectedExt].name}
             </button>
-            {isShowOptions &&
-              Object.keys(extensions)
-                .filter((k) => k !== selectedExt)
-                .map((k) => (
-                  <button
-                    key={k}
-                    type="button"
-                    onMouseDown={() => {
-                      setSelectedExt(k);
-                      electron.store.set('selectedExt', k);
-                    }}
-                  >
-                    {extensions[k].name}
-                  </button>
-                ))}
+            {isShowOptions && (
+              <div
+                className={styles.options}
+                style={{
+                  display: 'fex',
+                  flexDirection: 'column',
+                }}
+              >
+                {Object.keys(extensions)
+                  .filter((k) => k !== selectedExt)
+                  .map((k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onMouseDown={() => {
+                        setSelectedExt(k);
+                        electron.store.set('selectedExt', k);
+                      }}
+                    >
+                      {extensions[k].name}
+                    </button>
+                  ))}
+              </div>
+            )}
           </div>
           <input
             ref={searchRef}

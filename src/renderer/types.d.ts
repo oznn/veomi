@@ -35,6 +35,11 @@ export type PlayerSettings = {
   preferredQuality: number;
   preferredSubtitles: string;
   preferredServer: string;
+  subtitlesFont: {
+    size: number;
+    shadowStrokeSize: number;
+    yAxisOffset: number;
+  };
 };
 export type Chapter = {
   id: string;

@@ -224,6 +224,13 @@ export default function Player() {
       {textTracks && trackIdx > -1 && (
         <pre
           className={styles.subtitles}
+          style={{
+            fontSize: `${(1 + settings.subtitlesFont.size * 0.1).toFixed(1)}em`,
+            bottom: `${5 + settings.subtitlesFont.yAxisOffset}%`,
+            textShadow: `0 0 ${settings.subtitlesFont.shadowStrokeSize}px #000,`
+              .repeat(4)
+              .slice(0, -1),
+          }}
           // eslint-disable-next-line
           dangerouslySetInnerHTML={{
             __html: textTracks
