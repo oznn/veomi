@@ -140,6 +140,7 @@ ipcMain.handle('poster-download', async (_, url, entryKey) => {
 
     if (body) await finished(Readable.fromWeb(body as any).pipe(stream));
     store.set(`entries.${entryKey}.posterPath`, posterPath);
+    return posterPath;
   } catch (err) {
     console.log('poster-download', err);
   }
@@ -147,7 +148,8 @@ ipcMain.handle('poster-download', async (_, url, entryKey) => {
 ipcMain.handle(
   'poster-delete',
   async (_, posterPath) =>
-    posterPath && unlink(posterPath, (e) => console.log(e)),
+    posterPath &&
+    unlink(posterPath, (e) => console.log('could not remove the poster', e)),
 );
 ipcMain.handle('extractor-megacloud', (_, ciphered) =>
   megacloudExtractor(ciphered),

@@ -1,15 +1,17 @@
 import { Episode, Result, Server, Source, Video, Details } from '@types';
+import { parse } from 'hls-parser';
+import { MasterPlaylist } from 'hls-parser/types';
 import { anilist } from '../../utils/details';
 
 const baseURL = 'https://hianime.to';
 const parser = new DOMParser();
-const parse = (html: string) => parser.parseFromString(html, 'text/html');
+const parseHTML = (html: string) => parser.parseFromString(html, 'text/html');
 const ext = 'hianime';
 const { electron } = window;
 
 export async function getResults(query: string) {
   const res = await fetch(`${baseURL}/search?keyword=${query}`);
-  const doc = parse(await res.text());
+  const doc = parseHTML(await res.text());
   const elements = doc.querySelectorAll('.flw-item');
   const results: Result[] = [];
   elements.forEach((e) => {
@@ -32,7 +34,7 @@ export async function getMedia(result: Result) {
   const { path } = result;
   const entryId = path.slice(path.lastIndexOf('-') + 1, path.length);
   const res = await fetch(`${baseURL}/ajax/v2/episode/list/${entryId}`);
-  const doc = parse((await res.json()).html);
+  const doc = parseHTML((await res.json()).html);
   const elements = doc.querySelectorAll('.ss-list a');
   const episodes: Episode[] = [];
 
@@ -58,7 +60,7 @@ export async function getMedia(result: Result) {
 export async function getDetails(result: Result): Promise<Details | null> {
   return null;
   const res = await fetch(baseURL + result.path);
-  const doc = parse(await res.text());
+  const doc = parseHTML(await res.text());
   const search = doc.querySelector('.film-name')?.innerHTML || '';
   let season = '';
   let seasonYear = '';
@@ -95,7 +97,7 @@ export async function getServers(episodeId: string) {
     `${baseURL}/ajax/v2/episode/servers?episodeId=${episodeId}`,
   );
   const { html } = await res.json();
-  const doc = parse(html);
+  const doc = parseHTML(html);
   const elements = doc.querySelectorAll('.server-item');
   const servers: Server[] = [];
   const supportedServers = ['HD-1', 'HD-2'];
@@ -113,18 +115,14 @@ export async function getServers(episodeId: string) {
 }
 async function getSources(url: string): Promise<Source[]> {
   const res = await fetch(url);
-  const lines = (await res.text()).split('\n');
-  const sources: Source[] = [];
+  const playlist = parse(await res.text());
 
-  let i = 1;
-  while (lines[i] && lines[i + 1]) {
-    const file = url.slice(0, url.lastIndexOf('/') + 1) + lines[i + 1];
-    const [qual] = /\d+x\d+/.exec(lines[i]) || [];
-
-    if (qual) sources.push({ file, qual: Number(qual.split('x')[1]) });
-    i += 2;
-  }
-  return sources;
+  return (playlist as MasterPlaylist).variants
+    .filter((t) => !t.isIFrameOnly)
+    .map(({ uri, resolution }) => ({
+      file: url.slice(0, url.lastIndexOf('/') + 1) + uri,
+      qual: resolution?.height || 0,
+    }));
 }
 export async function getVideo(server: Server): Promise<Video> {
   const res = await fetch(`${baseURL}/ajax/v2/episode/sources?id=${server.id}`);

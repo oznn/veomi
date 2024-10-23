@@ -25,7 +25,8 @@ export default function Entry() {
   const { entry, queue } = app;
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
-  const result = JSON.parse(searchParams.get('result') || '{}') as Result;
+  const resultString = searchParams.get('result') || '{}';
+  const result = JSON.parse(decodeURIComponent(resultString)) as Result;
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdatingMedia, setIsUpdatingMedia] = useState(false);
   const [selected, setSelected] = useState<number[]>([]);
@@ -76,13 +77,13 @@ export default function Entry() {
         playbackRate: 1,
         isAutoSkip: { intro: true, outro: true },
         markAsSeenPercent: 85,
-        preferredQuality: 0,
+        preferredQuality: 1080,
         preferredSubtitles: 'English',
         preferredServer: '',
         subtitlesFont: {
           size: 5,
           shadowStrokeSize: 5,
-          yAxisOffset: 0,
+          yAxisOffset: 5,
         },
       };
       const defaultReaderSettings = { mode: 'rtl', zoom: 0, yScrollFactor: 1 };
@@ -202,7 +203,11 @@ export default function Entry() {
                 <span style={{ background: media.isSeen ? 'grey' : 'white' }} />
                 {media.downloaded && <span>DOWNLOADED</span>}
                 {queue.findIndex(
-                  (q) => q.mediaKey === `entries.${entry.key}.media.${i}`,
+                  (q) =>
+                    q.mediaKey ===
+                    `entries.${entry.key}.media.${
+                      order - 1 ? entry.media.length - i - 1 : i
+                    }`,
                 ) !== -1 && <span>IN QUEUE</span>}
                 <span>{media.title}</span>
               </button>

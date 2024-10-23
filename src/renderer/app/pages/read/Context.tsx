@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Entry, ReaderSettings, ReadingMode } from '@types';
 import arrowBack from '@assets/arrowback.png';
@@ -138,11 +138,14 @@ function YScrollFactor() {
   );
 }
 
+const { electron } = window;
+
 export default function Context({ x, y }: { x: number; y: number }) {
   const [settingIdx, setSettingIdx] = useState(-1);
   const settings = [<Modes />, <Zoom />, <YScrollFactor />];
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
+  const entrySettings = entry.settings as ReaderSettings;
   const { mode, zoom, yScrollFactor } = entry.settings as ReaderSettings;
   const translateX = x + 420 > window.innerWidth ? '-100%' : '0';
   const translateY = y + 420 > window.innerHeight ? '-100%' : '0';
@@ -150,6 +153,7 @@ export default function Context({ x, y }: { x: number; y: number }) {
   const transformOriginY = translateY === '0' ? 'top' : 'bottom';
   const transformOrigin = `${transformOriginX} ${transformOriginY}`;
   const [, rerender] = useReducer((n) => n + 1, 0);
+  const defaultSettingsRef = useRef<HTMLButtonElement>(null);
   const dispatch = useDispatch();
   const style = {
     left: `${x}px`,
@@ -159,6 +163,17 @@ export default function Context({ x, y }: { x: number; y: number }) {
   };
 
   useEffect(() => rerender(), [x, y]);
+  useEffect(() => {
+    (async () => {
+      if (defaultSettingsRef.current) {
+        const playerSettings = JSON.stringify(
+          await electron.store.get('readerSettings'),
+        );
+        defaultSettingsRef.current.disabled =
+          JSON.stringify(entrySettings) === playerSettings;
+      }
+    })();
+  }, [entrySettings]);
 
   if (settingIdx > -1)
     return (
@@ -191,6 +206,17 @@ export default function Context({ x, y }: { x: number; y: number }) {
           [N]ext
         </button>
       </div>
+      <button
+        ref={defaultSettingsRef}
+        type="button"
+        title="Will only apply to newly added entries. Will not affect existing entries in the libary"
+        onClick={(e) => {
+          (e.target as HTMLButtonElement).disabled = true;
+          electron.store.set('readerSettings', entry.settings);
+        }}
+      >
+        Use this settings as default
+      </button>
       <button type="button" onClick={() => setSettingIdx(0)}>
         <span className={styles.arrow} />
         {modesMap[mode]}

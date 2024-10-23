@@ -78,6 +78,10 @@
   overflow: scroll;
 }
 
+.options:focus {
+  border: solid 5px red;
+}
+
 @keyframes pop {
   0% {
     opacity: 0;

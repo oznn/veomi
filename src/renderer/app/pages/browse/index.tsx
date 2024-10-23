@@ -29,7 +29,7 @@ export default function Browse() {
         <Link
           key={result.ext + result.path}
           className={resultsStyles.link}
-          to={`/entry?result=${JSON.stringify(result)}`}
+          to={`/entry?result=${encodeURIComponent(JSON.stringify(result))}`}
         >
           <div>
             <img loading="lazy" src={result.posterURL} alt="poster" />
@@ -42,5 +42,3 @@ export default function Browse() {
     </ul>
   );
 }
-
-// https://proxybot.io/api/v1/71147c421c55efbfbea0a931b7c6376b?url=https://mangadex.org/covers/eac0159f-2768-49d7-8891-4202f3e9fb8c/ee3f0bbe-ef17-4dd2-8518-1a0c110f127e.jpg

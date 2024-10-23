@@ -240,13 +240,19 @@ export default function Libary() {
               disabled={
                 selected.length ===
                 entries.filter(
-                  ({ category }) => category === categories[categoryIdx],
+                  ({ category }) =>
+                    categories.length === 0 ||
+                    category === categories[categoryIdx],
                 ).length
               }
               onClick={() =>
                 setSelected(
                   (entries as Entry[])
-                    .filter((e) => e.category === categories[categoryIdx])
+                    .filter(
+                      (e) =>
+                        categories.length === 0 ||
+                        e.category === categories[categoryIdx],
+                    )
                     .map(({ key }) => key),
                 )
               }
@@ -257,7 +263,11 @@ export default function Libary() {
               type="button"
               onClick={() => {
                 const arr = (entries as Entry[])
-                  .filter((e) => e.category === categories[categoryIdx])
+                  .filter(
+                    (e) =>
+                      categories.length === 0 ||
+                      e.category === categories[categoryIdx],
+                  )
                   .map(({ key }) => key)
                   .filter((k) => !selected.includes(k));
 

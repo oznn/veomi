@@ -47,8 +47,8 @@ export async function getMedia(result: Result): Promise<Chapter> {
 }
 
 export async function getPages(id: string): Promise<string[]> {
-  const [name, number] = id.split(' ');
-  const url = `${baseURL}/read-online/${name}-chapter-${number}.html`;
+  const [name, num] = id.split(' ');
+  const url = `${baseURL}/read-online/${name}-chapter-${num}.html`;
   const html = await (await fetch(url)).text();
   const [, host] = /vm.CurPathName = "(.*)"/.exec(html) || ['', ''];
   const [, chap] = /vm.CurChapter = {(.*?)}/.exec(html) || ['', ''];
@@ -59,10 +59,7 @@ export async function getPages(id: string): Promise<string[]> {
   for (let i = 0; i < Number(chapter.Page); i += 1) {
     const page = `${i + 1}`.padStart(3, '0');
     pages.push(
-      `https://${host}/manga/${name}/${dir}${number.padStart(
-        4,
-        '0',
-      )}-${page}.png`,
+      `https://${host}/manga/${name}/${dir}${num.padStart(4, '0')}-${page}.png`,
     );
   }
 

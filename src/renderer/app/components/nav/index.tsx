@@ -12,21 +12,54 @@ const width = `${
 
 export default function Nav() {
   const searchRef = useRef<HTMLInputElement>(null);
+  const extensionsRef = useRef<HTMLButtonElement>(null);
   const [selectedExt, setSelectedExt] = useState('');
   const [isShowOptions, setIsShowOptions] = useState(false);
   const nav = useNavigate();
   const { pathname } = useLocation();
   const app = useAppSelector((state) => state.app);
   const { queue } = app;
+  const [extensionQuery, setExtensionQuery] = useState('');
 
   useEffect(() => {
-    document.onkeyup = ({ key }) => key === '/' && searchRef.current?.focus();
+    document.onkeyup = ({ key }) => {
+      if (key === '/') {
+        extensionsRef.current?.focus();
+        setIsShowOptions(true);
+        setExtensionQuery('');
+      }
+      if (isShowOptions) {
+        if (key === ' ') {
+          const [ext] = Object.keys(extensions).sort(
+            (_, k) => +k.includes(extensionQuery) - 1,
+          );
+          setSelectedExt(ext);
+          electron.store.set('selectedExt', ext);
+          searchRef.current?.focus();
+        }
+        if (key === 'Backspace')
+          setExtensionQuery((q) => q.slice(0, q.length - 1));
+        if (key.length === 1) setExtensionQuery((q) => q + key);
+      }
+    };
+  }, [isShowOptions, extensionQuery]);
+
+  useEffect(() => {
     (async () => {
       const res = await electron.store.get('selectedExt');
 
       setSelectedExt(res || Object.keys(extensions)[0]);
     })();
   }, []);
+
+  function boldCharacter(s: string) {
+    const i = s.toLowerCase().indexOf(extensionQuery);
+    const start = s.slice(0, i);
+    const end = s.slice(i + extensionQuery.length, s.length);
+
+    if (i < 0) return s;
+    return `${start}<b>${extensionQuery}</b>${end}`;
+  }
 
   if (selectedExt)
     return (
@@ -58,10 +91,17 @@ export default function Nav() {
               width,
               background: isShowOptions ? '#111' : 'transparent',
             }}
-            onBlur={() => setIsShowOptions(false)}
           >
-            <button type="button" onClick={() => setIsShowOptions((b) => !b)}>
-              {extensions[selectedExt].name}
+            <button
+              type="button"
+              onClick={() => setIsShowOptions((b) => !b)}
+              onBlur={() => {
+                setIsShowOptions(false);
+                setExtensionQuery('');
+              }}
+              ref={extensionsRef}
+            >
+              <span>{extensions[selectedExt].name}</span>
             </button>
             {isShowOptions && (
               <div
@@ -73,6 +113,7 @@ export default function Nav() {
               >
                 {Object.keys(extensions)
                   .filter((k) => k !== selectedExt)
+                  .sort((_, k) => +k.includes(extensionQuery) - 1)
                   .map((k) => (
                     <button
                       key={k}
@@ -82,7 +123,11 @@ export default function Nav() {
                         electron.store.set('selectedExt', k);
                       }}
                     >
-                      {extensions[k].name}
+                      <span
+                        dangerouslySetInnerHTML={{
+                          __html: boldCharacter(extensions[k].name),
+                        }}
+                      />
                     </button>
                   ))}
               </div>

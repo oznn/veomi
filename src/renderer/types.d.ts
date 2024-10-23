@@ -24,7 +24,7 @@ export type Episode = {
   isFiller?: boolean;
 };
 export type Details = {
-  info: string[];
+  info: string[][];
   description: string;
 };
 export type PlayerSettings = {

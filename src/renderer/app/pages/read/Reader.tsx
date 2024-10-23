@@ -172,7 +172,7 @@ export default function Reader({ pages, mode }: Props) {
             ))}
             <button
               type="button"
-              style={{ transform: translate(pages.length * -100 - 100) }}
+              style={{ transform: translate(-100 * (pages.length + 1)) }}
               onClick={({ clientX, clientY }) => {
                 if (mode === 'ltr' || mode === 'rtl')
                   move(clientX > window.innerWidth / 2 ? -1 : 1);

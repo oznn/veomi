@@ -50,7 +50,11 @@ const app = createSlice({
       if (state.entry) {
         state.entry.isInLibary = true;
         electron.store.set(`entries.${state.entry.key}.isInLibary`, true);
-        electron.poster.download(state.entry.result.posterURL, state.entry.key);
+        if (!state.entry.posterPath)
+          electron.poster.download(
+            state.entry.result.posterURL,
+            state.entry.key,
+          );
       }
     },
     setVolume: (state, action: PayloadAction<number>) => {
@@ -213,7 +217,11 @@ const app = createSlice({
           return obj[key];
         }, state.entry);
 
-        electron.store.set(`entries.${state.entry.key}.${k}`, v);
+        if (v)
+          electron.store.set(
+            `entries.${state.entry.key}.${k}`,
+            JSON.parse(JSON.stringify(v)),
+          );
       }
     },
     setReadingMode: (state, action: PayloadAction<ReadingMode>) => {
