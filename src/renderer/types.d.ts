@@ -3,7 +3,7 @@ export type Result = {
   posterURL: string;
   ext: string;
   path: string;
-  type: 'VIDEO' | 'IMAGE';
+  type: 'VIDEO' | 'IMAGE' | 'LIVE';
   [key: string]: any;
 };
 export type Source = { file: string; qual: number };

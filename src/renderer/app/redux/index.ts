@@ -25,6 +25,7 @@ type InitialState = {
     retries: 0;
   };
   queue: Queue | [];
+  entryRefresh: number;
 };
 
 const initialState = {
@@ -35,6 +36,7 @@ const initialState = {
   trackIdx: 0,
   server: { idx: 0, list: null },
   queue: [],
+  entryRefresh: 0,
 } as InitialState;
 
 const app = createSlice({
@@ -239,6 +241,9 @@ const app = createSlice({
         electron.store.set(`${k}.currentPage`, action.payload);
       }
     },
+    refreshEntry: (state) => {
+      state.entryRefresh += 1;
+    },
   },
 });
 
@@ -265,5 +270,6 @@ export const {
   setEntryProp,
   setReadingMode,
   setCurrentPage,
+  refreshEntry,
 } = app.actions;
 export default app.reducer;

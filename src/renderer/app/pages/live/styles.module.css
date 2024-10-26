@@ -1,0 +1,33 @@
+.container video {
+  width: 100vw;
+  height: 100vh;
+}
+
+.qual {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  overflow-x: scroll;
+  padding: 1em 0;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.qual:hover {
+  opacity: 1;
+}
+
+.volume {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%);
+  background-color: rgba(0, 0, 0, .8);
+  border-radius: 15px;
+  padding: 0 .6em;
+  margin-top: 1em;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}

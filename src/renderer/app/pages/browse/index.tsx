@@ -29,7 +29,9 @@ export default function Browse() {
         <Link
           key={result.ext + result.path}
           className={resultsStyles.link}
-          to={`/entry?result=${encodeURIComponent(JSON.stringify(result))}`}
+          to={`/${
+            result.type === 'LIVE' ? 'live' : 'entry'
+          }?result=${encodeURIComponent(JSON.stringify(result))}`}
         >
           <div>
             <img loading="lazy" src={result.posterURL} alt="poster" />

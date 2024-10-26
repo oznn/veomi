@@ -22,7 +22,7 @@ const { electron } = window;
 
 export default function Entry() {
   const app = useAppSelector((state) => state.app);
-  const { entry, queue } = app;
+  const { entry, queue, entryRefresh } = app;
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const resultString = searchParams.get('result') || '{}';
@@ -108,7 +108,7 @@ export default function Entry() {
         dispatch(setEntry(res));
       }
     })();
-  }, []);
+  }, [entryRefresh]);
 
   function download() {
     if (entry) {

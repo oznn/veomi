@@ -16,9 +16,10 @@ import Watch from './pages/watch';
 import Downloads from './pages/downloads';
 import { store } from './redux/store';
 import './index.css';
-import { setQueue, setQueueProgress } from './redux';
+import { refreshEntry, setQueue, setQueueProgress } from './redux';
 import extensions from '../extensions';
 import Read from './pages/read';
+import Live from './pages/live';
 
 const { electron } = window;
 
@@ -30,7 +31,10 @@ function Download() {
       async function download(isRemoveFirst: boolean) {
         const queue = (await electron.store.get('queue')) as Queue | [];
         let idx = queue.findIndex(({ isFailed }) => !isFailed);
-        if (isRemoveFirst) queue.splice(idx, 1);
+        if (isRemoveFirst) {
+          queue.splice(idx, 1);
+          dispatch(refreshEntry());
+        }
 
         idx = queue.findIndex(({ isFailed }) => !isFailed);
         const item = queue[idx];
@@ -143,6 +147,7 @@ export default function App() {
           <Route path="/watch" element={<Watch />} />
           <Route path="/read" element={<Read />} />
           <Route path="/downloads" element={<Downloads />} />
+          <Route path="/live" element={<Live />} />
         </Routes>
         <br />
       </Provider>
