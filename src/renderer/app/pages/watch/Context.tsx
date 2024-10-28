@@ -102,7 +102,7 @@ function Qualities() {
         .map(({ qual }, i) => (
           <button
             type="button"
-            key={qual}
+            key={Math.random()}
             onClick={() => dispatch(setSourceIdx(i))}
             disabled={sourceIdx === i}
           >

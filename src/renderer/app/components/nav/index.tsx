@@ -23,8 +23,8 @@ export default function Nav() {
 
   useEffect(() => {
     document.onkeyup = ({ key }) => {
-      if (key === '?') searchRef.current?.focus();
-      if (key === '/') {
+      if (key === '/') searchRef.current?.focus();
+      if (key === '?') {
         extensionsRef.current?.focus();
         setIsShowOptions(true);
         setExtensionQuery('');
