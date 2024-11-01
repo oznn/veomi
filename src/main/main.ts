@@ -33,6 +33,7 @@ class AppUpdater {
 
 let mw: BrowserWindow | null = null;
 let origin: string | null = null;
+let referrer: string | null = null;
 const store = new Store();
 
 type VideoFile = {
@@ -57,7 +58,7 @@ ipcMain.handle('ffmpeg-download', async (_, videoFile: VideoFile) => {
     .input(videoFile.video.sources[0].file)
     .output(`${folder}/${videoFile.fileName}.mp4`)
     // .addOption('-threads 1')
-    .on('error', (err) => mw?.webContents.send('console-log', err))
+    .on('error', (err) => console.log('ffmpeg err', err))
     .on('progress', (progress) => {
       console.log(videoFile.fileName, progress.percent);
       mw?.webContents.send('download-progress', progress.percent);
@@ -124,6 +125,7 @@ ipcMain.handle('images-download', async (_, imagesFolder: ImagesFolder) => {
   }
 });
 ipcMain.on('change-origin', (_, newOrigin) => (origin = newOrigin)); //eslint-disable-line
+ipcMain.on('change-referrer', (_, newReferrer) => (referrer = newReferrer)); //eslint-disable-line
 ipcMain.handle('store-get', (_, k) => store.get(k));
 ipcMain.handle('store-set', (_, k, v) => store.set(k, v));
 ipcMain.handle('store-delete', (_, k) => store.delete(k));
@@ -269,7 +271,18 @@ app
     session.defaultSession.webRequest.onBeforeSendHeaders(
       { urls: ['*://*/*'] },
       (details, callback) => {
-        details.requestHeaders.Referer = details.url;
+        // if (details.url.includes('/rcp_v'))
+        //   console.log(
+        //     details.url,
+        //     ' | ',
+        //     details.uploadData
+        //       ? details.uploadData
+        //           .map(({ bytes }) => bytes.toString())
+        //           .join(' * ')
+        //       : '',
+        //   );
+        details.requestHeaders.Referer =
+          referrer || new URL(details.url).origin;
         if (origin) details.requestHeaders.Origin = origin;
 
         callback({ cancel: false, requestHeaders: details.requestHeaders });

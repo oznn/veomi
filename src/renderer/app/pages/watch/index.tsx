@@ -1,5 +1,4 @@
 import useDidMountEffect from '@components/useDidMountEffect';
-// import Loading from '@components/loading';
 import Message from '@components/message';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +9,7 @@ import { setServer, setServerIdx, setVideo } from '../../redux';
 import Player from './Player';
 import styles from './styles.module.css';
 
+const { electron } = window;
 function Container({ children }: { children: ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const nav = useNavigate();
@@ -19,6 +19,9 @@ function Container({ children }: { children: ReactNode }) {
     if (containerRef.current && !document.fullscreenElement) {
       containerRef.current.requestFullscreen();
     }
+    return () => {
+      electron.ipcRenderer.sendMessage('change-referrer', null);
+    };
   }, []);
 
   return <div ref={containerRef}>{children}</div>;

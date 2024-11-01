@@ -32,7 +32,7 @@ export default function Nav() {
       if (isShowOptions) {
         if (key === ' ') {
           const [ext] = Object.keys(extensions).sort(
-            (_, k) => +k.includes(extensionQuery) - 1,
+            (_, k) => +k.includes(extensionQuery.toLowerCase()) - 1,
           );
           setSelectedExt(ext);
           electron.store.set('selectedExt', ext);
@@ -54,7 +54,7 @@ export default function Nav() {
   }, []);
 
   function boldCharacter(s: string) {
-    const i = s.toLowerCase().indexOf(extensionQuery);
+    const i = s.toLowerCase().indexOf(extensionQuery.toLowerCase());
     const start = s.slice(0, i);
     const end = s.slice(i + extensionQuery.length, s.length);
 
@@ -114,7 +114,7 @@ export default function Nav() {
               >
                 {Object.keys(extensions)
                   .filter((k) => k !== selectedExt)
-                  .sort((_, k) => +k.includes(extensionQuery) - 1)
+                  .sort((_, k) => +k.includes(extensionQuery.toLowerCase()) - 1)
                   .map((k) => (
                     <button
                       key={k}

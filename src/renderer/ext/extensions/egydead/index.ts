@@ -98,6 +98,7 @@ export async function getVideo(server: Server): Promise<Video | undefined> {
     const playlist = parse(await (await fetch(master)).text());
     console.log('playlist', playlist);
     const sources = (playlist as MasterPlaylist).variants
+      .filter((t) => !t.isIFrameOnly)
       .map(({ uri, resolution }) => ({
         file: uri.includes('://')
           ? uri

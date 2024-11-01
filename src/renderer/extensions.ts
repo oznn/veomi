@@ -4,5 +4,5 @@ export default {
   mangasee: { name: 'Mangasee', lang: 'en' },
   iptv: { name: 'IPTV', lang: 'all' },
   egydead: { name: 'EgyDead', lang: 'ar' },
-  // myflixer: { name: 'MyFlixer', lang: 'en' },
+  // vidsrc: { name: 'VidSrc', lang: 'en' },
 } as { [k: string]: { name: string } };

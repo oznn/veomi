@@ -5,6 +5,7 @@ import type { Video } from '../renderer/types.d.ts';
 
 export type Channels =
   | 'change-origin'
+  | 'change-referrer'
   | 'download-progress'
   | 'ffmpeg-ended'
   | 'download-start'
