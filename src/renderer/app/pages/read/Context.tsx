@@ -6,12 +6,13 @@ import { useAppSelector } from '../../redux/store';
 import styles from './styles.module.css';
 import { setEntryProp, setMediaIdx, setReadingMode } from '../../redux';
 
+const minmax = (a: number, b: number, c: number) => Math.max(a, Math.min(b, c));
 const modesMap: Record<string, string> = {
   ltr: 'Left to right',
   rtl: 'Right to left',
   ttb: 'Top to bottom',
   btt: 'Bottom to top',
-  scroll: 'Free scroll',
+  scroll: 'Long strip',
 };
 function Modes() {
   const dispatch = useDispatch();
@@ -20,7 +21,7 @@ function Modes() {
 
   return (
     <>
-      {['ltr', 'rtl', 'ttb', 'btt'].map((m) => (
+      {['ltr', 'rtl', 'ttb', 'btt', 'scroll'].map((m) => (
         <button
           type="button"
           key={m}
@@ -41,112 +42,16 @@ function Modes() {
   );
 }
 
-function Zoom() {
-  const app = useAppSelector((state) => state.app);
-  const entry = app.entry as Entry;
-  const { zoom } = entry.settings as ReaderSettings;
-  const dispatch = useDispatch();
-
-  return (
-    <>
-      <span style={{ textAlign: 'center', display: 'block' }}>
-        Zoom Percent
-      </span>
-      <div style={{ display: 'flex' }}>
-        <button
-          type="button"
-          style={{
-            display: 'inline',
-            textAlign: 'center',
-          }}
-          onClick={() =>
-            dispatch(
-              setEntryProp({ k: 'settings.zoom', v: Math.max(0, zoom - 1) }),
-            )
-          }
-        >
-          ---
-        </button>
-        <span>{100 + zoom * 10}%</span>
-        <button
-          type="button"
-          style={{
-            display: 'inline',
-            textAlign: 'center',
-          }}
-          onClick={() =>
-            dispatch(setEntryProp({ k: 'settings.zoom', v: zoom + 1 }))
-          }
-        >
-          +++
-        </button>
-      </div>
-    </>
-  );
-}
-
-function YScrollFactor() {
-  const app = useAppSelector((state) => state.app);
-  const entry = app.entry as Entry;
-  const { yScrollFactor } = entry.settings as ReaderSettings;
-  const dispatch = useDispatch();
-
-  return (
-    <>
-      <span style={{ textAlign: 'center', display: 'block' }}>
-        Y axis scroll factor
-      </span>
-      <div style={{ display: 'flex' }}>
-        <br />
-        <button
-          type="button"
-          style={{
-            display: 'inline',
-            textAlign: 'center',
-          }}
-          onClick={() =>
-            dispatch(
-              setEntryProp({
-                k: 'settings.yScrollFactor',
-                v: Math.max(0, yScrollFactor - 1),
-              }),
-            )
-          }
-        >
-          ---
-        </button>
-        <span>{yScrollFactor}x</span>
-        <button
-          type="button"
-          style={{
-            display: 'inline',
-            textAlign: 'center',
-          }}
-          onClick={() =>
-            dispatch(
-              setEntryProp({
-                k: 'settings.yScrollFactor',
-                v: yScrollFactor + 1,
-              }),
-            )
-          }
-        >
-          +++
-        </button>
-      </div>
-    </>
-  );
-}
-
 const { electron } = window;
 
 export default function Context({ x, y }: { x: number; y: number }) {
   const [settingIdx, setSettingIdx] = useState(-1);
-  const settings = [<Modes />, <Zoom />, <YScrollFactor />];
+  const settings = [<Modes />];
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
   const entrySettings = entry.settings as ReaderSettings;
-  const { mode, zoom, yScrollFactor } = entry.settings as ReaderSettings;
+  const { mode, sliderZoom, yScrollFactor, gapSize, longStripZoom } =
+    entry.settings as ReaderSettings;
   const translateX = x + 420 > window.innerWidth ? '-100%' : '0';
   const translateY = y + 420 > window.innerHeight ? '-100%' : '0';
   const transformOriginX = translateX === '0' ? 'left' : 'right';
@@ -221,14 +126,99 @@ export default function Context({ x, y }: { x: number; y: number }) {
         <span className={styles.arrow} />
         {modesMap[mode]}
       </button>
-      <button type="button" onClick={() => setSettingIdx(1)}>
-        <span className={styles.arrow} />
-        {100 + zoom * 10}%
-      </button>
-      <button type="button" onClick={() => setSettingIdx(2)}>
-        <span className={styles.arrow} />
-        {yScrollFactor}x
-      </button>
+      <div className={styles.setting}>
+        <span>Slider zoom</span>
+        <div>
+          <input
+            type="number"
+            defaultValue={100 + sliderZoom * 10}
+            onBlur={(e) => {
+              const t = e.target as HTMLInputElement;
+              const v = (minmax(100, +t.value, 200) - 100) * 0.1;
+              t.value = `${minmax(100, +t.value, 200)}`;
+              const p = { k: 'settings.sliderZoom', v };
+              dispatch(setEntryProp(p));
+            }}
+            onWheel={(e) => {
+              let v = e.deltaY > 0 ? 1 : -1;
+              v = Math.max(0, Math.min(sliderZoom + v, 10));
+              (e.target as HTMLInputElement).value = `${100 + v * 10}`;
+              const p = { k: 'settings.sliderZoom', v };
+              dispatch(setEntryProp(p));
+            }}
+          />
+          <span style={{ width: '30px', display: 'inline-block' }}>%</span>
+        </div>
+      </div>
+      <div className={styles.setting}>
+        <span>Y axix scroll factor</span>
+        <div>
+          <input
+            type="number"
+            defaultValue={yScrollFactor}
+            onBlur={(e) => {
+              const t = e.target as HTMLInputElement;
+              t.value = `${minmax(1, +t.value, 10)}`;
+              const p = { k: 'settings.yScrollFactor', v: +t.value };
+              dispatch(setEntryProp(p));
+            }}
+            onWheel={(e) => {
+              let v = e.deltaY > 0 ? 1 : -1;
+              v = Math.max(1, Math.min(yScrollFactor + v, 10));
+              (e.target as HTMLInputElement).value = `${v}`;
+              const p = { k: 'settings.yScrollFactor', v };
+              dispatch(setEntryProp(p));
+            }}
+          />
+          <span style={{ width: '30px', display: 'inline-block' }}>x</span>
+        </div>
+      </div>
+      <div className={styles.setting}>
+        <span>Vertical gap size</span>
+        <div>
+          <input
+            type="number"
+            defaultValue={gapSize}
+            onBlur={(e) => {
+              const t = e.target as HTMLInputElement;
+              t.value = `${minmax(0, +t.value, 100)}`;
+              const p = { k: 'settings.gapSize', v: +t.value };
+              dispatch(setEntryProp(p));
+            }}
+            onWheel={(e) => {
+              let v = e.deltaY > 0 ? 1 : -1;
+              v = Math.max(0, Math.min(gapSize + v, 100));
+              (e.target as HTMLInputElement).value = `${v}`;
+              const p = { k: 'settings.gapSize', v };
+              dispatch(setEntryProp(p));
+            }}
+          />
+          <span style={{ width: '30px', display: 'inline-block' }}>px</span>
+        </div>
+      </div>
+      <div className={styles.setting}>
+        <span>Long strip zoom</span>
+        <div>
+          <input
+            type="number"
+            defaultValue={longStripZoom}
+            onBlur={(e) => {
+              const t = e.target as HTMLInputElement;
+              t.value = `${minmax(-99, +t.value, 100)}`;
+              const p = { k: 'settings.longStripZoom', v: +t.value };
+              dispatch(setEntryProp(p));
+            }}
+            onWheel={(e) => {
+              let v = e.deltaY > 0 ? 1 : -1;
+              v = Math.max(-99, Math.min(longStripZoom + v, 100));
+              (e.target as HTMLInputElement).value = `${v}`;
+              const p = { k: 'settings.longStripZoom', v };
+              dispatch(setEntryProp(p));
+            }}
+          />
+          <span style={{ width: '30px', display: 'inline-block' }}>px</span>
+        </div>
+      </div>
     </div>
   );
 }

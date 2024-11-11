@@ -52,8 +52,10 @@ export type Chapter = {
 export type ReadingMode = 'ltr' | 'rtl' | 'ttb' | 'btt' | 'scroll';
 export type ReaderSettings = {
   mode: ReadingMode;
-  zoom: number;
   yScrollFactor: number;
+  gapSize: number;
+  sliderZoom: number;
+  longStripZoom: number;
 };
 
 export type Entry = {

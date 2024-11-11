@@ -114,7 +114,9 @@ export default function Nav() {
               >
                 {Object.keys(extensions)
                   .filter((k) => k !== selectedExt)
-                  .sort((_, k) => +k.includes(extensionQuery.toLowerCase()) - 1)
+                  .toSorted(
+                    (_, k) => +k.includes(extensionQuery.toLowerCase()) - 1,
+                  )
                   .map((k) => (
                     <button
                       key={k}

@@ -46,7 +46,9 @@ export async function getMedia(result: Result): Promise<Chapter[]> {
     // .filter((c: any) => c.relationships[0].id === scanaltionGroupId)
     .map((e: any) => ({
       id: e.id,
-      title: `${e.attributes.chapter}. ${e.attributes.title || 'Chapter'}`,
+      title: `${e.attributes.chapter || '0'}. ${
+        e.attributes.title || 'Chapter'
+      }`,
       currentPage: 0,
       isSeen: false,
     }));

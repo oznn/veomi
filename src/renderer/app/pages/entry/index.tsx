@@ -86,7 +86,13 @@ export default function Entry() {
           yAxisOffset: 5,
         },
       };
-      const defaultReaderSettings = { mode: 'rtl', zoom: 0, yScrollFactor: 1 };
+      const defaultReaderSettings = {
+        mode: 'rtl',
+        sliderZoom: 0,
+        yScrollFactor: 1,
+        gapSize: 5,
+        longStripZoom: 0,
+      };
       const settings =
         result.type === 'VIDEO'
           ? (await electron.store.get('playerSettings')) ||

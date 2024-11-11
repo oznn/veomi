@@ -271,16 +271,8 @@ app
     session.defaultSession.webRequest.onBeforeSendHeaders(
       { urls: ['*://*/*'] },
       (details, callback) => {
-        // if (details.url.includes('/rcp_v'))
-        //   console.log(
-        //     details.url,
-        //     ' | ',
-        //     details.uploadData
-        //       ? details.uploadData
-        //           .map(({ bytes }) => bytes.toString())
-        //           .join(' * ')
-        //       : '',
-        //   );
+        console.log(details.url);
+        console.log('');
         details.requestHeaders.Referer =
           referrer || new URL(details.url).origin;
         if (origin) details.requestHeaders.Origin = origin;

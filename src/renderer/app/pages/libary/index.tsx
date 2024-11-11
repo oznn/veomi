@@ -126,6 +126,7 @@ export default function Libary() {
   }
   return (
     <>
+      <iframe src="https://megacloud.tube/embed-1/e-1/bEilBSuyMryn?z=" />
       <div
         style={{
           overflow: 'scroll',
@@ -240,9 +241,12 @@ export default function Libary() {
               disabled={
                 selected.length ===
                 entries.filter(
-                  ({ category }) =>
+                  (e) =>
                     categories.length === 0 ||
-                    category === categories[categoryIdx],
+                    e.category ===
+                      (isUseCategories ? ['', ...categories] : categories)[
+                        categoryIdx
+                      ],
                 ).length
               }
               onClick={() =>
@@ -251,7 +255,10 @@ export default function Libary() {
                     .filter(
                       (e) =>
                         categories.length === 0 ||
-                        e.category === categories[categoryIdx],
+                        e.category ===
+                          (isUseCategories ? ['', ...categories] : categories)[
+                            categoryIdx
+                          ],
                     )
                     .map(({ key }) => key),
                 )
@@ -266,7 +273,10 @@ export default function Libary() {
                   .filter(
                     (e) =>
                       categories.length === 0 ||
-                      e.category === categories[categoryIdx],
+                      e.category ===
+                        (isUseCategories ? ['', ...categories] : categories)[
+                          categoryIdx
+                        ],
                   )
                   .map(({ key }) => key)
                   .filter((k) => !selected.includes(k));

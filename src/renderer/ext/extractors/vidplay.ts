@@ -1,7 +1,7 @@
+import { Source, Track } from '@types';
 import { Buffer } from 'buffer';
 import rc4Encrypt from '../utils/rc4Encrypt';
 import { encrypt, decrypt } from '../utils/vrf';
-import { Source, Track } from '../types';
 
 // async function encodeID(key: string, vidId: string) {
 //   const rc4 = rc4Encrypt(key, Buffer.from(vidId));
