@@ -55,7 +55,7 @@ export default function Libary() {
       const [e] = s;
       entries[e].isUpdating = true;
       rerender();
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // eslint-disable-line
+      await new Promise((resolve) => setTimeout(resolve, 200)); // eslint-disable-line
       const { result } = entries[e];
       const { getMedia } = await import(
         `../../../ext/extensions/${result.ext}`
