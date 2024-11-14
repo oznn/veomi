@@ -1,14 +1,18 @@
+import { MasterPlaylist } from 'hls-parser/types';
 import { Episode, Result, Server, Video } from '@types';
+import embedExtractor from '../../extractors/embed';
+import { parse } from 'hls-parser';
 
 const baseURL = 'https://myflixerz.to';
 const ext = 'myflixer';
 const parser = new DOMParser();
-const parse = (html: string) => parser.parseFromString(html, 'text/html');
+const parseHTML = (html: string) => parser.parseFromString(html, 'text/html');
+const { electron } = window;
 
 export async function getResults(q: string): Promise<Result[]> {
   const url = `https://myflixerz.to/search/${q.replaceAll(' ', '-')}`;
   const html = await (await fetch(url)).text();
-  const doc = parse(html);
+  const doc = parseHTML(html);
   const items = doc.querySelectorAll('.flw-item');
   const results: Result[] = [];
 
@@ -45,7 +49,7 @@ export async function getMedia(result: Result): Promise<Episode[]> {
   const seasonsHTML = await (
     await fetch(`${baseURL}/ajax/season/list/${entryDataId}`)
   ).text();
-  const seasonsDoc = parse(seasonsHTML);
+  const seasonsDoc = parseHTML(seasonsHTML);
   const seasons = seasonsDoc.querySelectorAll('a.ss-item');
 
   for (let i = 0; i < seasons.length; i += 1) {
@@ -54,7 +58,7 @@ export async function getMedia(result: Result): Promise<Episode[]> {
     const episodesHTML = await (
       await fetch(`${baseURL}/ajax/season/episodes/${seasonId}`)
     ).text();
-    const episodesDoc = parse(episodesHTML);
+    const episodesDoc = parseHTML(episodesHTML);
     episodesDoc.querySelectorAll('a.eps-item').forEach((e) => {
       const episodeDataId = e.getAttribute('data-id') || '';
       const episodeTitle = e.getAttribute('title') || '';
@@ -83,7 +87,7 @@ export async function getServers(dataId: string): Promise<Server[]> {
   const res = await fetch(`${baseURL}/ajax/episode/${dataId}`);
 
   const html = await res.text();
-  const doc = parse(html);
+  const doc = parseHTML(html);
   doc.querySelectorAll('a').forEach((e) => {
     const name = e.getAttribute('title') || '';
     const id = e.getAttribute('data-id') || e.getAttribute('data-linkid') || '';
@@ -97,6 +101,27 @@ export async function getServers(dataId: string): Promise<Server[]> {
 export async function getVideo(server: Server): Promise<Video | undefined> {
   const res = await fetch(`${baseURL}/ajax/episode/sources/${server.id}`);
   const { link } = await res.json();
+  const [url, playlistURL] = (await embedExtractor(link, [
+    'getSources',
+    '.m3u8',
+  ])) as string;
+  const headers = {
+    custom: JSON.stringify({
+      'X-Requested-With': 'XMLHttpRequest',
+      Referer: link,
+      Origin: 'https://megacloud.tube',
+    }),
+  };
+  const { tracks } = await (await fetch(url, { headers })).json();
+  const playlist = parse(await (await fetch(playlistURL)).text());
+  const sources = (playlist as MasterPlaylist).variants
+    .filter((t) => !t.isIFrameOnly)
+    .map(({ uri, resolution }) => ({
+      file: uri.includes('://')
+        ? uri
+        : url.slice(0, url.lastIndexOf('/') + 1) + uri,
+      qual: resolution?.height || 0,
+    }));
 
-  console.log(link);
+  return { sources, tracks };
 }

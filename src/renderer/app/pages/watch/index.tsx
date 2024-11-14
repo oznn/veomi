@@ -80,17 +80,11 @@ export default function Watch() {
           const res = (await getVideo(server.list[server.idx])) as Video;
           const { preferredQuality, preferredSubtitles } =
             entry.settings as PlayerSettings;
-          const sourceIdx = Math.max(
-            res.sources.findIndex(
-              ({ qual }: { qual: number }) => qual === preferredQuality,
-            ),
-            0,
-          );
-          const trackIdx = res.tracks
-            ? res.tracks.findIndex(
-                ({ label }) => label?.includes(preferredSubtitles),
-              )
-            : -1;
+          const f = ({ qual }: { qual: number }) => qual === preferredQuality;
+          const sourceIdx = Math.max(res.sources.findIndex(f), 0);
+          const g = ({ label }: { label: string }) =>
+            label?.includes(preferredSubtitles);
+          const trackIdx = res.tracks ? res.tracks.findIndex(g) : -1;
 
           dispatch(setVideo({ video: res, sourceIdx, trackIdx }));
         }

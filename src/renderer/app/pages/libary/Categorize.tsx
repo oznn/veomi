@@ -22,20 +22,53 @@ export default function Categorize({
     () => electron.store.set('categories', categories),
     [categories],
   );
+  function swapCategories(i1: number, i2: number) {
+    [categories[i1], categories[i2]] = [categories[i2], categories[i1]];
+    setCategories([...categories]);
+  }
 
   return (
     <div className={styles.category}>
       {/* eslint-disable-next-line */}
       <span onClick={close} />
       <div>
-        Move selected entries
-        <br />
         {categories
           .filter((c) => c)
           .map((c, i) => (
-            <div key={c} style={{ display: 'flex' }}>
+            <div
+              key={c}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '.5em',
+              }}
+            >
+              <div style={{ display: 'flex' }}>
+                <div>
+                  <button
+                    disabled={i === 0}
+                    type="button"
+                    onClick={() => swapCategories(i, i - 1)}
+                  >
+                    <span
+                      className={styles.arrow}
+                      style={{ rotate: '225deg', translate: '0 25%' }}
+                    />
+                  </button>
+                  <button
+                    disabled={i === categories.length - 1}
+                    type="button"
+                    onClick={() => console.log('down')}
+                  >
+                    <span
+                      className={styles.arrow}
+                      style={{ translate: '0 -25%' }}
+                    />
+                  </button>
+                </div>
+              </div>
+
               <button type="button" onClick={() => categorize(c)}>
-                <span style={{ borderRadius: '50%' }} />
                 {c}
               </button>
               <button
@@ -51,8 +84,10 @@ export default function Categorize({
             </div>
           ))}
         <input
+          // eslint-disable-next-line
+          autoFocus
           type="text"
-          placeholder="add category"
+          placeholder="Add a category"
           onKeyUp={({ key, target }) => {
             const { value } = target as HTMLInputElement;
             if (key === 'Enter') {

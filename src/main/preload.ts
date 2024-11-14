@@ -9,6 +9,7 @@ export type Channels =
   | 'download-progress'
   | 'ffmpeg-ended'
   | 'download-start'
+  | 'session-match-found'
   | 'console-log';
 
 type VideoFile = {
@@ -66,6 +67,13 @@ const electronHandler = {
   },
   dialog: {
     showMessage: (msg: string) => ipcRenderer.invoke('dialog-showMessage', msg),
+  },
+  session: {
+    search: (patterns: string[] | null) =>
+      ipcRenderer.invoke('session-search', patterns),
+  },
+  console: {
+    log: (messages: any[]) => ipcRenderer.invoke('console-log', messages),
   },
   ipcRenderer: {
     sendMessage(channel: Channels, ...args: unknown[]) {

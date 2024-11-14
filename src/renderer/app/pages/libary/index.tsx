@@ -126,7 +126,6 @@ export default function Libary() {
   }
   return (
     <>
-      <iframe src="https://megacloud.tube/embed-1/e-1/bEilBSuyMryn?z=" />
       <div
         style={{
           overflow: 'scroll',

@@ -34,6 +34,7 @@ class AppUpdater {
 let mw: BrowserWindow | null = null;
 let origin: string | null = null;
 let referrer: string | null = null;
+let sessionSearchPattern: string[] | null = null;
 const store = new Store();
 
 type VideoFile = {
@@ -151,7 +152,10 @@ ipcMain.handle(
   'poster-delete',
   async (_, posterPath) =>
     posterPath &&
-    unlink(posterPath, (e) => console.log('could not remove the poster', e)),
+    unlink(
+      posterPath,
+      (e) => e && console.log('could not remove the poster', e),
+    ),
 );
 ipcMain.handle('extractor-megacloud', (_, ciphered) =>
   megacloudExtractor(ciphered),
@@ -162,6 +166,12 @@ ipcMain.handle('fs-remove', (_, folderPath) => {
 });
 ipcMain.handle('dialog-showMessage', (_, message) => {
   if (mw) dialog.showMessageBox(mw, { message });
+});
+ipcMain.handle('session-search', (_, pattern) => {
+  sessionSearchPattern = pattern;
+});
+ipcMain.handle('console-log', (_, messages) => {
+  console.log(...messages);
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -271,13 +281,19 @@ app
     session.defaultSession.webRequest.onBeforeSendHeaders(
       { urls: ['*://*/*'] },
       (details, callback) => {
-        console.log(details.url);
-        console.log('');
+        const cancel =
+          !!sessionSearchPattern &&
+          sessionSearchPattern.some((p) => details.url.includes(p));
         details.requestHeaders.Referer =
           referrer || new URL(details.url).origin;
         if (origin) details.requestHeaders.Origin = origin;
+        if (cancel) mw?.webContents.send('session-match-found', details.url);
 
-        callback({ cancel: false, requestHeaders: details.requestHeaders });
+        const requestHeaders = {
+          ...details.requestHeaders,
+          ...(JSON.parse(details.requestHeaders.custom || '{}') as Object),
+        };
+        callback({ cancel: false, requestHeaders });
       },
     );
     app.on('activate', () => {

@@ -1,7 +1,7 @@
 import { Video, Episode, Result, Server } from '@types';
 import { parse } from 'hls-parser';
 import { MasterPlaylist } from 'hls-parser/types';
-import vidsrcExtractor from '../../extractors/vidsrc';
+import embedExtractor from '../../extractors/embed';
 
 const { electron } = window;
 const baseURL = 'https://vidsrc.net';
@@ -73,34 +73,34 @@ export async function getServers(episodeId: string): Promise<Server[]> {
   return [{ name: 'vidsrc', id: `${baseURL}/embed/${episodeId}` }];
 }
 
-export async function getVideo(server: Server): Promise<Video | undefined> {
-  const res = await fetch(server.id);
-  const doc = parseHTML(await res.text());
-  const url = doc.querySelector('#player_iframe')?.getAttribute('src') || '';
-  const base = new URL(`https:${url}`).origin;
-  const txt = await (await fetch(`https:${url}`)).text();
-  console.log('b',base);
-  console.log(txt);
-  const [, path] = /src: '(.*?)'/.exec(txt) || ['', ''];
-  const doc2 = parseHTML(await (await fetch(base + path)).text());
-  const div = doc2.querySelector('#reporting_content+div');
-  const method = div?.getAttribute('id') || '';
-  const encodedMaster = div?.textContent || '';
-  const master = vidsrcExtractor(method, encodedMaster) || '';
-  electron.ipcRenderer.sendMessage('change-referrer', `https:${url}`);
-  const playlist = parse(await (await fetch(master)).text());
-
-  const sources = (playlist as MasterPlaylist).variants
-    .filter((t) => !t.isIFrameOnly)
-    .map(({ uri, resolution }) => ({
-      file: uri.includes('://')
-        ? uri
-        : url.slice(0, url.lastIndexOf('/') + 1) + uri,
-      qual: resolution?.height || 0,
-    }))
-    .toSorted((a, b) => b.qual - a.qual);
-  return { sources };
-}
+// export async function getVideo(server: Server): Promise<Video | undefined> {
+//   const res = await fetch(server.id);
+//   const doc = parseHTML(await res.text());
+//   const url = doc.querySelector('#player_iframe')?.getAttribute('src') || '';
+//   const base = new URL(`https:${url}`).origin;
+//   const txt = await (await fetch(`https:${url}`)).text();
+//   console.log('b',base);
+//   console.log(txt);
+//   const [, path] = /src: '(.*?)'/.exec(txt) || ['', ''];
+//   const doc2 = parseHTML(await (await fetch(base + path)).text());
+//   const div = doc2.querySelector('#reporting_content+div');
+//   const method = div?.getAttribute('id') || '';
+//   const encodedMaster = div?.textContent || '';
+//   const master = vidsrcExtractor(method, encodedMaster) || '';
+//   electron.ipcRenderer.sendMessage('change-referrer', `https:${url}`);
+//   const playlist = parse(await (await fetch(master)).text());
+//
+//   const sources = (playlist as MasterPlaylist).variants
+//     .filter((t) => !t.isIFrameOnly)
+//     .map(({ uri, resolution }) => ({
+//       file: uri.includes('://')
+//         ? uri
+//         : url.slice(0, url.lastIndexOf('/') + 1) + uri,
+//       qual: resolution?.height || 0,
+//     }))
+//     .toSorted((a, b) => b.qual - a.qual);
+//   return { sources };
+// }
 
 // export async function getVideo(server: Server): Promise<Video | undefined> {
 //   const res = await fetch(server.id);
@@ -124,3 +124,20 @@ export async function getVideo(server: Server): Promise<Video | undefined> {
 //   // console.log(await (await fetch(`https://${path}`)).text());
 // }
 //
+//
+
+export async function getVideo(server: Server): Promise<Video | undefined> {
+  const url = (await embedExtractor(server.id, '.m3u8')) as string;
+  const playlist = parse(await (await fetch(url)).text());
+  const sources = (playlist as MasterPlaylist).variants
+    .filter((t) => !t.isIFrameOnly)
+    .map(({ uri, resolution }) => ({
+      file: uri.includes('://')
+        ? uri
+        : url.slice(0, url.lastIndexOf('/') + 1) + uri,
+      qual: resolution?.height || 0,
+    }));
+
+  console.log('sources', sources);
+  return { sources };
+}

@@ -219,7 +219,7 @@ const app = createSlice({
           return obj[key];
         }, state.entry);
 
-        if (typeof v === 'number')
+        if (v || v === 0)
           electron.store.set(
             `entries.${state.entry.key}.${k}`,
             JSON.parse(JSON.stringify(v)),

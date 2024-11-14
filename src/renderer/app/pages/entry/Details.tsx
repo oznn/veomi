@@ -1,14 +1,77 @@
+import Loading from '@components/loading';
 import { useEffect, useReducer, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Entry } from '@types';
 import { useNavigate } from 'react-router-dom';
 import buttonStyles from '@styles/Button.module.css';
+import resultsStyles from '@styles/Results.module.css';
 import extensions from '../../../extensions';
 import styles from './styles.module.css';
 import { useAppSelector } from '../../redux/store';
 import { addToLib, setEntryProp, setMediaIdx } from '../../redux';
 
 const { electron } = window;
+type ResultType = {
+  results: Object[] | null;
+  close: () => void;
+  rerender: () => void;
+};
+
+function Results({ results, close, rerender }: ResultType) {
+  const dispatch = useDispatch();
+  const app = useAppSelector((s) => s.app);
+  const entry = app.entry as Entry;
+  if (!results) return <Loading />;
+
+  return (
+    <ul style={{ margin: '1em 0' }} className={resultsStyles.container}>
+      {!results.length ? (
+        <span style={{ display: 'block', textAlign: 'center' }}>
+          No results found
+        </span>
+      ) : (
+        results.map((e: any) => (
+          <button
+            className={resultsStyles.link}
+            type="button"
+            key={e.id}
+            onClick={async () => {
+              const info = [
+                ['status', e.status as string],
+                ['year', e.seasonYear as string],
+                ['studio', e.studios.nodes[0]?.name as string],
+                ['format', e.format as string],
+                ['score', ((+e.averageScore as number) / 10).toFixed(2)],
+              ];
+              const details = {
+                info: info.filter(([, notNull]) => notNull),
+                description: e.description,
+              };
+              dispatch(setEntryProp({ k: 'details', v: details }));
+              close();
+              const path = await electron.poster.download(
+                e.coverImage.extraLarge,
+                entry.key,
+              );
+              if (path) {
+                rerender();
+                dispatch(setEntryProp({ k: 'posterPath', v: path }));
+              }
+              rerender();
+            }}
+          >
+            <div>
+              <img src={e.coverImage.large} alt="cover" height={10} />
+            </div>
+            <span className={resultsStyles.title}>
+              {e.title.english || e.title.romaji}
+            </span>
+          </button>
+        ))
+      )}
+    </ul>
+  );
+}
 
 function Anilist({
   close,
@@ -19,12 +82,12 @@ function Anilist({
 }) {
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
-  const [results, setResults] = useState([]);
-  const dispatch = useDispatch();
+  const [results, setResults] = useState<Object[] | null>([]);
   const [isAnime, setIsAnime] = useState(entry.result.type === 'VIDEO');
   const [search, setSearch] = useState(entry.result.title);
 
   useEffect(() => {
+    setResults(null);
     (async () => {
       const variables = { search, page: 1, perPage: 20 };
       const query = `
@@ -40,6 +103,7 @@ function Anilist({
               }
               coverImage {
                 extraLarge
+                large
                 medium
               }
               studios(isMain: true){
@@ -67,95 +131,50 @@ function Anilist({
     })();
   }, [search, isAnime]);
 
-  if (results)
-    return (
-      <>
-        <input
-          // border: solid 3px grey;
-          // border-radius: 20px;
-          // padding: 0 .5em;
-          style={{
-            fontSize: '1em',
-            border: 'solid 3px grey',
-            borderRadius: '10px',
-            padding: '0 .5em',
-            background: 'transparent',
-            color: 'silver',
-            outline: 'none',
-          }}
-          defaultValue={search}
-          placeholder="Search"
-          onKeyUp={
-            ({ target, key }) =>
-              key === 'Enter' && setSearch((target as HTMLInputElement).value)
-          }
-        />
-        <br />
-        <button
-          className={buttonStyles.container}
-          type="button"
-          onClick={() => setIsAnime(true)}
-          disabled={isAnime}
-        >
-          ANIME
-        </button>
-        <button
-          className={buttonStyles.container}
-          type="button"
-          onClick={() => setIsAnime(false)}
-          disabled={!isAnime}
-        >
-          MANGA
-        </button>
-        <ul style={{ padding: 0 }}>
-          {results.map((e: any) => (
-            <button
-              type="button"
-              key={e.id}
-              className={buttonStyles.container}
-              onClick={async () => {
-                const info = [
-                  ['status', e.status as string],
-                  ['year', e.seasonYear as string],
-                  ['studio', e.studios.nodes[0]?.name as string],
-                  ['format', e.format as string],
-                  ['score', ((+e.averageScore as number) / 10).toFixed(2)],
-                ];
-                const details = {
-                  info: info.filter(([, notNull]) => notNull),
-                  description: e.description,
-                };
-                dispatch(setEntryProp({ k: 'details', v: details }));
-                close();
-                const path = await electron.poster.download(
-                  e.coverImage.extraLarge,
-                  entry.key,
-                );
-                if (path) {
-                  dispatch(setEntryProp({ k: 'posterPath', v: path }));
-                  rerender();
-                }
-                rerender();
-              }}
-              style={{
-                margin: '.5em 0',
-                padding: '0',
-                gap: '.5em',
-                display: 'flex',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <img src={e.coverImage.medium} alt="cover" />
-              <span style={{ padding: '0 .4em' }}>
-                {e.title.english || e.title.romaji}
-              </span>
-            </button>
-          ))}
-        </ul>
-      </>
-    );
+  return (
+    <>
+      <input
+        style={{
+          fontSize: '1em',
+          border: 'solid 3px grey',
+          borderRadius: '20px',
+          padding: '.2em .5em',
+          margin: '.2em 0',
+          background: 'transparent',
+          color: 'silver',
+          outline: 'none',
+          width: '100%',
+        }}
+        defaultValue={search}
+        placeholder="Search"
+        onKeyUp={({ target, key }) =>
+          key === 'Enter' && setSearch((target as HTMLInputElement).value)
+        }
+      />
+      <br />
+      <button
+        className={buttonStyles.container}
+        type="button"
+        onClick={() => setIsAnime(true)}
+        disabled={isAnime}
+        style={{ fontSize: '.8em' }}
+      >
+        ANIME
+      </button>
+      <button
+        className={buttonStyles.container}
+        type="button"
+        onClick={() => setIsAnime(false)}
+        disabled={!isAnime}
+        style={{ fontSize: '.8em' }}
+      >
+        MANGA
+      </button>
+      <Results results={results} close={close} rerender={rerender} />
+    </>
+  );
 }
+
 export default function Details() {
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;

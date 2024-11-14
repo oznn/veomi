@@ -4,7 +4,7 @@ export default function Message({ msg }: { msg: string }) {
       style={{
         display: 'block',
         textAlign: 'center',
-        padding: '2em 0',
+        paddingTop: '2em',
       }}
     >
       {msg}

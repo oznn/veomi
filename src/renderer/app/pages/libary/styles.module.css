@@ -53,9 +53,10 @@
   background: #222;
   animation: pop 100ms ease 1;
   translate: -50% -50%;
-  top:50%;
-  left:50%;
+  top: 50%;
+  left: 50%;
 }
+
 .category button {
   display: flex;
   align-items: center;
@@ -65,7 +66,7 @@
   color: grey;
   background: none;
   width: 100%;
-  margin: 0 .4em;
+  /* margin: 0 .4em; */
   font-weight: 500;
 }
 
@@ -81,6 +82,23 @@
   height: .5em;
   transition: 200ms;
 }
+
+.category button>.arrow {
+  background: none;
+  border-right: solid 4px grey;
+  border-bottom: solid 4px grey;
+  rotate: 45deg;
+  width: 20px;
+  height: 20px;
+}
+.category button:hover>.arrow{
+  border-right: solid 4px white;
+  border-bottom: solid 4px white;
+}
+
+/* .category button>.arrow:hover { */
+/*   border: solid 1px green; */
+/* } */
 
 @keyframes pop {
   0% {
