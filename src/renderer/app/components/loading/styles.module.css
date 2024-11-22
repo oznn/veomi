@@ -6,7 +6,6 @@
   border-radius: 50%;
   box-sizing: border-box;
   animation: rotation .7s linear infinite;
-  margin: 1em auto;
 }
 
 @keyframes rotation {

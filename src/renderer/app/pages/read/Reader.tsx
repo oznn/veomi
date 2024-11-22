@@ -43,8 +43,8 @@ export default function Reader({ pages, mode }: Props) {
     if (mode === 'scroll') {
       const m = heights.at(-1) || 0;
       if (scrollTop === m + 1 && n > 0) {
-        const key = `entries.${entry.key}.media.${mediaIdx}.isSeen`;
-        electron.store.set(key, true);
+        const key = `entries.${entry.key}.media.${mediaIdx}`;
+        electron.store.set(`${key}.isSeen`, true);
         return next();
       }
       if (scrollTop === 0 && n < 0) return prev();
@@ -285,6 +285,7 @@ export default function Reader({ pages, mode }: Props) {
                   margin: `auto auto ${gapSize}px auto`,
                   display: 'block',
                   width: `calc(100% + ${longStripZoom * 10}px)`,
+                  transition: 'all 200ms ease',
                   translate:
                     longStripZoom > 0 ? `${(-longStripZoom * 10) / 2}px` : '0',
                 }}

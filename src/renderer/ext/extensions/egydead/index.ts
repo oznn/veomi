@@ -32,7 +32,7 @@ export async function getMedia(result: Result): Promise<Episode[]> {
   const doc = parseHTML(await res.text());
 
   if (result.path.includes('/season')) {
-    doc.querySelectorAll('.EpsList li>a').forEach((e, i) => {
+    [...doc.querySelectorAll('.EpsList li>a')].toReversed().forEach((e, i) => {
       const id = e.getAttribute('href') || '';
 
       episodes.push({
@@ -96,7 +96,6 @@ export async function getVideo(server: Server): Promise<Video | undefined> {
     if (script.includes('(p,a,c,k,e,d)')) script = unpack(script);
     const [, master] = /{file:"(.*?)"/.exec(script) || ['', ''];
     const playlist = parse(await (await fetch(master)).text());
-    console.log('playlist', playlist);
     const sources = (playlist as MasterPlaylist).variants
       .filter((t) => !t.isIFrameOnly)
       .map(({ uri, resolution }) => ({

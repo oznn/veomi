@@ -92,7 +92,10 @@ export default function Categorize({
             const { value } = target as HTMLInputElement;
             if (key === 'Enter') {
               (target as HTMLInputElement).value = '';
-              if (!categories.includes(value))
+              if (
+                !categories.includes(value) &&
+                value.toLowerCase() !== 'default'
+              )
                 setCategories([...categories, value]);
             }
           }}

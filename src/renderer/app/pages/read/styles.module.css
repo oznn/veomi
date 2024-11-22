@@ -3,6 +3,10 @@
   position: absolute;
 }
 
+/* .reader img { */
+/*   max-width: 100%; */
+/* } */
+
 .slider {
   width: 100vw;
   height: 100vh;
@@ -19,10 +23,10 @@
 }
 
 .slider img {
-  max-width: 100%;
   transform-origin: top;
   transition: 200ms ease;
 }
+
 
 .context {
   position: absolute;
@@ -32,7 +36,6 @@
   padding: .5em 0;
   height: 420px;
   width: 420px;
-  border-radius: .5em;
   overflow-y: scroll;
   overflow-x: hidden;
 }
@@ -113,14 +116,20 @@
   margin: .1em .4em;
 }
 
+.setting i {
+  color: silver;
+  width: 30px;
+  display: inline-block;
+  text-align: center;
+}
 .setting span {
   color: silver;
 }
 
 .setting input {
   border: solid 3px grey;
-  border-radius: 10px;
-  width: 3ch;
+  border-radius: 20px;
+  width: 3.5ch;
   padding: 0 .2em;
   font-size: .9em;
   text-align: center;

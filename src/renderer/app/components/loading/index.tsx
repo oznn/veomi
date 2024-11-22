@@ -13,7 +13,7 @@ export default function Loading({ centerY }: { centerY?: boolean }) {
               left: '50%',
               translate: '-50% -50%',
             }
-          : {}
+          : { margin: '1em auto' }
       }
     />
   );

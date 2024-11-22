@@ -39,6 +39,7 @@ export type PlayerSettings = {
     size: number;
     shadowStrokeSize: number;
     yAxisOffset: number;
+    opacity: number;
   };
 };
 export type Chapter = {

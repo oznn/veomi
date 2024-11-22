@@ -23,6 +23,10 @@ export default function Nav() {
 
   useEffect(() => {
     document.onkeyup = ({ key }) => {
+      const tagName = document.activeElement?.tagName;
+      if (tagName === 'INPUT' || pathname === '/watch') return;
+      if (key === 'L') nav('/');
+      if (key === 'D') nav('/downloads');
       if (key === '/') searchRef.current?.focus();
       if (key === '?') {
         extensionsRef.current?.focus();
@@ -43,7 +47,7 @@ export default function Nav() {
         if (key.length === 1) setExtensionQuery((q) => q + key);
       }
     };
-  }, [isShowOptions, extensionQuery]);
+  }, [isShowOptions, extensionQuery, pathname]);
 
   useEffect(() => {
     (async () => {
@@ -77,7 +81,7 @@ export default function Nav() {
             <img src={arrowBack} alt="icon" />
           </button>
           <Link to="/">
-            Libary
+            Library
             <sup style={{ color: 'transparent', userSelect: 'none' }}>0</sup>
           </Link>
           <Link to="/downloads">

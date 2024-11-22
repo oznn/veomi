@@ -1,4 +1,5 @@
 .container {
+  scrollbar-gutter: stable both-edges;
   position: absolute;
   animation: pop 100ms ease 1;
   background-color: #111111cc;
@@ -7,7 +8,6 @@
   height: 420px;
   width: 420px;
   overflow: scroll;
-  border-radius: .8em;
   transform-origin: top left;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -88,5 +88,32 @@
 
 .container .circleButton:hover {
   background: #555;
+  color: silver;
+}
+
+.container .setting {
+  display: flex;
+  justify-content: space-between;
+  margin: .1em .4em;
+}
+
+.container .setting span {
+  color: silver;
+}
+
+.container .setting i {
+  color: silver;
+  width: 30px;
+  display: inline-block;
+  text-align: center;
+}
+
+.container .setting input {
+  border: solid 3px grey;
+  border-radius: 20px;
+  width: 3.5ch;
+  padding: 0 .2em;
+  font-size: .9em;
+  text-align: center;
   color: silver;
 }

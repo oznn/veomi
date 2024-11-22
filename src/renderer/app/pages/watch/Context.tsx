@@ -8,14 +8,13 @@ import {
   setServerIdx,
   setSourceIdx,
   setTrackIdx,
-  setPlaybackRate,
   toggleAutoSkip,
   setMediaIdx,
-  setMarkAsSeenPercent,
   setEntryProp,
 } from '../../redux';
 
 const { electron } = window;
+const minmax = (a: number, b: number, c: number) => Math.max(a, Math.min(b, c));
 
 function Servers() {
   const dispatch = useDispatch();
@@ -120,60 +119,6 @@ function Qualities() {
   );
 }
 
-function Playback() {
-  const dispatch = useDispatch();
-  const app = useAppSelector((state) => state.app);
-  const entry = app.entry as Entry;
-  const { playbackRate } = entry.settings as PlayerSettings;
-
-  return (
-    <div style={{ padding: '0 .5em' }}>
-      <span style={{ display: 'block', textAlign: 'center' }}>
-        {playbackRate.toFixed(2)}x
-      </span>
-      <input
-        type="range"
-        step={1}
-        max={12}
-        defaultValue={(playbackRate - 1) / 0.25}
-        onChange={({ target }) => {
-          const speed = +target.value * 0.25 + 1;
-          dispatch(setPlaybackRate(speed));
-        }}
-      />
-    </div>
-  );
-}
-
-function MarkAsSeenPercent() {
-  const app = useAppSelector((state) => state.app);
-  const entry = app.entry as Entry;
-  const settings = entry.settings as PlayerSettings;
-  const dispatch = useDispatch();
-
-  return (
-    <div style={{ textAlign: 'center' }}>
-      {'Mark as seen at '}
-      <input
-        style={{
-          border: 'solid 3px grey',
-          width: '3ch',
-          padding: '0 .2em',
-          borderRadius: '10px',
-          color: 'grey',
-        }}
-        type="number"
-        defaultValue={settings.markAsSeenPercent}
-        onChange={(e) => {
-          e.target.value = `${Math.max(0, Math.min(+e.target.value, 100))}`;
-          dispatch(setMarkAsSeenPercent(+e.target.value));
-        }}
-      />
-      %
-    </div>
-  );
-}
-
 function SubtitlesFont() {
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
@@ -182,131 +127,102 @@ function SubtitlesFont() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span
-          style={{ textAlign: 'center', display: 'block', padding: '0 .4em' }}
-        >
-          Size
-        </span>
-        <div style={{ display: 'flex', placeItems: 'center' }}>
-          <button
-            type="button"
-            className={styles.circleButton}
-            onClick={() =>
-              dispatch(
-                setEntryProp({
-                  k: 'settings.subtitlesFont.size',
-                  v: Math.max(-9, subtitlesFont.size - 1),
-                }),
-              )
-            }
-          >
-            -
-          </button>
-          <span style={{ padding: '0 .2em' }}>
-            {100 + subtitlesFont.size * 10}%
-          </span>
-          <button
-            type="button"
-            className={styles.circleButton}
-            onClick={() =>
-              dispatch(
-                setEntryProp({
-                  k: 'settings.subtitlesFont.size',
-                  v: Math.min(20, subtitlesFont.size + 1),
-                }),
-              )
-            }
-          >
-            +
-          </button>
+      <div className={styles.setting}>
+        <span>Size</span>
+        <div>
+          <input
+            type="number"
+            defaultValue={subtitlesFont.size}
+            onBlur={(e) => {
+              const t = e.target as HTMLInputElement;
+              t.value = `${minmax(10, +t.value, 400)}`;
+              const p = { k: 'settings.subtitlesFont.size', v: +t.value };
+              dispatch(setEntryProp(p));
+            }}
+            onWheel={(e) => {
+              let v = e.deltaY > 0 ? -1 : 1;
+              v = minmax(10, subtitlesFont.size + v * 5, 400);
+              (e.target as HTMLInputElement).value = `${v}`;
+              const p = { k: 'settings.subtitlesFont.size', v };
+              dispatch(setEntryProp(p));
+            }}
+          />
+          <i>%</i>
         </div>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span
-          style={{
-            textAlign: 'center',
-            display: 'block',
-            padding: '0 .4em',
-            fontSize: '.9em',
-          }}
-        >
-          Shadow thickness
-        </span>
-        <div style={{ display: 'flex', placeItems: 'center' }}>
-          <button
-            type="button"
-            className={styles.circleButton}
-            onClick={() =>
-              dispatch(
-                setEntryProp({
-                  k: 'settings.subtitlesFont.shadowStrokeSize',
-                  v: Math.max(0, subtitlesFont.shadowStrokeSize - 1),
-                }),
-              )
-            }
-          >
-            -
-          </button>
-          <span style={{ padding: '0 .2em' }}>
-            {subtitlesFont.shadowStrokeSize}
-          </span>
-          <button
-            type="button"
-            className={styles.circleButton}
-            onClick={() =>
-              dispatch(
-                setEntryProp({
-                  k: 'settings.subtitlesFont.shadowStrokeSize',
-                  v: Math.min(20, subtitlesFont.shadowStrokeSize + 1),
-                }),
-              )
-            }
-          >
-            +
-          </button>
+      <div className={styles.setting}>
+        <span>Opacity</span>
+        <div>
+          <input
+            type="number"
+            defaultValue={subtitlesFont.opacity}
+            onBlur={(e) => {
+              const t = e.target as HTMLInputElement;
+              t.value = `${minmax(0, +t.value, 100)}`;
+              const p = { k: 'settings.subtitlesFont.opacity', v: +t.value };
+              dispatch(setEntryProp(p));
+            }}
+            onWheel={(e) => {
+              let v = e.deltaY > 0 ? -1 : 1;
+              v = minmax(0, subtitlesFont.opacity + v * 5, 100);
+              (e.target as HTMLInputElement).value = `${v}`;
+              const p = { k: 'settings.subtitlesFont.opacity', v };
+              dispatch(setEntryProp(p));
+            }}
+          />
+          <i>%</i>
         </div>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span
-          style={{
-            textAlign: 'center',
-            display: 'block',
-            padding: '0 .4em',
-          }}
-        >
-          Y axis offset
-        </span>
-        <div style={{ display: 'flex', placeItems: 'center' }}>
-          <button
-            type="button"
-            className={styles.circleButton}
-            onClick={() =>
-              dispatch(
-                setEntryProp({
-                  k: 'settings.subtitlesFont.yAxisOffset',
-                  v: Math.max(0, subtitlesFont.yAxisOffset - 1),
-                }),
-              )
-            }
-          >
-            -
-          </button>
-          <span style={{ padding: '0 .2em' }}>{subtitlesFont.yAxisOffset}</span>
-          <button
-            type="button"
-            className={styles.circleButton}
-            onClick={() =>
-              dispatch(
-                setEntryProp({
-                  k: 'settings.subtitlesFont.yAxisOffset',
-                  v: Math.min(20, subtitlesFont.yAxisOffset + 1),
-                }),
-              )
-            }
-          >
-            +
-          </button>
+      <div className={styles.setting}>
+        <span>Shadow thickness</span>
+        <div>
+          <input
+            type="number"
+            defaultValue={subtitlesFont.shadowStrokeSize}
+            onBlur={(e) => {
+              const t = e.target as HTMLInputElement;
+              t.value = `${minmax(0, +t.value, 20)}`;
+              const p = {
+                k: 'settings.subtitlesFont.shadowStrokeSize',
+                v: +t.value,
+              };
+              dispatch(setEntryProp(p));
+            }}
+            onWheel={(e) => {
+              let v = e.deltaY > 0 ? -1 : 1;
+              v = minmax(0, subtitlesFont.shadowStrokeSize + v, 20);
+              (e.target as HTMLInputElement).value = `${v}`;
+              const p = { k: 'settings.subtitlesFont.shadowStrokeSize', v };
+              dispatch(setEntryProp(p));
+            }}
+          />
+          <i>px</i>
+        </div>
+      </div>
+      <div className={styles.setting}>
+        <span>Y position offset</span>
+        <div>
+          <input
+            type="number"
+            defaultValue={subtitlesFont.yAxisOffset}
+            onBlur={(e) => {
+              const t = e.target as HTMLInputElement;
+              t.value = `${minmax(0, +t.value, 40)}`;
+              const p = {
+                k: 'settings.subtitlesFont.yAxisOffset',
+                v: +t.value,
+              };
+              dispatch(setEntryProp(p));
+            }}
+            onWheel={(e) => {
+              let v = e.deltaY > 0 ? -1 : 1;
+              v = minmax(0, subtitlesFont.yAxisOffset + v, 40);
+              (e.target as HTMLInputElement).value = `${v}`;
+              const p = { k: 'settings.subtitlesFont.yAxisOffset', v };
+              dispatch(setEntryProp(p));
+            }}
+          />
+          <i>px</i>
         </div>
       </div>
     </div>
@@ -318,8 +234,6 @@ export default function Context({ x, y }: { x: number; y: number }) {
   const settings = [
     <Servers />,
     <Qualities />,
-    <Playback />,
-    <MarkAsSeenPercent />,
     <Subtitles />,
     <SubtitlesFont />,
   ];
@@ -336,6 +250,7 @@ export default function Context({ x, y }: { x: number; y: number }) {
   const transformOrigin = `${transformOriginX} ${transformOriginY}`;
   const [, rerender] = useReducer((n) => n + 1, 0);
   const defaultSettingsRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const style = {
     left: `${x}px`,
     top: `${y}px`,
@@ -366,21 +281,40 @@ export default function Context({ x, y }: { x: number; y: number }) {
       </div>
     );
 
+  function disableContainerScroll() {
+    if (containerRef.current) containerRef.current.style.overflowY = 'hidden';
+  }
+  function enableContainerScroll() {
+    if (containerRef.current) containerRef.current.style.overflowY = 'scroll';
+  }
+
   return (
-    <div className={styles.container} style={style}>
+    <div className={styles.container} ref={containerRef} style={style}>
       <div>
-        <div style={{ display: 'flex' }}>
+        <div
+          style={{
+            padding: '0 .4em',
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+        >
           <button
             type="button"
+            style={{ margin: 0, width: 'auto' }}
             disabled={app.mediaIdx === 0}
             onClick={() => dispatch(setMediaIdx(app.mediaIdx - 1))}
           >
             [P]rev
           </button>
-          <button type="button" onClick={() => document.exitFullscreen()}>
+          <button
+            style={{ margin: 0, width: 'auto' }}
+            type="button"
+            onClick={() => document.exitFullscreen()}
+          >
             [Esc]ape
           </button>
           <button
+            style={{ margin: 0, width: 'auto' }}
             type="button"
             disabled={app.mediaIdx === entry.media.length - 1}
             onClick={() => dispatch(setMediaIdx(app.mediaIdx + 1))}
@@ -426,24 +360,66 @@ export default function Context({ x, y }: { x: number; y: number }) {
         <span className={styles.arrow} />
         {video.sources[sourceIdx].qual}p
       </button>
-      <button type="button" onClick={() => setSettingIdx(2)}>
-        <span className={styles.arrow} />
-        {entrySettings.playbackRate.toFixed(2)}x
-      </button>
-      <button type="button" onClick={() => setSettingIdx(3)}>
-        <span className={styles.arrow} />
-        {entrySettings.markAsSeenPercent}%
-      </button>
       {video.tracks && (
-        <button type="button" onClick={() => setSettingIdx(4)}>
+        <button type="button" onClick={() => setSettingIdx(2)}>
           <span className={styles.arrow} />
           {trackIdx > -1 ? video.tracks[trackIdx].label : 'Subtitles'}
         </button>
       )}
-      <button type="button" onClick={() => setSettingIdx(5)}>
+      <button type="button" onClick={() => setSettingIdx(3)}>
         <span className={styles.arrow} />
         Subtitles font
       </button>
+      <div className={styles.setting}>
+        <span>Mark as seen at</span>
+        <div>
+          <input
+            type="number"
+            defaultValue={entrySettings.markAsSeenPercent}
+            onBlur={(e) => {
+              const t = e.target as HTMLInputElement;
+              t.value = `${minmax(1, +t.value, 100)}`;
+              const p = { k: 'settings.markAsSeenPercent', v: +t.value };
+              dispatch(setEntryProp(p));
+            }}
+            onWheel={(e) => {
+              let v = e.deltaY > 0 ? -1 : 1;
+              v = minmax(0, entrySettings.markAsSeenPercent + v * 5, 100);
+              (e.target as HTMLInputElement).value = `${v}`;
+              const p = { k: 'settings.markAsSeenPercent', v };
+              dispatch(setEntryProp(p));
+            }}
+            onMouseEnter={disableContainerScroll}
+            onMouseLeave={enableContainerScroll}
+          />
+          <i>%</i>
+        </div>
+      </div>
+      <div className={styles.setting}>
+        <span>Playback rate</span>
+        <div>
+          <input
+            type="number"
+            defaultValue={entrySettings.playbackRate.toFixed(2)}
+            onBlur={(e) => {
+              const t = e.target as HTMLInputElement;
+              t.value = `${minmax(0.25, +t.value, 4).toFixed(2)}`;
+              const p = { k: 'settings.playbackRate', v: +t.value };
+              dispatch(setEntryProp(p));
+            }}
+            onWheel={(e) => {
+              let v = e.deltaY > 0 ? -1 : 1;
+              v = minmax(0.25, entrySettings.playbackRate + v * 0.25, 4);
+              (e.target as HTMLInputElement).value = `${v.toFixed(2)}`;
+              const p = { k: 'settings.playbackRate', v };
+              dispatch(setEntryProp(p));
+            }}
+            onMouseEnter={disableContainerScroll}
+            onMouseLeave={enableContainerScroll}
+          />
+          <i>x</i>
+        </div>
+      </div>
     </div>
   );
 }

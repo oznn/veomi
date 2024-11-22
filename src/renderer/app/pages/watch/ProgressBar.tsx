@@ -8,6 +8,8 @@ let timestampPercent = 0;
 let seekerBoundingClient: any;
 let isMouseDown = false;
 
+const minmax = (a: number, b: number, c: number) => Math.max(a, Math.min(b, c));
+
 function formatTime(t: number) {
   const s = t % 60;
   const m = Math.floor((t / 60) % 60);
@@ -28,6 +30,15 @@ export default function ProgressBar({ videoRef }: Props) {
   const { mediaIdx } = useAppSelector((state) => state.app);
   const seekerRef = useRef<HTMLDivElement>(null);
   const [hoveredTimestamp, setHoveredTimestamp] = useState(0);
+
+  function timeJump(n: number) {
+    if (videoRef.current)
+      videoRef.current.currentTime = minmax(
+        0,
+        videoRef.current.currentTime + n,
+        videoRef.current.duration,
+      );
+  }
 
   function seek() {
     if (videoRef.current) {
@@ -77,7 +88,6 @@ export default function ProgressBar({ videoRef }: Props) {
 
   return (
     <div className={styles.container}>
-      <span>{formatTime(Math.floor(currentTime))}</span>
       {/* eslint-disable-next-line */}
       <div
         className={styles.bar}
@@ -102,9 +112,26 @@ export default function ProgressBar({ videoRef }: Props) {
         >
           {formatTime(hoveredTimestamp)}
         </span>
-        <span className={styles.intro} />
       </div>
-      <span>{formatTime(Math.floor(duration))}</span>
+      <div className={styles.time}>
+        <span>{formatTime(Math.floor(currentTime))}</span>
+        <div style={{ gap: '10px', display: 'flex' }}>
+          <button type="button" onClick={() => timeJump(-5)}>
+            -5s
+          </button>
+          <button type="button" onClick={() => timeJump(-1 / 24)}>
+            -1f
+          </button>
+          {` • `}
+          <button type="button" onClick={() => timeJump(1 / 24)}>
+            +1f
+          </button>
+          <button type="button" onClick={() => timeJump(5)}>
+            +5s
+          </button>
+        </div>
+        <span>{formatTime(Math.floor(duration))}</span>
+      </div>
     </div>
   );
 }

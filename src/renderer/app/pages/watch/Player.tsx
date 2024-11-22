@@ -225,11 +225,16 @@ export default function Player() {
         <pre
           className={styles.subtitles}
           style={{
-            fontSize: `${(1 + settings.subtitlesFont.size * 0.1).toFixed(1)}em`,
+            fontSize: `${(settings.subtitlesFont.size * 0.01).toFixed(1)}em`,
+            opacity: settings.subtitlesFont.opacity * 0.01,
             bottom: `${5 + settings.subtitlesFont.yAxisOffset}%`,
             textShadow: `0 0 ${settings.subtitlesFont.shadowStrokeSize}px #000,`
               .repeat(4)
               .slice(0, -1),
+            display: 'inline-block',
+            // whiteSpace: 'pre-line',
+            // wordWrap: 'break-word',
+            pointerEvents: 'none',
           }}
           // eslint-disable-next-line
           dangerouslySetInnerHTML={{

@@ -81,7 +81,8 @@ export default function Entry() {
         preferredSubtitles: 'English',
         preferredServer: '',
         subtitlesFont: {
-          size: 5,
+          size: 100,
+          opacity: 100,
           shadowStrokeSize: 5,
           yAxisOffset: 5,
         },

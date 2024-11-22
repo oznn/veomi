@@ -92,19 +92,31 @@ export default function Context({ x, y }: { x: number; y: number }) {
 
   return (
     <div className={styles.context} style={style}>
-      <div style={{ display: 'flex' }}>
+      <div
+        style={{
+          display: 'flex',
+          padding: '0 .4em',
+          justifyContent: 'space-between',
+        }}
+      >
         <button
           type="button"
           disabled={app.mediaIdx === 0}
+          style={{ width: 'auto', margin: 0 }}
           onClick={() => dispatch(setMediaIdx(app.mediaIdx - 1))}
         >
           [P]rev
         </button>
-        <button type="button" onClick={() => document.exitFullscreen()}>
+        <button
+          style={{ width: 'auto', margin: 0 }}
+          type="button"
+          onClick={() => document.exitFullscreen()}
+        >
           [Esc]ape
         </button>
         <button
           type="button"
+          style={{ width: 'auto', margin: 0 }}
           disabled={app.mediaIdx === entry.media.length - 1}
           onClick={() => dispatch(setMediaIdx(app.mediaIdx + 1))}
         >
@@ -140,14 +152,14 @@ export default function Context({ x, y }: { x: number; y: number }) {
               dispatch(setEntryProp(p));
             }}
             onWheel={(e) => {
-              let v = e.deltaY > 0 ? 1 : -1;
+              let v = e.deltaY > 0 ? -1 : 1;
               v = Math.max(0, Math.min(sliderZoom + v, 10));
               (e.target as HTMLInputElement).value = `${100 + v * 10}`;
               const p = { k: 'settings.sliderZoom', v };
               dispatch(setEntryProp(p));
             }}
           />
-          <span style={{ width: '30px', display: 'inline-block' }}>%</span>
+          <i>%</i>
         </div>
       </div>
       <div className={styles.setting}>
@@ -163,14 +175,14 @@ export default function Context({ x, y }: { x: number; y: number }) {
               dispatch(setEntryProp(p));
             }}
             onWheel={(e) => {
-              let v = e.deltaY > 0 ? 1 : -1;
+              let v = e.deltaY > 0 ? -1 : 1;
               v = Math.max(1, Math.min(yScrollFactor + v, 10));
               (e.target as HTMLInputElement).value = `${v}`;
               const p = { k: 'settings.yScrollFactor', v };
               dispatch(setEntryProp(p));
             }}
           />
-          <span style={{ width: '30px', display: 'inline-block' }}>x</span>
+          <i>x</i>
         </div>
       </div>
       <div className={styles.setting}>
@@ -186,14 +198,14 @@ export default function Context({ x, y }: { x: number; y: number }) {
               dispatch(setEntryProp(p));
             }}
             onWheel={(e) => {
-              let v = e.deltaY > 0 ? 1 : -1;
+              let v = e.deltaY > 0 ? -1 : 1;
               v = Math.max(0, Math.min(gapSize + v, 100));
               (e.target as HTMLInputElement).value = `${v}`;
               const p = { k: 'settings.gapSize', v };
               dispatch(setEntryProp(p));
             }}
           />
-          <span style={{ width: '30px', display: 'inline-block' }}>px</span>
+          <i>px</i>
         </div>
       </div>
       <div className={styles.setting}>
@@ -209,14 +221,14 @@ export default function Context({ x, y }: { x: number; y: number }) {
               dispatch(setEntryProp(p));
             }}
             onWheel={(e) => {
-              let v = e.deltaY > 0 ? 1 : -1;
+              let v = e.deltaY > 0 ? -1 : 1;
               v = Math.max(-99, Math.min(longStripZoom + v, 100));
               (e.target as HTMLInputElement).value = `${v}`;
               const p = { k: 'settings.longStripZoom', v };
               dispatch(setEntryProp(p));
             }}
           />
-          <span style={{ width: '30px', display: 'inline-block' }}>px</span>
+          <i>px</i>
         </div>
       </div>
     </div>

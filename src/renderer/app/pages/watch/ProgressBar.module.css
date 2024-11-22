@@ -1,16 +1,19 @@
 .container {
   position: absolute;
-  bottom: 0em;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 2em;
+  bottom: 0%;
+  width: 96%;
+  translate: 2%;
+  /* display: flex; */
+  /* justify-content: space-between; */
+  /* align-items: center; */
+  height: 8.8%;
   opacity: 0;
-  transition: opacity 200ms;
-  gap: .8em;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 70%);
-  padding: 2em .5em 1.2em .5em;
+  transition: opacity 200ms ease;
+  /* gap: .8em; */
+  background: rgba(0, 0, 0, .6);
+  padding: 0 .5em;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
 }
 
 .container:hover,
@@ -23,7 +26,7 @@
   width: 100%;
   position: relative;
   cursor: pointer;
-  margin-bottom: .4em;
+  margin-bottom: .2em;
 }
 
 .bar>span:nth-child(1) {
@@ -53,7 +56,7 @@
   height: .2em;
   position: absolute;
   transition: scale 200ms ease, opacity 200ms ease;
-  opacity: 0;
+  margin-left: -.1em;
   bottom: 0;
   border-radius: 50%;
 }
@@ -68,7 +71,7 @@
   display: inline-block;
   inset: 0;
   translate: -50% -2em;
-  background-color: rgba(0, 0, 0, .8);
+  background-color: rgba(0, 0, 0, .6);
   padding: 0 .6em;
   border-radius: .5em;
   font-size: .8em;
@@ -79,4 +82,22 @@
 
 .bar:hover>.timestamp {
   opacity: 1;
+}
+
+.time {
+  /* border: solid 1px red; */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.time button {
+  color: grey;
+  font-weight: bold;
+  transition: color 200ms ease;
+}
+
+.time button:hover {
+  color: white;
+  transition: 0s;
 }
