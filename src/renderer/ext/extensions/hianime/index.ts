@@ -135,6 +135,7 @@ export async function getVideo(server: Server): Promise<Video> {
     ? JSON.parse(await electron.extractor.megacloud(data.sources))[0].file
     : data.sources[0].file;
   const sources = await getSources(file);
+  console.log(sources);
 
   return {
     sources,

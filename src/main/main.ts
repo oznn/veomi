@@ -57,6 +57,7 @@ ipcMain.handle('ffmpeg-download', async (_, videoFile: VideoFile) => {
 
   ffmpeg
     .input(videoFile.video.sources[0].file)
+    .videoCodec('copy')
     .output(`${folder}/${videoFile.fileName}.mp4`)
     // .addOption('-threads 1')
     .on('error', (err) => console.log('ffmpeg err', err))

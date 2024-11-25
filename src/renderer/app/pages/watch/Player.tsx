@@ -115,7 +115,7 @@ export default function Player() {
   useEffect(() => {
     window.ononline = () => dispatch(serverRetry());
     if (videoRef.current) {
-      if (source.file.includes('.m3u8')) {
+      if (source.file.includes('.m3u8') || source.file.includes('.ts')) {
         hls.loadSource(source.file);
         hls.attachMedia(videoRef.current);
         hls.on(Hls.Events.ERROR, (_, data) => console.log('hlsErr', data.type));

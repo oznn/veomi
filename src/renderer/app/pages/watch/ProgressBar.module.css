@@ -3,13 +3,9 @@
   bottom: 0%;
   width: 96%;
   translate: 2%;
-  /* display: flex; */
-  /* justify-content: space-between; */
-  /* align-items: center; */
   height: 8.8%;
   opacity: 0;
   transition: opacity 200ms ease;
-  /* gap: .8em; */
   background: rgba(0, 0, 0, .6);
   padding: 0 .5em;
   border-top-left-radius: 20px;
@@ -50,7 +46,8 @@
   transform-origin: left;
 }
 
-.bar>.thumb {
+.bar>.thumb,
+.markPercent {
   background-color: white;
   width: .2em;
   height: .2em;
@@ -61,7 +58,8 @@
   border-radius: 50%;
 }
 
-.bar:hover>.thumb {
+.bar:hover>.thumb,
+.markPercent {
   scale: 3;
   opacity: 1;
 }
@@ -100,4 +98,11 @@
 .time button:hover {
   color: white;
   transition: 0s;
+}
+
+.markPercent {
+  opacity: 1;
+  scale: 1;
+  background: grey;
+  border-radius: 0;
 }

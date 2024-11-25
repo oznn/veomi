@@ -363,7 +363,7 @@ export default function Context({ x, y }: { x: number; y: number }) {
       {video.tracks && (
         <button type="button" onClick={() => setSettingIdx(2)}>
           <span className={styles.arrow} />
-          {trackIdx > -1 ? video.tracks[trackIdx].label : 'Subtitles'}
+          {trackIdx > -1 ? video.tracks[trackIdx]?.label : 'Subtitles'}
         </button>
       )}
       <button type="button" onClick={() => setSettingIdx(3)}>

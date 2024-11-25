@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useAppSelector } from '../../redux/store';
 import { setEpisodeCurrentTime } from '../../redux';
 import styles from './ProgressBar.module.css';
+import { PlayerSettings } from '@types';
 
 let timestampPercent = 0;
 let seekerBoundingClient: any;
@@ -27,7 +28,8 @@ type Props = {
 
 export default function ProgressBar({ videoRef }: Props) {
   const dispatch = useDispatch();
-  const { mediaIdx } = useAppSelector((state) => state.app);
+  const { entry, mediaIdx } = useAppSelector((state) => state.app);
+  const settings = entry?.settings as PlayerSettings;
   const seekerRef = useRef<HTMLDivElement>(null);
   const [hoveredTimestamp, setHoveredTimestamp] = useState(0);
 
@@ -107,6 +109,10 @@ export default function ProgressBar({ videoRef }: Props) {
           style={{ left: `${progressPercent}%` }}
         />
         <span
+          className={styles.markPercent}
+          style={{ left: `${settings.markAsSeenPercent}%` }}
+        />
+        <span
           className={styles.timestamp}
           style={{ left: `${timestampPercent}%` }}
         >
@@ -115,14 +121,23 @@ export default function ProgressBar({ videoRef }: Props) {
       </div>
       <div className={styles.time}>
         <span>{formatTime(Math.floor(currentTime))}</span>
-        <div style={{ gap: '10px', display: 'flex' }}>
+        <div style={{ gap: '10px', display: 'flex', alignItems: 'center' }}>
           <button type="button" onClick={() => timeJump(-5)}>
             -5s
           </button>
           <button type="button" onClick={() => timeJump(-1 / 24)}>
             -1f
           </button>
-          {` • `}
+          <span
+            style={{
+              width: '12px',
+              height: '12px',
+              backgroundColor: 'silver',
+              margin: '0px 10px 5px 10px',
+              borderRadius: videoRef.current.paused ? '50%' : '0',
+              transition: 'all 300ms ease',
+            }}
+          />
           <button type="button" onClick={() => timeJump(1 / 24)}>
             +1f
           </button>
