@@ -1,16 +1,17 @@
+import fuzzysort from 'fuzzysort';
 import { Episode, Result, Server, Source, Video, Details } from '@types';
 import { parse } from 'hls-parser';
 import { MasterPlaylist } from 'hls-parser/types';
 import { anilist } from '../../utils/details';
+import embedExtractor from '../../extractors/embed';
 
 const baseURL = 'https://hianime.to';
 const parser = new DOMParser();
 const parseHTML = (html: string) => parser.parseFromString(html, 'text/html');
 const ext = 'hianime';
-const { electron } = window;
 
-export async function getResults(query: string) {
-  const res = await fetch(`${baseURL}/search?keyword=${query}`);
+export async function getResults(q: string) {
+  const res = await fetch(`${baseURL}/search?keyword=${q}`);
   const doc = parseHTML(await res.text());
   const elements = doc.querySelectorAll('.flw-item');
   const results: Result[] = [];
@@ -28,7 +29,8 @@ export async function getResults(query: string) {
       ext,
     });
   });
-  return results;
+
+  return fuzzysort.go(q, results, { key: 'title' }).map(({ obj }) => obj);
 }
 export async function getMedia(result: Result) {
   const { path } = result;
@@ -127,15 +129,14 @@ async function getSources(url: string): Promise<Source[]> {
 export async function getVideo(server: Server): Promise<Video> {
   const res = await fetch(`${baseURL}/ajax/v2/episode/sources?id=${server.id}`);
   const { link } = await res.json();
-  const id = link.slice(link.lastIndexOf('/') + 1, link.indexOf('?'));
-  const sourceURL = 'https://megacloud.tv/embed-2/ajax/e-1/getsources?id=';
-  const data = await (await fetch(sourceURL + id)).json();
+  console.log('link', link);
+  const [apiURL, playlistURL] = (await embedExtractor(link, [
+    'getSources?id=',
+    '.m3u8',
+  ])) as string;
+  const data = await (await fetch(apiURL)).json();
   const { tracks, intro, outro } = data;
-  const file = data.encrypted
-    ? JSON.parse(await electron.extractor.megacloud(data.sources))[0].file
-    : data.sources[0].file;
-  const sources = await getSources(file);
-  console.log(sources);
+  const sources = await getSources(playlistURL);
 
   return {
     sources,

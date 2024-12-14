@@ -2,7 +2,7 @@
   scrollbar-gutter: stable both-edges;
   position: absolute;
   animation: pop 100ms ease 1;
-  background-color: #111111cc;
+  background-color: rgba(0, 0, 0, .8);
   backdrop-filter: blur(10px);
   padding: .5em 0;
   height: 420px;

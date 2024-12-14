@@ -21,6 +21,7 @@ function Container({ children }: { children: ReactNode }) {
     }
     return () => {
       electron.ipcRenderer.sendMessage('change-referrer', null);
+      electron.ipcRenderer.sendMessage('change-origin', null);
     };
   }, []);
 

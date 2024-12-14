@@ -27,14 +27,16 @@ export default function Browse() {
     <ul className={resultsStyles.container}>
       {results.map((result) => (
         <Link
-          key={result.ext + result.path}
+          key={Math.random()}
           className={resultsStyles.link}
           to={`/${
             result.type === 'LIVE' ? 'live' : 'entry'
           }?result=${encodeURIComponent(JSON.stringify(result))}`}
         >
           <div>
-            <img loading="lazy" src={result.posterURL} alt="poster" />
+            {result.posterURL && (
+              <img loading="lazy" src={result.posterURL} alt="poster" />
+            )}
           </div>
           <span className={resultsStyles.title} title={result.title}>
             {result.title}

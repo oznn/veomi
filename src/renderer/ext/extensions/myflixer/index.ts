@@ -1,13 +1,12 @@
+import { parse } from 'hls-parser';
 import { MasterPlaylist } from 'hls-parser/types';
 import { Episode, Result, Server, Video } from '@types';
 import embedExtractor from '../../extractors/embed';
-import { parse } from 'hls-parser';
 
 const baseURL = 'https://myflixerz.to';
 const ext = 'myflixer';
 const parser = new DOMParser();
 const parseHTML = (html: string) => parser.parseFromString(html, 'text/html');
-const { electron } = window;
 
 export async function getResults(q: string): Promise<Result[]> {
   const url = `https://myflixerz.to/search/${q.replaceAll(' ', '-')}`;
@@ -91,8 +90,9 @@ export async function getServers(dataId: string): Promise<Server[]> {
   doc.querySelectorAll('a').forEach((e) => {
     const name = e.getAttribute('title') || '';
     const id = e.getAttribute('data-id') || e.getAttribute('data-linkid') || '';
+    const n = name.includes('Server') ? 1 : 0;
 
-    servers.push({ name: `[softsub] ${name.split(' ')[1]}`, id });
+    servers.push({ name: `[softsub] ${name.split(' ')[n]}`, id });
   });
 
   return servers;

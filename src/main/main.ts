@@ -60,7 +60,8 @@ ipcMain.handle('ffmpeg-download', async (_, videoFile: VideoFile) => {
     .videoCodec('copy')
     .output(`${folder}/${videoFile.fileName}.mp4`)
     // .addOption('-threads 1')
-    .on('error', (err) => console.log('ffmpeg err', err))
+    // .on('error', (err) => console.log('ffmpeg err', err))
+    .on('error', (err) => mw?.webContents.send('console-log', err))
     .on('progress', (progress) => {
       console.log(videoFile.fileName, progress.percent);
       mw?.webContents.send('download-progress', progress.percent);
@@ -222,6 +223,7 @@ const createWindow = async () => {
     height: 728,
     backgroundColor: '#111',
     icon: getAssetPath('icon.png'),
+    minWidth: 1050,
     webPreferences: {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
@@ -280,21 +282,31 @@ app
   .then(() => {
     createWindow();
 
+    session.defaultSession.webRequest.onHeadersReceived(
+      { urls: ['*://*/*'] },
+      (details, callback) => {
+        if (details.responseHeaders)
+          details.responseHeaders['content-security-policy'] = [''];
+        callback({ cancel: false, responseHeaders: details.responseHeaders });
+      },
+    );
     session.defaultSession.webRequest.onBeforeSendHeaders(
       { urls: ['*://*/*'] },
       (details, callback) => {
-        const cancel =
+        const found =
           !!sessionSearchPattern &&
           sessionSearchPattern.some((p) => details.url.includes(p));
         details.requestHeaders.Referer =
           referrer || new URL(details.url).origin;
         if (origin) details.requestHeaders.Origin = origin;
-        if (cancel) mw?.webContents.send('session-match-found', details.url);
+        if (found) mw?.webContents.send('session-match-found', details.url);
 
         const requestHeaders = {
           ...details.requestHeaders,
           ...(JSON.parse(details.requestHeaders.custom || '{}') as Object),
         };
+
+        // const requestHeaders={origin:'https://key2.keylocking.ru/wmsxx.php?test=true&name=premium91&number=1'}
         callback({ cancel: false, requestHeaders });
       },
     );

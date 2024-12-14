@@ -128,6 +128,9 @@ function Download() {
       electron.ipcRenderer.on('download-progress', (v) => {
         dispatch(setQueueProgress(v as number));
       });
+      electron.ipcRenderer.on('console-log', (m) => {
+        console.log(m);
+      });
     })();
   }, []);
 

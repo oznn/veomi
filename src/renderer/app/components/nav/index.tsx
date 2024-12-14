@@ -23,10 +23,10 @@ export default function Nav() {
 
   useEffect(() => {
     document.onkeyup = ({ key }) => {
-      const tagName = document.activeElement?.tagName;
-      if (tagName === 'INPUT' || pathname === '/watch') return;
-      if (key === 'L') nav('/');
-      if (key === 'D') nav('/downloads');
+      // const tagName = document.activeElement?.tagName;
+      // if (tagName === 'INPUT' || pathname === '/watch') return;
+      // if (key === 'L') nav('/');
+      // if (key === 'D') nav('/downloads');
       if (key === '/') searchRef.current?.focus();
       if (key === '?') {
         extensionsRef.current?.focus();

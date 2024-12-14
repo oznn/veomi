@@ -122,10 +122,25 @@ export default function ProgressBar({ videoRef }: Props) {
       <div className={styles.time}>
         <span>{formatTime(Math.floor(currentTime))}</span>
         <div style={{ gap: '10px', display: 'flex', alignItems: 'center' }}>
-          <button type="button" onClick={() => timeJump(-5)}>
+          <button
+            onKeyUp={(e) => e.preventDefault()}
+            type="button"
+            onClick={() => timeJump(-30)}
+          >
+            -30s
+          </button>
+          <button
+            onKeyUp={(e) => e.preventDefault()}
+            type="button"
+            onClick={() => timeJump(-5)}
+          >
             -5s
           </button>
-          <button type="button" onClick={() => timeJump(-1 / 24)}>
+          <button
+            onKeyUp={(e) => e.preventDefault()}
+            type="button"
+            onClick={() => timeJump(-1 / 24)}
+          >
             -1f
           </button>
           <span
@@ -138,11 +153,26 @@ export default function ProgressBar({ videoRef }: Props) {
               transition: 'all 300ms ease',
             }}
           />
-          <button type="button" onClick={() => timeJump(1 / 24)}>
+          <button
+            onKeyUp={(e) => e.preventDefault()}
+            type="button"
+            onClick={() => timeJump(1 / 24)}
+          >
             +1f
           </button>
-          <button type="button" onClick={() => timeJump(5)}>
+          <button
+            onKeyUp={(e) => e.preventDefault()}
+            type="button"
+            onClick={() => timeJump(5)}
+          >
             +5s
+          </button>
+          <button
+            onKeyUp={(e) => e.preventDefault()}
+            type="button"
+            onClick={() => timeJump(30)}
+          >
+            +30s
           </button>
         </div>
         <span>{formatTime(Math.floor(duration))}</span>

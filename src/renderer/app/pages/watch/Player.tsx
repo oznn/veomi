@@ -11,6 +11,7 @@ import {
   setVolume,
   setMediaIdx,
   serverRetry,
+  setPlaybackRate,
 } from '../../redux';
 import Context from './Context';
 import styles from './styles.module.css';
@@ -59,7 +60,7 @@ export default function Player() {
     }
     setContext({ isShow: false, x: 0, y: 0 });
   }
-  document.onkeydown = ({ key }) => {
+  document.onkeydown = ({ key, ctrlKey }) => {
     if (videoRef.current)
       switch (key) {
         case 'ArrowRight':
@@ -69,7 +70,7 @@ export default function Player() {
         case 'D':
           videoRef.current.currentTime = Math.min(
             videoRef.current.duration,
-            videoRef.current.currentTime + 5,
+            videoRef.current.currentTime + (ctrlKey ? 1 / 24 : 5),
           );
           break;
         case 'ArrowLeft':
@@ -79,7 +80,7 @@ export default function Player() {
         case 'A':
           videoRef.current.currentTime = Math.max(
             0,
-            videoRef.current.currentTime - 5,
+            videoRef.current.currentTime - (ctrlKey ? 1 / 24 : 5),
           );
           break;
         case 'ArrowUp':
@@ -106,6 +107,16 @@ export default function Player() {
         case 'p':
         case 'P':
           dispatch(setMediaIdx(Math.max(0, mediaIdx - 1)));
+          break;
+        case ',':
+        case '<':
+          dispatch(
+            setPlaybackRate(Math.max(0.25, settings.playbackRate - 0.25)),
+          );
+          break;
+        case '.':
+        case '>':
+          dispatch(setPlaybackRate(Math.min(settings.playbackRate + 0.25, 4)));
           break;
         default:
         // no default

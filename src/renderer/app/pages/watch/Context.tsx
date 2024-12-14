@@ -366,10 +366,12 @@ export default function Context({ x, y }: { x: number; y: number }) {
           {trackIdx > -1 ? video.tracks[trackIdx]?.label : 'Subtitles'}
         </button>
       )}
-      <button type="button" onClick={() => setSettingIdx(3)}>
-        <span className={styles.arrow} />
-        Subtitles font
-      </button>
+      {video.tracks && (
+        <button type="button" onClick={() => setSettingIdx(3)}>
+          <span className={styles.arrow} />
+          Subtitles font
+        </button>
+      )}
       <div className={styles.setting}>
         <span>Mark as seen at</span>
         <div>

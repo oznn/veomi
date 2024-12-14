@@ -16,6 +16,8 @@ type Props = {
 const { electron } = window;
 let heights: number[] = [];
 
+let isShift = false;
+
 export default function Reader({ pages, mode }: Props) {
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
@@ -48,7 +50,11 @@ export default function Reader({ pages, mode }: Props) {
         return next();
       }
       if (scrollTop === 0 && n < 0) return prev();
-      const a = minmax(0, scrollTop + n * yScrollFactor * 100, m ? m + 1 : 0);
+      const a = minmax(
+        0,
+        scrollTop + n * (isShift ? 1 : yScrollFactor) * 100,
+        m ? m + 1 : 0,
+      );
       const i = heights.findLastIndex((h) => a > h);
 
       dispatch(setCurrentPage(i + 2));
@@ -107,8 +113,13 @@ export default function Reader({ pages, mode }: Props) {
     }, 100);
   }, [longStripZoom, gapSize]);
   useEffect(() => {
+    // eslint-disable-next-line
+    window.onkeyup = ({ key }) => key === 'Shift' && (isShift = false);
     window.onkeydown = ({ key }) => {
       switch (key) {
+        case 'Shift':
+          isShift = true;
+          break;
         case 'ArrowLeft':
         case 'a':
         case 'A':
@@ -169,6 +180,7 @@ export default function Reader({ pages, mode }: Props) {
     };
     return () => {
       window.onkeydown = () => {};
+      window.onkeyup = () => {};
     };
   });
 
@@ -284,10 +296,10 @@ export default function Reader({ pages, mode }: Props) {
                 style={{
                   margin: `auto auto ${gapSize}px auto`,
                   display: 'block',
-                  width: `calc(100% + ${longStripZoom * 10}px)`,
+                  width: `calc(100% + ${longStripZoom * 50}px)`,
                   transition: 'all 200ms ease',
                   translate:
-                    longStripZoom > 0 ? `${(-longStripZoom * 10) / 2}px` : '0',
+                    longStripZoom > 0 ? `${(-longStripZoom * 50) / 2}px` : '0',
                 }}
               />
             </div>

@@ -3,7 +3,7 @@ import { parse } from 'hls-parser';
 import { MasterPlaylist } from 'hls-parser/types';
 
 const baseURL = 'https://iptv-org.github.io/api';
-const ext = 'iptv';
+const ext = 'iptvorg';
 let channels: any | null = null;
 let streams: any | null = null;
 
@@ -31,8 +31,7 @@ export async function getResults(q: string): Promise<Result[]> {
 
 export async function getStream(channel: string) {
   const url = streams.find((s: any) => s.channel === channel)?.url;
-  console.log('channel', channel);
-  console.log('url', url);
+
   if (!url) return undefined;
   try {
     const playlist = parse(await (await fetch(url)).text());
