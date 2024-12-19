@@ -1,7 +1,7 @@
 {
   "author": "oznn",
   "name": "veomi",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "description": "watch anythin",
   "license": "MIT",
   "main": "./dist/main/main.js",
