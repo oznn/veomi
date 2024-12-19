@@ -1,6 +1,7 @@
 export default {
   aniwave: { name: 'Aniwave', lang: ['en'] },
-  dlhd: { name: 'dlhd', lang: ['all'] },
+  dlhd: { name: 'DLHD', lang: ['ar', 'fr', 'en', 'tr'] },
+  topembed: { name: 'TopEmbed', lang: ['multi'] },
   egydead: { name: 'EgyDead', lang: ['ar'] },
   hianime: { name: 'Hianime', lang: ['en'] },
   iptvorg: { name: 'iptv-org', lang: ['all'] },
@@ -8,6 +9,7 @@ export default {
   // ugeen: { name: 'Ugeen', lang: ['ar', 'fr'] },
   mangadex: { name: 'Mangadex', lang: ['en'] },
   mangasee: { name: 'Mangasee', lang: ['en'] },
-  // myflixer: { name: 'MyFlixer', lang: ['en'] },
+  myflixer: { name: 'MyFlixer', lang: ['en'] },
+  // witanime: { name: 'Witanime', lang: ['ar'] },
   // wecima: { name: 'WeCima', lang: ['ar'] },
 } as { [k: string]: { name: string } };

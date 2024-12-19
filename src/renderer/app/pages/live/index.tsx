@@ -11,19 +11,13 @@ const { electron } = window;
 let volumeTimer: any;
 let mpegtsPlayer: Mpegts.Player | null = null;
 let cursorTimer: any;
+let timeoutTimer: any;
 
 function Container({ children }: { children: ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const nav = useNavigate();
 
   useEffect(() => {
-    window.onkeydown = ({ key }) => {
-      if (key === 'p' && mpegtsPlayer) {
-        mpegtsPlayer.unload();
-        mpegtsPlayer.load();
-        mpegtsPlayer.play();
-      }
-    };
     document.onfullscreenchange = () => !document.fullscreenElement && nav(-1);
     if (containerRef.current && !document.fullscreenElement) {
       containerRef.current.requestFullscreen();
@@ -48,10 +42,46 @@ export default function Live() {
   const [isShowVolume, setIsShowVolume] = useState(false);
   const stream = streams ? streams[streamIdx] : null;
   const videoRef = useRef<HTMLVideoElement>(null);
-  const hls = new Hls({ debug: false });
   const nav = useNavigate();
   const [retryCount, setRetryCount] = useState(0);
+  const hls = new Hls({ debug: false });
 
+  function changeVolume(dv: number) {
+    if (videoRef.current) {
+      const v = Math.max(0, Math.min(volume + dv, 20));
+      if (stream && stream.file.includes('.m3u8'))
+        videoRef.current.volume = v * 0.05;
+      else if (mpegtsPlayer) mpegtsPlayer.volume = v * 0.05;
+      setVolume(v);
+      setIsShowVolume(true);
+      clearTimeout(volumeTimer);
+      volumeTimer = setTimeout(() => setIsShowVolume(false), 1000);
+    }
+  }
+  document.onkeydown = ({ key }) => {
+    switch (key) {
+      case 'r':
+      case 'R':
+        setRetryCount((c) => c + 1);
+        break;
+      case 'ArrowUp':
+      case 'w':
+      case 'W':
+      case 'k':
+      case 'K':
+        changeVolume(1);
+        break;
+      case 'ArrowDown':
+      case 's':
+      case 'S':
+      case 'j':
+      case 'J':
+        changeVolume(-1);
+        break;
+      default:
+      // no default
+    }
+  };
   useEffect(() => {
     (async () => {
       const { getStream } = await import(
@@ -64,6 +94,7 @@ export default function Live() {
     })();
 
     return () => {
+      document.onkeydown = () => {};
       hls.destroy();
       if (mpegtsPlayer) mpegtsPlayer.destroy();
       electron.ipcRenderer.sendMessage('change-referrer', null);
@@ -107,26 +138,18 @@ export default function Live() {
         // mpegtsPlayer.on('')
       }
     }
-  }, [streamIdx, streams, videoRef.current, retryCount]);
-
-  function changeVolume(dv: number) {
-    if (videoRef.current) {
-      const v = Math.max(0, Math.min(volume + dv, 20));
-      if (stream && stream.file.includes('.m3u8'))
-        videoRef.current.volume = v * 0.05;
-      else if (mpegtsPlayer) mpegtsPlayer.volume = v * 0.05;
-      setVolume(v);
-      setIsShowVolume(true);
-      clearTimeout(volumeTimer);
-      volumeTimer = setTimeout(() => setIsShowVolume(false), 1000);
-    }
-  }
+  }, [streamIdx, streams, retryCount]);
 
   if (!stream) return <Container> </Container>;
   return (
     <Container>
       {/* eslint-disable-next-line */}
       <video
+        onTimeUpdate={() => {
+          // setIsShowCursor(true);
+          clearTimeout(timeoutTimer);
+          timeoutTimer = setTimeout(() => setRetryCount((c) => c + 1), 3000);
+        }}
         ref={videoRef}
         style={{ cursor: isShowCursor ? 'auto' : 'none' }}
         onWheel={({ deltaY }) => changeVolume(deltaY < 0 ? 1 : -1)}

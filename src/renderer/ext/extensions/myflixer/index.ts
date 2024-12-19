@@ -101,6 +101,8 @@ export async function getServers(dataId: string): Promise<Server[]> {
 export async function getVideo(server: Server): Promise<Video | undefined> {
   const res = await fetch(`${baseURL}/ajax/episode/sources/${server.id}`);
   const { link } = await res.json();
+  console.log(`${baseURL}/ajax/episode/sources/${server.id}`);
+  console.log(link);
   const [url, playlistURL] = (await embedExtractor(link, [
     'getSources',
     '.m3u8',

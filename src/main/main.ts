@@ -306,7 +306,6 @@ app
           ...(JSON.parse(details.requestHeaders.custom || '{}') as Object),
         };
 
-        // const requestHeaders={origin:'https://key2.keylocking.ru/wmsxx.php?test=true&name=premium91&number=1'}
         callback({ cancel: false, requestHeaders });
       },
     );
