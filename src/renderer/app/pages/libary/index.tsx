@@ -164,7 +164,7 @@ export default function Libary() {
             <button
               type="button"
               style={{
-                background: selected.includes(entry.key) ? '#444' : '#ffffff11',
+                background: selected.includes(entry.key) ? '#444' : '#222',
                 border: `solid 3px ${
                   entry.isUpdating ? 'silver' : 'transparent'
                 }`,

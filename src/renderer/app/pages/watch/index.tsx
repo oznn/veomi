@@ -84,8 +84,10 @@ export default function Watch() {
           const f = ({ qual }: { qual: number }) => qual === preferredQuality;
           const sourceIdx = Math.max(res.sources.findIndex(f), 0);
           const g = ({ label }: { label: string }) =>
-            label?.includes(preferredSubtitles);
-          const trackIdx = res.tracks ? res.tracks.findIndex(g) : -1;
+            label.includes(preferredSubtitles);
+          const trackIdx = res.tracks
+            ? Math.max(res.tracks.findIndex(g), 0)
+            : 0;
 
           dispatch(setVideo({ video: res, sourceIdx, trackIdx }));
         }

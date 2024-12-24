@@ -12,6 +12,7 @@ import {
   setMediaIdx,
   serverRetry,
   setPlaybackRate,
+  setEntryProp,
 } from '../../redux';
 import Context from './Context';
 import styles from './styles.module.css';
@@ -117,6 +118,15 @@ export default function Player() {
         case '.':
         case '>':
           dispatch(setPlaybackRate(Math.min(settings.playbackRate + 0.25, 4)));
+          break;
+        case 'c':
+        case 'C':
+          dispatch(
+            setEntryProp({
+              k: 'settings.isShowSubtitles',
+              v: !settings.isShowSubtitles,
+            }),
+          );
           break;
         default:
         // no default
@@ -232,7 +242,7 @@ export default function Player() {
         {settings.volume * 5}%
       </span>
 
-      {textTracks && trackIdx > -1 && (
+      {settings.isShowSubtitles && textTracks && (
         <pre
           className={styles.subtitles}
           style={{
@@ -243,8 +253,6 @@ export default function Player() {
               .repeat(4)
               .slice(0, -1),
             display: 'inline-block',
-            // whiteSpace: 'pre-line',
-            // wordWrap: 'break-word',
             pointerEvents: 'none',
           }}
           // eslint-disable-next-line
@@ -252,6 +260,7 @@ export default function Player() {
             __html: textTracks
               .filter((t) => currentTime >= t.start && currentTime <= t.end)
               .map((t) => t.text)
+              .reverse()
               .join('\n\n'),
           }}
         />

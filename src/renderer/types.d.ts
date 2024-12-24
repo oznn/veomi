@@ -31,6 +31,7 @@ export type PlayerSettings = {
   volume: number;
   playbackRate: number;
   isAutoSkip: { intro: boolean; outro: boolean };
+  isShowSubtitles: boolean;
   markAsSeenPercent: number;
   preferredQuality: number;
   preferredSubtitles: string;

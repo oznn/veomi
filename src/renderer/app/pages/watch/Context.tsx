@@ -50,42 +50,24 @@ function Subtitles() {
   const video = app.video as Video;
   const { trackIdx } = app;
 
-  return (
-    <>
+  if (video.tracks)
+    return video.tracks.map((track, i) => (
       <button
+        key={track.file}
         type="button"
-        onClick={() => dispatch(setTrackIdx(-1))}
-        disabled={trackIdx === -1}
+        onClick={() => dispatch(setTrackIdx(i))}
+        disabled={trackIdx === i}
       >
         <span
           style={{
-            opacity: trackIdx === -1 ? 1 : 0,
-            transform: `scale(${trackIdx === -1 ? 1 : 3})`,
+            opacity: trackIdx === i ? 1 : 0,
+            transform: `scale(${trackIdx === i ? 1 : 3})`,
             borderRadius: '50%',
           }}
         />
-        off
+        {track.label}
       </button>
-      {video.tracks &&
-        video.tracks.map((track, i) => (
-          <button
-            key={track.file}
-            type="button"
-            onClick={() => dispatch(setTrackIdx(i))}
-            disabled={trackIdx === i}
-          >
-            <span
-              style={{
-                opacity: trackIdx === i ? 1 : 0,
-                transform: `scale(${trackIdx === i ? 1 : 3})`,
-                borderRadius: '50%',
-              }}
-            />
-            {track.label}
-          </button>
-        ))}
-    </>
-  );
+    ));
 }
 
 function Qualities() {
@@ -351,6 +333,25 @@ export default function Context({ x, y }: { x: number; y: number }) {
           />
           Auto skip outro
         </button>
+        <button
+          type="button"
+          onClick={() =>
+            dispatch(
+              setEntryProp({
+                k: 'settings.isShowSubtitles',
+                v: !entrySettings.isShowSubtitles,
+              }),
+            )
+          }
+        >
+          <span
+            style={{
+              opacity: entrySettings.isShowSubtitles ? 1 : 0,
+              transform: `scale(${entrySettings.isShowSubtitles ? 1 : 3})`,
+            }}
+          />
+          Show subtitles
+        </button>
       </div>
       <button type="button" onClick={() => setSettingIdx(0)}>
         <span className={styles.arrow} />
@@ -360,10 +361,10 @@ export default function Context({ x, y }: { x: number; y: number }) {
         <span className={styles.arrow} />
         {video.sources[sourceIdx].qual}p
       </button>
-      {video.tracks && (
+      {video.tracks && video.tracks.length && (
         <button type="button" onClick={() => setSettingIdx(2)}>
           <span className={styles.arrow} />
-          {trackIdx > -1 ? video.tracks[trackIdx]?.label : 'Subtitles'}
+          {video.tracks[trackIdx].label}
         </button>
       )}
       {video.tracks && (

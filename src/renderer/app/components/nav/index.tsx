@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import {
+  useNavigate,
+  Link,
+  useLocation,
+  ScrollRestoration,
+} from 'react-router-dom';
 import arrowBack from '@assets/arrowback.png';
 import extensions from '../../../extensions';
 import styles from './styles.module.css';

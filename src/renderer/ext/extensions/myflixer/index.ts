@@ -1,7 +1,6 @@
-import { parse } from 'hls-parser';
-import { MasterPlaylist } from 'hls-parser/types';
 import { Episode, Result, Server, Video } from '@types';
 import embedExtractor from '../../extractors/embed';
+import getSources from '../../utils/getSourcesFromPlaylist';
 
 const baseURL = 'https://myflixerz.to';
 const ext = 'myflixer';
@@ -101,9 +100,7 @@ export async function getServers(dataId: string): Promise<Server[]> {
 export async function getVideo(server: Server): Promise<Video | undefined> {
   const res = await fetch(`${baseURL}/ajax/episode/sources/${server.id}`);
   const { link } = await res.json();
-  console.log(`${baseURL}/ajax/episode/sources/${server.id}`);
-  console.log(link);
-  const [url, playlistURL] = (await embedExtractor(link, [
+  const [url, file] = (await embedExtractor(link, [
     'getSources',
     '.m3u8',
   ])) as string;
@@ -115,15 +112,6 @@ export async function getVideo(server: Server): Promise<Video | undefined> {
     }),
   };
   const { tracks } = await (await fetch(url, { headers })).json();
-  const playlist = parse(await (await fetch(playlistURL)).text());
-  const sources = (playlist as MasterPlaylist).variants
-    .filter((t) => !t.isIFrameOnly)
-    .map(({ uri, resolution }) => ({
-      file: uri.includes('://')
-        ? uri
-        : url.slice(0, url.lastIndexOf('/') + 1) + uri,
-      qual: resolution?.height || 0,
-    }));
 
-  return { sources, tracks };
+  return { sources: [{ file, qual: 1080 }], tracks };
 }

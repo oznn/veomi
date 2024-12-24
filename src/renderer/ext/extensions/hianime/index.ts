@@ -1,7 +1,6 @@
 import fuzzysort from 'fuzzysort';
-import { Episode, Result, Server, Source, Video, Details } from '@types';
-import { parse } from 'hls-parser';
-import { MasterPlaylist } from 'hls-parser/types';
+import { Episode, Result, Server, Video, Details } from '@types';
+import getSources from '../../utils/getSourcesFromPlaylist';
 import { anilist } from '../../utils/details';
 import embedExtractor from '../../extractors/embed';
 
@@ -114,17 +113,6 @@ export async function getServers(episodeId: string) {
   });
 
   return servers;
-}
-async function getSources(url: string): Promise<Source[]> {
-  const res = await fetch(url);
-  const playlist = parse(await res.text());
-
-  return (playlist as MasterPlaylist).variants
-    .filter((t) => !t.isIFrameOnly)
-    .map(({ uri, resolution }) => ({
-      file: url.slice(0, url.lastIndexOf('/') + 1) + uri,
-      qual: resolution?.height || 0,
-    }));
 }
 export async function getVideo(server: Server): Promise<Video> {
   const res = await fetch(`${baseURL}/ajax/v2/episode/sources?id=${server.id}`);

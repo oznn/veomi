@@ -1,6 +1,6 @@
 .container {
   list-style-type: none;
-  padding: 1.5em 0;
+  padding: 1.0em 0;
   margin: 0 2em;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, max-content));
@@ -10,17 +10,17 @@
 
 .link {
   display: block;
+  border-radius: 20px;
   margin: auto;
   width: 242px;
   height: 100%;
-  transition: scale 100ms ease;
+  transition: translate 100ms ease;
   position: relative;
-  background: #ffffff11;
 }
 
 .link:hover,
 .link:focus-visible {
-  scale: 1.2;
+  translate: 0% -8%;
 }
 
 .link span {
@@ -28,12 +28,12 @@
 }
 
 .title {
+  text-align: center;
   height: 69px;
   display: -webkit-box;
   overflow: hidden;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  color: white;
   line-clamp: 2;
   padding: 0 5px;
   line-height: 1.3;
@@ -49,12 +49,13 @@
 .container img {
   width: 100%;
   height: 100%;
+  border-radius: 15px;
 }
 
 .remaining {
   position: absolute;
-  right: .6em;
-  top: .7em;
+  right: .9em;
+  top: .9em;
   border-radius: .3em;
   background: rgba(0, 0, 0, .8);
   padding: 0 8px 0 8px;

@@ -61,7 +61,12 @@ function Results({ results, close, rerender }: ResultType) {
             }}
           >
             <div>
-              <img src={e.coverImage.large} alt="cover" height={10} />
+              <img
+                src={e.coverImage.large}
+                alt="cover"
+                height={333}
+                width={222}
+              />
             </div>
             <span className={resultsStyles.title}>
               {e.title.english || e.title.romaji}
@@ -197,32 +202,18 @@ export default function Details() {
     <div className={styles.details}>
       <div>
         <img
+          style={{
+            borderRadius: '20px',
+            display: 'block',
+            padding: '0 0 5px 0',
+          }}
           src={entry.posterPath || entry.result.posterURL}
-          height={396}
+          height={333}
+          width={222}
           alt="poster"
         />
       </div>
       <div>
-        <div className={styles.info}>
-          <h1 title={entry.result.title} className={styles.title}>
-            {entry.result.title}
-          </h1>
-          <div style={{ display: 'flex', gap: '0 .2em' }}>
-            <span>{extensions[entry.result.ext].name}</span>
-            {entry.details &&
-              entry.details.info.map((e) => (
-                <span key={Math.random()} title={e[0]}>
-                  •{` ${e[1]} `}
-                </span>
-              ))}
-          </div>
-          <p
-            // eslint-disable-next-line
-            dangerouslySetInnerHTML={{
-              __html: entry.details?.description || '',
-            }}
-          />
-        </div>
         <button
           type="button"
           className={buttonStyles.container}
@@ -253,7 +244,7 @@ export default function Details() {
           className={buttonStyles.container}
           onClick={() => setIsShowDetailsProviders(true)}
         >
-          DETAILS
+          POSTER
         </button>
         {isShowDetailsProviders && (
           <div className={styles.detailsProviders}>

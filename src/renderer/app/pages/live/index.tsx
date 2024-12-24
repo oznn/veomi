@@ -1,4 +1,3 @@
-import Mpegts from 'mpegts.js';
 import useDidMountEffect from '@components/useDidMountEffect';
 import { Result } from '@types';
 import Hls from 'hls.js';
@@ -9,9 +8,9 @@ import styles from './styles.module.css';
 
 const { electron } = window;
 let volumeTimer: any;
-let mpegtsPlayer: Mpegts.Player | null = null;
 let cursorTimer: any;
 let timeoutTimer: any;
+let hls: any;
 
 function Container({ children }: { children: ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -44,14 +43,12 @@ export default function Live() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const nav = useNavigate();
   const [retryCount, setRetryCount] = useState(0);
-  const hls = new Hls({ debug: false });
 
   function changeVolume(dv: number) {
     if (videoRef.current) {
       const v = Math.max(0, Math.min(volume + dv, 20));
       if (stream && stream.file.includes('.m3u8'))
         videoRef.current.volume = v * 0.05;
-      else if (mpegtsPlayer) mpegtsPlayer.volume = v * 0.05;
       setVolume(v);
       setIsShowVolume(true);
       clearTimeout(volumeTimer);
@@ -83,6 +80,7 @@ export default function Live() {
     }
   };
   useEffect(() => {
+    hls = new Hls({ debug: false });
     (async () => {
       const { getStream } = await import(
         `../../../ext/extensions/${result.ext}`
@@ -94,51 +92,24 @@ export default function Live() {
     })();
 
     return () => {
-      document.onkeydown = () => {};
+      console.log('destroy');
       hls.destroy();
-      if (mpegtsPlayer) mpegtsPlayer.destroy();
+      document.onkeydown = () => {};
       electron.ipcRenderer.sendMessage('change-referrer', null);
       electron.ipcRenderer.sendMessage('change-origin', null);
     };
   }, []);
   useDidMountEffect(() => {
-    if (videoRef.current && stream) {
+    if (hls && videoRef.current && stream) {
       if (stream.file.includes('.m3u8')) {
         hls.loadSource(stream.file);
         hls.attachMedia(videoRef.current);
-        hls.on(Hls.Events.ERROR, (_, data) => console.log('hlsErr', data.type));
+        // hls.on(Hls.Events.ERROR, (_, data) => console.log('hlsErr', data.type));
         videoRef.current.volume = 0.5;
         videoRef.current.play();
-      } else {
-        mpegtsPlayer = Mpegts.createPlayer({
-          type: 'mse',
-          isLive: true,
-          url: stream.file,
-        });
-        mpegtsPlayer.attachMediaElement(videoRef.current);
-        mpegtsPlayer.load();
-        // mpegtsPlayer.volume = 0;
-        mpegtsPlayer.play();
-        // mpegtsPlayer.on(Mpegts.ErrorTypes.NETWORK_ERROR, (a) =>
-        //   console.log('NETWORK_ERROR', a),
-        // );
-        // mpegtsPlayer.on(Mpegts.Events.MEDIA_INFO, (a) =>
-        //   console.log('INFO', a),
-        // );
-        videoRef.current.onended = () => {
-          console.log('ENDED');
-          setRetryCount((c) => c + 1);
-
-          // mpegtsPlayer.pause();
-          // mpegtsPlayer.unload();
-          // mpegtsPlayer.load();
-          // mpegtsPlayer.play();
-        };
-        // mpegtsPlayer.en
-        // mpegtsPlayer.on('')
       }
     }
-  }, [streamIdx, streams, retryCount]);
+  }, [streams, streamIdx, retryCount]);
 
   if (!stream) return <Container> </Container>;
   return (
@@ -146,9 +117,8 @@ export default function Live() {
       {/* eslint-disable-next-line */}
       <video
         onTimeUpdate={() => {
-          // setIsShowCursor(true);
           clearTimeout(timeoutTimer);
-          timeoutTimer = setTimeout(() => setRetryCount((c) => c + 1), 3000);
+          timeoutTimer = setTimeout(() => setRetryCount((c) => c + 1), 4000);
         }}
         ref={videoRef}
         style={{ cursor: isShowCursor ? 'auto' : 'none' }}

@@ -1,10 +1,19 @@
 .container {
-  padding: .5em 1em;
+  display: flex;
+  padding: 0 1em;
+  gap: 0 .5em;
 }
 
 .details {
-  display: flex;
+  width: 222px;
   gap: .5em;
+}
+.details button{
+  width:100%;
+  padding: 0;
+  text-align: center;
+  margin: 2px 0;
+  /* margin: .5em 0; */
 }
 
 .info span {
@@ -25,29 +34,38 @@
   font-size: .8em;
 }
 
-.title {
-  line-height: 1em;
-  font-size: 1.5em;
-  font-weight: 500;
-  margin: 0;
-  padding: 0;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  line-clamp: 1;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+/* .title { */
+/*   line-height: 1em; */
+/*   font-size: 1.5em; */
+/*   font-weight: 500; */
+/*   margin: 0; */
+/*   padding: 0; */
+/*   text-overflow: ellipsis; */
+/*   display: -webkit-box; */
+/*   line-clamp: 1; */
+/*   -webkit-line-clamp: 1; */
+/*   -webkit-box-orient: vertical; */
+/*   overflow: hidden; */
+/* } */
 
 .container ul {
   padding: 0 1em;
 }
 
+.media {
+  height:430px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
 .media button,
 .options button {
   color: grey;
   transition: color 200ms ease-in;
   padding: 0 .1em;
+  border-radius: 20px;
+  margin: .1em 0;
 }
 
 .media button:hover,
@@ -59,7 +77,7 @@
 }
 
 .media button {
-  width: 100%;
+  width: 99%;
   display: flex;
   align-items: center;
   gap: 10px;
