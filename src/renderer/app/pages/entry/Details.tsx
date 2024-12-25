@@ -5,7 +5,6 @@ import { Entry } from '@types';
 import { useNavigate } from 'react-router-dom';
 import buttonStyles from '@styles/Button.module.css';
 import resultsStyles from '@styles/Results.module.css';
-import extensions from '../../../extensions';
 import styles from './styles.module.css';
 import { useAppSelector } from '../../redux/store';
 import { addToLib, setEntryProp, setMediaIdx } from '../../redux';
@@ -36,18 +35,6 @@ function Results({ results, close, rerender }: ResultType) {
             type="button"
             key={e.id}
             onClick={async () => {
-              const info = [
-                ['status', e.status as string],
-                ['year', e.seasonYear as string],
-                ['studio', e.studios.nodes[0]?.name as string],
-                ['format', e.format as string],
-                ['score', ((+e.averageScore as number) / 10).toFixed(2)],
-              ];
-              const details = {
-                info: info.filter(([, notNull]) => notNull),
-                description: e.description,
-              };
-              dispatch(setEntryProp({ k: 'details', v: details }));
               close();
               const path = await electron.poster.download(
                 e.coverImage.extraLarge,
@@ -68,9 +55,6 @@ function Results({ results, close, rerender }: ResultType) {
                 width={222}
               />
             </div>
-            <span className={resultsStyles.title}>
-              {e.title.english || e.title.romaji}
-            </span>
           </button>
         ))
       )}
@@ -248,6 +232,13 @@ export default function Details() {
         </button>
         {isShowDetailsProviders && (
           <div className={styles.detailsProviders}>
+            <span
+              className={styles.backdrop}
+              onClick={() => {
+                setIsShowDetailsProviders(false);
+                setDetailsProvidersIdx(-1);
+              }}
+            />
             <div>
               <div
                 style={{
@@ -257,22 +248,11 @@ export default function Details() {
                   alignItems: 'center',
                 }}
               >
-                <span>
+                <p>
                   {detailsProvidersIdx > -1
-                    ? 'Select entry'
-                    : 'Select details provider'}
-                </span>
-                <button
-                  onClick={() => {
-                    setIsShowDetailsProviders(false);
-                    setDetailsProvidersIdx(-1);
-                  }}
-                  type="button"
-                  className={buttonStyles.container}
-                  style={{ margin: 0, padding: '2px 20px' }}
-                >
-                  X
-                </button>
+                    ? 'Select poster'
+                    : 'Select database'}
+                </p>
               </div>
               {detailsProvidersIdx > -1 ? (
                 detailsProviders[detailsProvidersIdx]

@@ -157,9 +157,9 @@ export default function Entry() {
   if (entry)
     return (
       <>
-        <h2 style={{ margin: '0', padding: '0 0 0 30px' }}>
+        <h3 style={{ margin: '0', padding: '0 0 0 40px', lineHeight: 1.4 }}>
           {entry.result.title}
-        </h2>
+        </h3>
         <div className={styles.container}>
           <Details />
           <div style={{ width: '100%' }}>
@@ -170,7 +170,7 @@ export default function Entry() {
             <button
               type="button"
               className={buttonStyles.container}
-              style={{ fontSize: '.8em' }}
+              style={{ fontSize: '.8em', margin: '0 .2em' }}
               disabled={isUpdatingMedia}
               onClick={updateMedia}
             >
@@ -179,7 +179,7 @@ export default function Entry() {
             <button
               type="button"
               className={buttonStyles.container}
-              style={{ fontSize: '.8em' }}
+              style={{ fontSize: '.8em', margin: '0 .2em' }}
               onClick={() => {
                 setOrder((v) => (v - 1 ? 1 : -1));
                 setSelected((a) => a.map((i) => entry.media.length - i - 1));
@@ -191,7 +191,7 @@ export default function Entry() {
               type="button"
               onClick={() => setIsShowRemoveConfirmation(true)}
               disabled={!entry.media.some((e) => e.downloaded)}
-              style={{ fontSize: '.8em' }}
+              style={{ fontSize: '.8em', margin: '0 .2em' }}
               className={buttonStyles.container}
             >
               REMOVE DOWNLOADS
@@ -308,10 +308,7 @@ export default function Entry() {
           )}
           {isShowRemoveConfirmation && (
             <Confirm
-              title={`Delete all ${entry.media.reduce(
-                (p, c) => p + (c.downloaded ? 1 : 0),
-                0,
-              )} downloads?`}
+              title="Remove all downloads?"
               msg={
                 entry.result.type === 'VIDEO'
                   ? 'SUBTITLES WILL ALSO BE REMOVED'

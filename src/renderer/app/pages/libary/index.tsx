@@ -165,9 +165,7 @@ export default function Libary() {
               type="button"
               style={{
                 background: selected.includes(entry.key) ? '#444' : '#222',
-                border: `solid 3px ${
-                  entry.isUpdating ? 'silver' : 'transparent'
-                }`,
+                translate: entry.isUpdating ? '0 -8%' : '0',
               }}
               key={entry.key}
               className={resultsStyles.link}
@@ -303,7 +301,9 @@ export default function Libary() {
       )}
       {isShowConfirmation && (
         <Confirm
-          title={`Remove all ${selected.length} selceted entries?`}
+          title={`Remove ${selected.length} selceted ${
+            selected.length > 1 ? 'entries' : 'entry'
+          }?`}
           msg="Downloads, poster and progress will also be removed!"
           cancel={() => setIsShowConfirmation(false)}
           confirm={() => {

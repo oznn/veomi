@@ -6,10 +6,11 @@
   inset: 0;
   display: grid;
   place-items: center;
+  z-index: 1;
 }
 
 .container>div {
-  border-radius: 10px;
+  border-radius: 20px;
   padding: .5em 1em;
   background: #222;
   animation: pop 100ms ease 1;

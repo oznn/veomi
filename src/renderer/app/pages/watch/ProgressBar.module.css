@@ -1,14 +1,14 @@
 .container {
   position: absolute;
-  bottom: 0%;
+  bottom: -9%;
   width: 96%;
   translate: 2%;
-  height: 8.8%;
+  height: 20%;
   opacity: 0;
   transition: opacity 200ms ease;
   background-color: rgba(0, 0, 0, .8);
   backdrop-filter: blur(10px);
-  padding: 0 .5em;
+  padding:  2px .5em;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
 }
@@ -37,7 +37,7 @@
 }
 
 .bar>.progress>span {
-  background: white;
+  background: silver;
   height: .4em;
   position: absolute;
   bottom: 0;
@@ -49,7 +49,7 @@
 
 .bar>.thumb,
 .markPercent {
-  background-color: white;
+  background-color: silver;
   width: .2em;
   height: .2em;
   position: absolute;

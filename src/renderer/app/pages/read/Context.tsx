@@ -21,7 +21,7 @@ function Modes() {
 
   return (
     <>
-      {['ltr', 'rtl', 'ttb', 'btt', 'scroll'].map((m) => (
+      {['ltr', 'rtl', 'ttb', 'btt'].map((m) => (
         <button
           type="button"
           key={m}

@@ -2,8 +2,8 @@
   background-color: #333;
   color: silver;
   font-weight: 500;
-  border-radius: 20px;
-  transition: background 100ms ease;
+  border-radius: 18px;
+  transition: background 100ms ease, color 100ms ease;
   margin: .4em .1em;
   padding: .1em 1em;
 }

@@ -1,5 +1,6 @@
 import { Episode, Result, Server } from '@types';
 import getSources from '../../utils/getSourcesFromPlaylist';
+import embedExtractor from '../../extractors/embed';
 
 const ext = 'aniwave';
 const baseURL = 'https://aniwave.lv';
@@ -32,7 +33,6 @@ export async function getMedia(result: Result) {
   });
   const episodes: Episode[] = [];
   const doc = parseHTML((await res.json()).result);
-  console.log(doc);
   doc.querySelectorAll('.episodes a').forEach((e) => {
     const id = e.getAttribute('data-ids') || '';
     const number = e.getAttribute('data-num') || '';
@@ -46,7 +46,6 @@ export async function getMedia(result: Result) {
     });
   });
 
-  console.log(episodes);
   return episodes;
 }
 
@@ -59,19 +58,18 @@ export async function getServers(episodeId: string) {
   const servers: Server[] = [];
   const sub = doc.querySelectorAll('.type')[0];
   const dub = doc.querySelectorAll('.type')[1];
-  console.log(doc);
   sub.querySelectorAll('li').forEach((e) => {
     const serverName = e.textContent || '';
     const name = `[sub] ${serverName.trim()}`;
     const id = e.getAttribute('data-link-id') || '';
-    if (name.includes('Vidplay')) servers.push({ name, id });
+    if (name.includes('No-ads-1')) servers.push({ name, id });
   });
   if (dub)
     dub.querySelectorAll('li').forEach((e) => {
       const serverName = e.textContent || '';
       const name = `[dub] ${serverName.trim()}`;
       const id = e.getAttribute('data-link-id') || '';
-      if (name.includes('Vidplay')) servers.push({ name, id });
+      if (name.includes('No-ads-1')) servers.push({ name, id });
     });
   return servers;
 }
@@ -82,8 +80,7 @@ export async function getVideo(server: Server) {
     headers,
   });
   const { url } = (await res.json()).result;
-  const html = await (await fetch(url)).text();
-  const [, playlistURL] = /"file": `(.*)`/.exec(html) || ['', ''];
+  const [playlistURL] = (await embedExtractor(url, ['.m3u8'])) as string[];
   const sources = await getSources(playlistURL);
 
   return { sources };

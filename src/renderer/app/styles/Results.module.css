@@ -10,17 +10,19 @@
 
 .link {
   display: block;
-  border-radius: 20px;
+  border-radius: 24px;
   margin: auto;
   width: 242px;
   height: 100%;
-  transition: translate 100ms ease;
+  transition: all 200ms ease, translate 100ms ease;
   position: relative;
+  background: #222;
+  color: silver;
 }
 
-.link:hover,
-.link:focus-visible {
-  translate: 0% -8%;
+.link:hover, .link:focus-visible {
+  /* color: red; */
+  box-shadow: 0 0 0 3px silver;
 }
 
 .link span {
