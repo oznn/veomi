@@ -1,9 +1,9 @@
+import { PlayerSettings } from '@types';
 import { MouseEvent, useState, useRef, useEffect, RefObject } from 'react';
 import { useDispatch } from 'react-redux';
 import { useAppSelector } from '../../redux/store';
 import { setEpisodeCurrentTime } from '../../redux';
 import styles from './ProgressBar.module.css';
-import { PlayerSettings } from '@types';
 
 let timestampPercent = 0;
 let seekerBoundingClient: any;
@@ -125,9 +125,9 @@ export default function ProgressBar({ videoRef }: Props) {
           <button
             onKeyUp={(e) => e.preventDefault()}
             type="button"
-            onClick={() => timeJump(-30)}
+            onClick={() => timeJump(settings.timeJump)}
           >
-            -30s
+            -{settings.timeJump}s
           </button>
           <button
             onKeyUp={(e) => e.preventDefault()}
@@ -170,9 +170,9 @@ export default function ProgressBar({ videoRef }: Props) {
           <button
             onKeyUp={(e) => e.preventDefault()}
             type="button"
-            onClick={() => timeJump(30)}
+            onClick={() => timeJump(settings.timeJump)}
           >
-            +30s
+            +{settings.timeJump}s
           </button>
         </div>
         <span>{formatTime(Math.floor(duration))}</span>

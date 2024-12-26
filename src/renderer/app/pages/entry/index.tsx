@@ -13,6 +13,7 @@ import {
   setMedia,
   setQueue,
   toggleIsSeen,
+  setEntryProp,
 } from '../../redux';
 import Loading from '../../components/loading';
 import styles from './styles.module.css';
@@ -30,7 +31,6 @@ export default function Entry() {
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdatingMedia, setIsUpdatingMedia] = useState(false);
   const [selected, setSelected] = useState<number[]>([]);
-  const [order, setOrder] = useState(1);
   const [isShowRemoveConfirmation, setIsShowRemoveConfirmation] =
     useState(false);
   const nav = useNavigate();
@@ -77,7 +77,8 @@ export default function Entry() {
         playbackRate: 1,
         isAutoSkip: { intro: true, outro: true },
         isShowSubtitles: true,
-        markAsSeenPercent: 85,
+        markAsSeenPercent: 90,
+        timeJump: 85,
         preferredQuality: 1080,
         preferredSubtitles: 'English',
         preferredServer: '',
@@ -106,7 +107,7 @@ export default function Entry() {
         result,
         media,
         settings,
-        details: undefined,
+        isDesc: false,
         isInLibary: false,
         category: '',
       };
@@ -121,7 +122,7 @@ export default function Entry() {
   function download() {
     if (entry) {
       const items: Queue = selected
-        .map((i) => (order - 1 ? entry.media.length - i - 1 : i))
+        .map((i) => (entry.isDesc ? entry.media.length - i - 1 : i))
         .map((mediaIdx) => ({
           entryKey: entry.key,
           mediaIdx,
@@ -181,11 +182,11 @@ export default function Entry() {
               className={buttonStyles.container}
               style={{ fontSize: '.8em', margin: '0 .2em' }}
               onClick={() => {
-                setOrder((v) => (v - 1 ? 1 : -1));
+                dispatch(setEntryProp({ k: 'isDesc', v: !entry.isDesc }));
                 setSelected((a) => a.map((i) => entry.media.length - i - 1));
               }}
             >
-              {order - 1 ? 'ASC' : 'DESC'}
+              {entry.isDesc ? 'ASC' : 'DESC'}
             </button>
             <button
               type="button"
@@ -198,14 +199,16 @@ export default function Entry() {
             </button>
             <div className={styles.media}>
               {entry.media
-                .toSorted(() => order)
+                .toSorted(() => (entry.isDesc ? -1 : 1))
                 .map((media, i) => (
                   <button
                     type="button"
                     key={media.id + media.title}
                     onClick={() => {
                       dispatch(
-                        setMediaIdx(order - 1 ? entry.media.length - i - 1 : i),
+                        setMediaIdx(
+                          entry.isDesc ? entry.media.length - i - 1 : i,
+                        ),
                       );
                       nav(entry.result.type === 'VIDEO' ? '/watch' : '/read');
                     }}
@@ -223,7 +226,7 @@ export default function Entry() {
                       (q) =>
                         q.mediaKey ===
                         `entries.${entry.key}.media.${
-                          order - 1 ? entry.media.length - i - 1 : i
+                          entry.isDesc ? entry.media.length - i - 1 : i
                         }`,
                     ) !== -1 && <span>IN QUEUE</span>}
                     <span>{media.title}</span>
@@ -237,18 +240,35 @@ export default function Entry() {
               <div>
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={() =>
                     dispatch(
-                      toggleIsSeen(
-                        order - 1
+                      toggleIsSeen({
+                        arr: entry.isDesc
                           ? selected.map((e) => entry.media.length - e - 1)
                           : selected,
-                      ),
-                    );
-                    setSelected([]);
-                  }}
+                        val: true,
+                      }),
+                    )
+                  }
+                  disabled={selected.every((s) => entry.media[s].isSeen)}
                 >
-                  toggle seen
+                  seen
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    dispatch(
+                      toggleIsSeen({
+                        arr: entry.isDesc
+                          ? selected.map((e) => entry.media.length - e - 1)
+                          : selected,
+                        val: false,
+                      }),
+                    )
+                  }
+                  disabled={selected.every((s) => !entry.media[s].isSeen)}
+                >
+                  unseen
                 </button>
                 <button
                   type="button"
@@ -322,7 +342,6 @@ export default function Entry() {
             />
           )}
         </div>
-        <br />
       </>
     );
 }

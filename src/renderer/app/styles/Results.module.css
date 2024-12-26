@@ -12,7 +12,7 @@
   display: block;
   border-radius: 24px;
   margin: auto;
-  width: 242px;
+  width: 220px;
   height: 100%;
   transition: all 200ms ease, translate 100ms ease;
   position: relative;
@@ -43,8 +43,8 @@
 }
 
 .link div {
-  width: 222px;
-  height: 333px;
+  width: 200px;
+  height: 300px;
   margin: 10px;
 }
 

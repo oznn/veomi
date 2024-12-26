@@ -169,18 +169,16 @@ const app = createSlice({
         electron.store.set(k, JSON.parse(JSON.stringify(media)));
       }
     },
-    toggleIsSeen(state, action: PayloadAction<number[]>) {
+    toggleIsSeen(
+      state,
+      action: PayloadAction<{ arr: number[]; val: boolean }>,
+    ) {
       if (state.entry) {
-        const seenLength = action.payload.filter(
-          (e) => state.entry?.media[e].isSeen,
-        ).length;
-        const toggle = seenLength * 2 > action.payload.length;
-
-        action.payload.forEach((n) => {
+        action.payload.arr.forEach((n) => {
           if (state.entry) {
             const k = `entries.${state.entry.key}.media.${n}.isSeen`;
-            state.entry.media[n].isSeen = !toggle;
-            electron.store.set(k, !toggle);
+            state.entry.media[n].isSeen = action.payload.val;
+            electron.store.set(k, action.payload.val);
           }
         });
       }
@@ -219,7 +217,7 @@ const app = createSlice({
           return obj[key];
         }, state.entry);
 
-        if (v || v === 0)
+        if (v !== undefined)
           electron.store.set(
             `entries.${state.entry.key}.${k}`,
             JSON.parse(JSON.stringify(v)),

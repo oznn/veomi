@@ -5,8 +5,8 @@
   background-color: rgba(0, 0, 0, .8);
   backdrop-filter: blur(10px);
   padding: .5em 0;
-  height: 420px;
-  width: 420px;
+  height: 400px;
+  width: 400px;
   overflow: scroll;
   transform-origin: top left;
   overflow-y: scroll;

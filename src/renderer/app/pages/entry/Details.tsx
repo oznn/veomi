@@ -11,7 +11,7 @@ import { addToLib, setEntryProp, setMediaIdx } from '../../redux';
 
 const { electron } = window;
 type ResultType = {
-  results: Object[] | null;
+  results: string[] | null;
   close: () => void;
   rerender: () => void;
 };
@@ -29,17 +29,14 @@ function Results({ results, close, rerender }: ResultType) {
           No results found
         </span>
       ) : (
-        results.map((e: any) => (
+        results.map((posterURL: string) => (
           <button
             className={resultsStyles.link}
             type="button"
-            key={e.id}
+            key={Math.random()}
             onClick={async () => {
               close();
-              const path = await electron.poster.download(
-                e.coverImage.extraLarge,
-                entry.key,
-              );
+              const path = await electron.poster.download(posterURL, entry.key);
               if (path) {
                 rerender();
                 dispatch(setEntryProp({ k: 'posterPath', v: path }));
@@ -48,12 +45,7 @@ function Results({ results, close, rerender }: ResultType) {
             }}
           >
             <div>
-              <img
-                src={e.coverImage.large}
-                alt="cover"
-                height={333}
-                width={222}
-              />
+              <img src={posterURL} alt="cover" height={333} width={222} />
             </div>
           </button>
         ))
@@ -71,7 +63,7 @@ function Anilist({
 }) {
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
-  const [results, setResults] = useState<Object[] | null>([]);
+  const [results, setResults] = useState<string[] | null>([]);
   const [isAnime, setIsAnime] = useState(entry.result.type === 'VIDEO');
   const [search, setSearch] = useState(entry.result.title);
 
@@ -86,25 +78,10 @@ function Anilist({
               isAnime ? 'ANIME' : 'MANGA'
             }) {
               id
-              title {
-                english
-                romaji
-              }
               coverImage {
                 extraLarge
                 large
-                medium
               }
-              studios(isMain: true){
-                nodes {
-                    name
-                }
-              }
-              status(version: 2)
-              description(asHtml: false)
-              averageScore
-              format
-              seasonYear
             }
           }
         }`;
@@ -116,7 +93,7 @@ function Anilist({
         body,
       };
       const { data } = await (await fetch(url, options)).json();
-      setResults(data.Page.media);
+      setResults(data.Page.media.map((e: any) => e.coverImage.extraLarge));
     })();
   }, [search, isAnime]);
 
@@ -163,7 +140,66 @@ function Anilist({
     </>
   );
 }
+function Tmdb({
+  close,
+  rerender,
+}: {
+  close: () => void;
+  rerender: () => void;
+}) {
+  const app = useAppSelector((state) => state.app);
+  const entry = app.entry as Entry;
+  const [results, setResults] = useState<string[] | null>([]);
+  const [search, setSearch] = useState(entry.result.title);
+  const tmdbApiKey =
+    'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5NzE2MTk3MDQ2YWY5MDQ5NWI5NzIyYTA0MjY3ZDVjZiIsInN1YiI6IjY1Zjg0ODU5ZWY5ZDcyMDE2NWQ2MTRhZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.dIq6Jl9u5kxx5onHlKzhzFPB9lvcxBNBg0NUPv4qhZI';
 
+  useEffect(() => {
+    setResults(null);
+    (async () => {
+      const options = {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          Authorization: `Bearer ${tmdbApiKey}`,
+        },
+      };
+      const url = `https://api.themoviedb.org/3/search/multi?query=${search}`;
+      const res = await fetch(url, options);
+      const json = await res.json();
+
+      setResults(
+        json.results.map(
+          (e: any) => `https://image.tmdb.org/t/p/original/${e.poster_path}`,
+        ),
+      );
+    })();
+  }, [search]);
+
+  return (
+    <>
+      <input
+        style={{
+          fontSize: '1em',
+          border: 'solid 3px grey',
+          borderRadius: '20px',
+          padding: '.2em .5em',
+          margin: '.2em 0',
+          background: 'transparent',
+          color: 'silver',
+          outline: 'none',
+          width: '100%',
+        }}
+        defaultValue={search}
+        placeholder="Search"
+        onKeyUp={({ target, key }) =>
+          key === 'Enter' && setSearch((target as HTMLInputElement).value)
+        }
+      />
+      <Results results={results} close={close} rerender={rerender} />
+    </>
+  );
+}
 export default function Details() {
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
@@ -174,6 +210,13 @@ export default function Details() {
   const [, rerender] = useReducer((n) => n + 1, 0);
   const detailsProviders = [
     <Anilist
+      rerender={() => rerender()}
+      close={() => {
+        setIsShowDetailsProviders(false);
+        setDetailsProvidersIdx(-1);
+      }}
+    />,
+    <Tmdb
       rerender={() => rerender()}
       close={() => {
         setIsShowDetailsProviders(false);
@@ -191,7 +234,12 @@ export default function Details() {
             display: 'block',
             padding: '0 0 5px 0',
           }}
-          src={entry.posterPath || entry.result.posterURL}
+          src={
+            // eslint-disable-next-line
+            (entry.posterPath || entry.result.posterURL) +
+            '?' +
+            new Date().getTime()
+          }
           height={333}
           width={222}
           alt="poster"
@@ -257,13 +305,22 @@ export default function Details() {
               {detailsProvidersIdx > -1 ? (
                 detailsProviders[detailsProvidersIdx]
               ) : (
-                <button
-                  className={buttonStyles.container}
-                  type="button"
-                  onClick={() => setDetailsProvidersIdx(0)}
-                >
-                  anilsit
-                </button>
+                <>
+                  <button
+                    className={buttonStyles.container}
+                    type="button"
+                    onClick={() => setDetailsProvidersIdx(0)}
+                  >
+                    Anilsit
+                  </button>
+                  <button
+                    className={buttonStyles.container}
+                    type="button"
+                    onClick={() => setDetailsProvidersIdx(1)}
+                  >
+                    TMDB
+                  </button>
+                </>
               )}
             </div>
           </div>

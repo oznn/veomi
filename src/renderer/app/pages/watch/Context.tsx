@@ -225,8 +225,8 @@ export default function Context({ x, y }: { x: number; y: number }) {
   const server = app.server as { list: Server[]; idx: number };
   const entrySettings = entry.settings as PlayerSettings;
   const { sourceIdx, trackIdx } = app;
-  const translateX = x + 420 > window.innerWidth ? '-100%' : '0';
-  const translateY = y + 420 > window.innerHeight ? '-100%' : '0';
+  const translateX = x + 400 > window.innerWidth ? '-100%' : '0';
+  const translateY = y + 400 > window.innerHeight ? '-100%' : '0';
   const transformOriginX = translateX === '0' ? 'left' : 'right';
   const transformOriginY = translateY === '0' ? 'top' : 'bottom';
   const transformOrigin = `${transformOriginX} ${transformOriginY}`;
@@ -373,6 +373,31 @@ export default function Context({ x, y }: { x: number; y: number }) {
           Subtitles font
         </button>
       )}
+      <div className={styles.setting}>
+        <span>[T]ime jump</span>
+        <div>
+          <input
+            type="number"
+            defaultValue={entrySettings.timeJump}
+            onBlur={(e) => {
+              const t = e.target as HTMLInputElement;
+              t.value = `${minmax(0, +t.value, 999)}`;
+              const p = { k: 'settings.timeJump', v: +t.value };
+              dispatch(setEntryProp(p));
+            }}
+            onWheel={(e) => {
+              let v = e.deltaY > 0 ? -1 : 1;
+              v = minmax(0, entrySettings.markAsSeenPercent + v, 999);
+              (e.target as HTMLInputElement).value = `${v}`;
+              const p = { k: 'settings.markAsSeenPercent', v };
+              dispatch(setEntryProp(p));
+            }}
+            onMouseEnter={disableContainerScroll}
+            onMouseLeave={enableContainerScroll}
+          />
+          <i>s</i>
+        </div>
+      </div>
       <div className={styles.setting}>
         <span>Mark as seen at</span>
         <div>

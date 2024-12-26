@@ -3,7 +3,7 @@ import { parse } from 'hls-parser';
 import { MasterPlaylist } from 'hls-parser/types';
 import { unpack } from 'unpacker';
 
-const baseURL = 'https://egydead.center';
+const baseURL = 'https://egydead.watch';
 const ext = 'egydead';
 
 const parser = new DOMParser();
@@ -50,6 +50,7 @@ export async function getMedia(result: Result): Promise<Episode[]> {
 }
 
 export async function getServers(episodeId: string): Promise<Server[]> {
+  console.log('episdoeId', episodeId);
   const servers: Server[] = [];
   const res = await fetch(episodeId, {
     method: 'post',
@@ -58,7 +59,8 @@ export async function getServers(episodeId: string): Promise<Server[]> {
     },
     body: 'View=1',
   });
-  const doc = parseHTML(await res.text());
+  const a = await res.text();
+  const doc = parseHTML(a);
   doc.querySelectorAll('.serversList li').forEach((e) => {
     const name = e.querySelector('span>p')?.textContent || '';
     const id = e.getAttribute('data-link') || '';

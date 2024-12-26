@@ -137,17 +137,37 @@ export default function Libary() {
         {entries.some((e) => e.category) &&
           (isUseCategories ? ['', ...categories] : categories).map((c, i) => (
             <button
-              disabled={i === categoryIdx}
               style={{
                 fontSize: '.8em',
-                background: i === categoryIdx ? 'white' : '#333',
+                background: i === categoryIdx ? '#888' : '#333',
                 color: i === categoryIdx ? 'black' : 'silver',
                 transition: 'all 200ms ease',
               }}
               className={buttonStyles.container}
               key={c}
               type="button"
-              onClick={() => setCategoryIdx(i)}
+              // eslint-disble-next-line
+              disabled={entries ? entries.some((e) => e.isUpdating) : false}
+              onClick={() => {
+                if (entries) {
+                  const s = entries
+                    .filter(
+                      (e) =>
+                        e.category ===
+                        (isUseCategories ? ['', ...categories] : categories)[
+                          categoryIdx
+                        ],
+                    )
+                    .map((e) => e.key);
+                  const target = s
+                    .map((k) =>
+                      (entries as Entry[]).findIndex(({ key }) => key === k),
+                    )
+                    .toSorted();
+                  if (i === categoryIdx) update(target);
+                  else setCategoryIdx(i);
+                }
+              }}
             >
               {c || 'DEFAULT'}
             </button>
@@ -179,7 +199,10 @@ export default function Libary() {
               onAuxClick={() => toggleSelect(entry.key)}
             >
               <div>
-                <img src={entry.posterPath} alt="poster" />
+                <img
+                  src={`${entry.posterPath}?${new Date().getTime()}`}
+                  alt="poster"
+                />
               </div>
               <span className={resultsStyles.title} title={entry.result.title}>
                 {entry.result.title}

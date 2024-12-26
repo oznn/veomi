@@ -33,6 +33,7 @@ export type PlayerSettings = {
   isAutoSkip: { intro: boolean; outro: boolean };
   isShowSubtitles: boolean;
   markAsSeenPercent: number;
+  timeJump: number;
   preferredQuality: number;
   preferredSubtitles: string;
   preferredServer: string;
@@ -67,7 +68,7 @@ export type Entry = {
   category: string;
   media: Episode[] | Chapter[];
   settings: PlayerSettings | ReaderSettings;
-  details?: Details;
+  isDesc: boolean;
   posterPath?: string;
 };
 export type Server = {

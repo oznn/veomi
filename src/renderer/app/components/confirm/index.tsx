@@ -20,14 +20,14 @@ export default function Confirm({ title, msg, cancel, confirm }: Props) {
             type="button"
             onClick={cancel}
           >
-            Cancel
+            CANCEL
           </button>
           <button
             className={buttonStyles.container}
             type="button"
             onClick={confirm}
           >
-            Confirm
+            CONFIRM
           </button>
         </div>
       </div>

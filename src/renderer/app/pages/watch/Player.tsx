@@ -128,6 +128,13 @@ export default function Player() {
             }),
           );
           break;
+        case 't':
+        case 'T':
+          videoRef.current.currentTime = Math.min(
+            videoRef.current.duration,
+            videoRef.current.currentTime + settings.timeJump,
+          );
+          break;
         default:
         // no default
       }

@@ -21,28 +21,31 @@ export default function Browse() {
   }, [ext, query]);
 
   if (!results) return <Loading />;
-  if (!results.length) return <Message msg="No results found" />;
+  if (!results.length) return <Message msg={`No results for "${query}"`} />;
 
   return (
-    <ul className={resultsStyles.container}>
-      {results.map((result) => (
-        <Link
-          key={Math.random()}
-          className={resultsStyles.link}
-          to={`/${
-            result.type === 'LIVE' ? 'live' : 'entry'
-          }?result=${encodeURIComponent(JSON.stringify(result))}`}
-        >
-          <div>
-            {result.posterURL && (
-              <img loading="lazy" src={result.posterURL} alt="poster" />
-            )}
-          </div>
-          <span className={resultsStyles.title} title={result.title}>
-            {result.title}
-          </span>
-        </Link>
-      ))}
-    </ul>
+    <>
+      <h4 style={{ textAlign: 'center' }}>{`"${query}"`}</h4>
+      <ul className={resultsStyles.container}>
+        {results.map((result) => (
+          <Link
+            key={Math.random()}
+            className={resultsStyles.link}
+            to={`/${
+              result.type === 'LIVE' ? 'live' : 'entry'
+            }?result=${encodeURIComponent(JSON.stringify(result))}`}
+          >
+            <div>
+              {result.posterURL && (
+                <img loading="lazy" src={result.posterURL} alt="poster" />
+              )}
+            </div>
+            <span className={resultsStyles.title} title={result.title}>
+              {result.title}
+            </span>
+          </Link>
+        ))}
+      </ul>
+    </>
   );
 }
