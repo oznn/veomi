@@ -61,66 +61,53 @@ export default function Player() {
     }
     setContext({ isShow: false, x: 0, y: 0 });
   }
-  document.onkeydown = ({ key, ctrlKey }) => {
+  document.onkeydown = ({ code, ctrlKey }) => {
     if (videoRef.current)
-      switch (key) {
+      switch (code) {
         case 'ArrowRight':
-        case 'l':
-        case 'L':
-        case 'd':
-        case 'D':
+        case 'KeyL':
+        case 'KeyD':
           videoRef.current.currentTime = Math.min(
             videoRef.current.duration,
             videoRef.current.currentTime + (ctrlKey ? 1 / 24 : 5),
           );
           break;
         case 'ArrowLeft':
-        case 'h':
-        case 'H':
-        case 'a':
-        case 'A':
+        case 'KeyH':
+        case 'KeyA':
           videoRef.current.currentTime = Math.max(
             0,
             videoRef.current.currentTime - (ctrlKey ? 1 / 24 : 5),
           );
           break;
         case 'ArrowUp':
-        case 'k':
-        case 'K':
-        case 'w':
-        case 'W':
+        case 'KeyK':
+        case 'KeyW':
           changeVolume(1);
           break;
         case 'ArrowDown':
-        case 'j':
-        case 'J':
-        case 's':
-        case 'S':
+        case 'KeyJ':
+        case 'KeyS':
           changeVolume(-1);
           break;
         case ' ':
           playPause();
           break;
-        case 'n':
-        case 'N':
+        case 'KeyN':
           dispatch(setMediaIdx(Math.min(entry.media.length - 1, mediaIdx + 1)));
           break;
-        case 'p':
-        case 'P':
+        case 'KeyP':
           dispatch(setMediaIdx(Math.max(0, mediaIdx - 1)));
           break;
-        case ',':
-        case '<':
+        case 'Comma':
           dispatch(
             setPlaybackRate(Math.max(0.25, settings.playbackRate - 0.25)),
           );
           break;
-        case '.':
-        case '>':
+        case 'Period':
           dispatch(setPlaybackRate(Math.min(settings.playbackRate + 0.25, 4)));
           break;
-        case 'c':
-        case 'C':
+        case 'KeyC':
           dispatch(
             setEntryProp({
               k: 'settings.isShowSubtitles',
@@ -128,8 +115,7 @@ export default function Player() {
             }),
           );
           break;
-        case 't':
-        case 'T':
+        case 'KeyT':
           videoRef.current.currentTime = Math.min(
             videoRef.current.duration,
             videoRef.current.currentTime + settings.timeJump,

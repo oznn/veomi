@@ -27,7 +27,7 @@ export default function Browse() {
     <>
       <h4 style={{ textAlign: 'center' }}>{`"${query}"`}</h4>
       <ul className={resultsStyles.container}>
-        {results.map((result) => (
+        {results.map((result, i) => (
           <Link
             key={Math.random()}
             className={resultsStyles.link}
@@ -37,7 +37,12 @@ export default function Browse() {
           >
             <div>
               {result.posterURL && (
-                <img loading="lazy" src={result.posterURL} alt="poster" />
+                <img
+                  style={{ transitionDelay: `${i * 10}ms` }}
+                  onLoad={(e) => (e.target.style.opacity = 1)}
+                  src={result.posterURL}
+                  alt="poster"
+                />
               )}
             </div>
             <span className={resultsStyles.title} title={result.title}>

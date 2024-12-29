@@ -93,7 +93,7 @@ ipcMain.handle('ffmpeg-download', async (_, videoFile: VideoFile) => {
 ipcMain.handle('ffmpeg-stop', () => {
   if (ffmpeg) {
     ffmpeg.kill('SIGKILL');
-    mw?.webContents.send('ffmpeg-download');
+    mw?.webContents.send('download-start');
   }
 });
 

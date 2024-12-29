@@ -29,7 +29,7 @@ function Results({ results, close, rerender }: ResultType) {
           No results found
         </span>
       ) : (
-        results.map((posterURL: string) => (
+        results.map((posterURL: string, i) => (
           <button
             className={resultsStyles.link}
             type="button"
@@ -45,7 +45,14 @@ function Results({ results, close, rerender }: ResultType) {
             }}
           >
             <div>
-              <img src={posterURL} alt="cover" height={333} width={222} />
+              <img
+                style={{ transitionDelay: `${i * 10}ms` }}
+                onLoad={(e) => (e.target.style.opacity = 1)}
+                src={posterURL}
+                alt="cover"
+                height={333}
+                width={222}
+              />
             </div>
           </button>
         ))
@@ -207,7 +214,8 @@ export default function Details() {
   const nav = useNavigate();
   const [isShowDetailsProviders, setIsShowDetailsProviders] = useState(false);
   const [detailsProvidersIdx, setDetailsProvidersIdx] = useState(-1);
-  const [, rerender] = useReducer((n) => n + 1, 0);
+  const [posterCount, setPosterCount] = useState(0);
+  const rerender = () => setPosterCount((c) => c + 1);
   const detailsProviders = [
     <Anilist
       rerender={() => rerender()}
@@ -236,9 +244,7 @@ export default function Details() {
           }}
           src={
             // eslint-disable-next-line
-            (entry.posterPath || entry.result.posterURL) +
-            '?' +
-            new Date().getTime()
+            (entry.posterPath || entry.result.posterURL) + '?' + posterCount
           }
           height={333}
           width={222}

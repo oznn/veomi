@@ -81,7 +81,7 @@ export default function Downloads() {
                 >
                   RETRY
                 </button>
-                <span style={{ color: e.isFailed ? 'crimson' : '#eee' }}>
+                <span style={{ color: e.isFailed ? 'grey' : 'silver' }}>
                   {e.progress ? e.progress.toFixed(2) : 0}% {e.mediaTitle}
                 </span>
               </li>

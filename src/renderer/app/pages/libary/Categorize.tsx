@@ -58,7 +58,7 @@ export default function Categorize({
                   <button
                     disabled={i === categories.length - 1}
                     type="button"
-                    onClick={() => console.log('down')}
+                    onClick={() => swapCategories(i, i + 1)}
                   >
                     <span
                       className={styles.arrow}

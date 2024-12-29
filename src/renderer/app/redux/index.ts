@@ -161,6 +161,7 @@ const app = createSlice({
         for (let i = 0; i < state.entry.media.length; i += 1) {
           media[i].title = action.payload[i].title;
           media[i].info = action.payload[i].info;
+          media[i].id = action.payload[i].id;
         }
         for (let i = media.length; i < action.payload.length; i += 1)
           (media as Episode[]).push(action.payload[i] as Episode);

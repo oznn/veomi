@@ -389,7 +389,7 @@ export default function Context({ x, y }: { x: number; y: number }) {
               let v = e.deltaY > 0 ? -1 : 1;
               v = minmax(0, entrySettings.markAsSeenPercent + v, 999);
               (e.target as HTMLInputElement).value = `${v}`;
-              const p = { k: 'settings.markAsSeenPercent', v };
+              const p = { k: 'settings.timeJump', v };
               dispatch(setEntryProp(p));
             }}
             onMouseEnter={disableContainerScroll}

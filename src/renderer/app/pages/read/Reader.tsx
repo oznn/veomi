@@ -115,63 +115,49 @@ export default function Reader({ pages, mode }: Props) {
   useEffect(() => {
     // eslint-disable-next-line
     window.onkeyup = ({ key }) => key === 'Shift' && (isShift = false);
-    window.onkeydown = ({ key }) => {
-      switch (key) {
+    window.onkeydown = ({ code }) => {
+      switch (code) {
         case 'Shift':
           isShift = true;
           break;
         case 'ArrowLeft':
-        case 'a':
-        case 'A':
-        case 'h':
-        case 'H':
+        case 'KeyA':
+        case 'KeyH':
           if (mode === 'rtl') move(1);
           if (mode === 'ltr') move(-1);
           break;
         case 'ArrowRight':
-        case 'd':
-        case 'D':
-        case 'l':
-        case 'L':
+        case 'KeyD':
+        case 'KeyL':
           if (mode === 'rtl') move(-1);
           if (mode === 'ltr') move(1);
           break;
         case 'ArrowUp':
-        case 'w':
-        case 'W':
-        case 'k':
-        case 'K':
+        case 'KeyW':
+        case 'KeyK':
           if (mode === 'btt') move(1);
           if (mode === 'ttb') move(-1);
           if (mode === 'scroll') move(-1);
           break;
         case 'ArrowDown':
-        case 's':
-        case 'S':
-        case 'j':
-        case 'J':
+        case 'KeyS':
+        case 'KeyJ':
           if (mode === 'btt') move(-1);
           if (mode === 'ttb') move(1);
           if (mode === 'scroll') move(1);
           break;
-        case 'i':
-        case 'I':
-        case 'e':
-        case 'E':
+        case 'KeyI':
+        case 'KeyE':
           adjustZoom(1);
           break;
-        case 'o':
-        case 'O':
-        case 'q':
-        case 'Q':
+        case 'KeyO':
+        case 'KeyQ':
           adjustZoom(-1);
           break;
-        case 'n':
-        case 'N':
+        case 'KeyN':
           next();
           break;
-        case 'p':
-        case 'P':
+        case 'KeyP':
           prev();
           break;
         default:

@@ -20,7 +20,8 @@
   color: silver;
 }
 
-.link:hover, .link:focus-visible {
+.link:hover,
+.link:focus-visible {
   /* color: red; */
   box-shadow: 0 0 0 3px silver;
 }
@@ -52,6 +53,8 @@
   width: 100%;
   height: 100%;
   border-radius: 15px;
+  opacity: 0;
+  transition: opacity 200ms ease;
 }
 
 .remaining {

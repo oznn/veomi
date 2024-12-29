@@ -83,7 +83,7 @@ export type Queue = {
   mediaIdx: number;
   entryTitle: string;
   mediaTitle: string;
-  mediaType: 'VIDEO' | 'IMAGE';
+  mediaType: 'VIDEO' | 'IMAGE' | 'LIVE';
   progress: number;
   isFailed: boolean;
 }[];

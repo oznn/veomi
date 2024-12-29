@@ -125,7 +125,7 @@ export default function ProgressBar({ videoRef }: Props) {
           <button
             onKeyUp={(e) => e.preventDefault()}
             type="button"
-            onClick={() => timeJump(settings.timeJump)}
+            onClick={() => timeJump(-settings.timeJump)}
           >
             -{settings.timeJump}s
           </button>

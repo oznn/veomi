@@ -10,6 +10,7 @@ import { setEntry, setMediaIdx } from '../../redux';
 import styles from './styles.module.css';
 import extensions from '../../../extensions';
 import Categorize from './Categorize';
+import Download from './Download';
 
 const { electron } = window;
 let entries: (Entry & { isUpdating: boolean })[] | null = null;
@@ -22,6 +23,7 @@ export default function Libary() {
   const [categories, setCategories] = useState<string[]>([]);
   const [isShowConfirmation, setIsShowConfirmation] = useState(false);
   const [isShowCategorization, setIsShowCategorization] = useState(false);
+  const [isShowDownload, setIsShowDownload] = useState(false);
   const [categoryIdx, setCategoryIdx] = useState(0);
   const isUseCategories = entries
     ? entries.some((e) => !categories.includes(e.category))
@@ -180,7 +182,7 @@ export default function Libary() {
               e.category ===
               (isUseCategories ? ['', ...categories] : categories)[categoryIdx],
           )
-          .map((entry) => (
+          .map((entry, i) => (
             <button
               type="button"
               style={{
@@ -202,6 +204,8 @@ export default function Libary() {
                 <img
                   src={`${entry.posterPath}?${new Date().getTime()}`}
                   alt="poster"
+                  style={{ transitionDelay: `${i * 10}ms` }}
+                  onLoad={(e) => (e.target.style.opacity = 1)}
                 />
               </div>
               <span className={resultsStyles.title} title={entry.result.title}>
@@ -244,6 +248,9 @@ export default function Libary() {
               }
             >
               update
+            </button>
+            <button type="button" onClick={() => setIsShowDownload(true)}>
+              download
             </button>
             <button type="button" onClick={() => setIsShowCategorization(true)}>
               categorize
@@ -309,6 +316,15 @@ export default function Libary() {
           </div>
         </div>
       )}
+      {isShowDownload && (
+        <Download
+          entries={entries.filter((e) => selected.includes(e.key))}
+          close={() => {
+            setSelected([]);
+            setIsShowDownload(false);
+          }}
+        />
+      )}
       {isShowCategorization && (
         <Categorize
           categories={categories}
@@ -319,7 +335,10 @@ export default function Libary() {
             setIsShowCategorization(false);
           }}
           clearCategory={(c: string) => clearCategory(c)}
-          close={() => setIsShowCategorization(false)}
+          close={() => {
+            setIsShowCategorization(false);
+            setSelected([]);
+          }}
         />
       )}
       {isShowConfirmation && (

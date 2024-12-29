@@ -158,7 +158,7 @@ export default function Entry() {
   if (entry)
     return (
       <>
-        <h3 style={{ margin: '0', padding: '0 0 0 40px', lineHeight: 1.4 }}>
+        <h3 style={{ margin: '0', padding: '0 0 0 32px', lineHeight: 1.4 }}>
           {entry.result.title}
         </h3>
         <div className={styles.container}>
@@ -240,7 +240,7 @@ export default function Entry() {
               <div>
                 <button
                   type="button"
-                  onClick={() =>
+                  onClick={() => {
                     dispatch(
                       toggleIsSeen({
                         arr: entry.isDesc
@@ -248,15 +248,16 @@ export default function Entry() {
                           : selected,
                         val: true,
                       }),
-                    )
-                  }
+                    );
+                    setSelected([]);
+                  }}
                   disabled={selected.every((s) => entry.media[s].isSeen)}
                 >
                   seen
                 </button>
                 <button
                   type="button"
-                  onClick={() =>
+                  onClick={() => {
                     dispatch(
                       toggleIsSeen({
                         arr: entry.isDesc
@@ -264,8 +265,9 @@ export default function Entry() {
                           : selected,
                         val: false,
                       }),
-                    )
-                  }
+                    );
+                    setSelected([]);
+                  }}
                   disabled={selected.every((s) => !entry.media[s].isSeen)}
                 >
                   unseen
