@@ -69,6 +69,8 @@ export type Entry = {
   media: Episode[] | Chapter[];
   settings: PlayerSettings | ReaderSettings;
   isDesc: boolean;
+  // altMedia?: Episode[] | Chapter[];
+  altMedia?: { name: string; media: Episode[] | Chapter[] }[];
   posterPath?: string;
 };
 export type Server = {

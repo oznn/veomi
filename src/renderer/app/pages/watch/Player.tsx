@@ -90,7 +90,7 @@ export default function Player() {
         case 'KeyS':
           changeVolume(-1);
           break;
-        case ' ':
+        case 'Space':
           playPause();
           break;
         case 'KeyN':

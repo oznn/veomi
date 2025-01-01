@@ -67,6 +67,7 @@ export default function Libary() {
         for (let i = 0; i < entries[e].media.length; i += 1) {
           entries[e].media[i].title = media[i].title;
           entries[e].media[i].info = media[i].info;
+          entries[e].media[i].id = media[i].id;
         }
         for (let i = entries[e].media.length; i < media.length; i += 1)
           entries[e].media.push(media[i]);

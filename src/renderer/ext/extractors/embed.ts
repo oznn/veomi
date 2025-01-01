@@ -1,6 +1,9 @@
 const { electron } = window;
 
-export default function extractor(embedURL: string, patterns: string[]) {
+export default function extractor(
+  embedURL: string,
+  patterns: string[],
+): Promise<string[]> {
   const urls: string[] = [];
   electron.session.search(patterns);
   const iframe = document.createElement('iframe');

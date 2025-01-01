@@ -1,7 +1,6 @@
 import fuzzysort from 'fuzzysort';
-import { Episode, Result, Server, Video, Details } from '@types';
+import { Episode, Result, Server, Video } from '@types';
 import getSources from '../../utils/getSourcesFromPlaylist';
-import { anilist } from '../../utils/details';
 import embedExtractor from '../../extractors/embed';
 
 const baseURL = 'https://hianime.to';
@@ -57,41 +56,6 @@ export async function getMedia(result: Result) {
   });
 
   return episodes;
-}
-export async function getDetails(result: Result): Promise<Details | null> {
-  return null;
-  const res = await fetch(baseURL + result.path);
-  const doc = parseHTML(await res.text());
-  const search = doc.querySelector('.film-name')?.innerHTML || '';
-  let season = '';
-  let seasonYear = '';
-
-  doc.querySelectorAll('.item-title').forEach((e) => {
-    if (e.querySelector('.item-head')?.innerHTML.includes('Premiered')) {
-      const name = e.querySelector('.name')?.innerHTML || '';
-      season = name.split(' ')[0].toUpperCase(); //eslint-disable-line
-      seasonYear = name.split(' ')[1]; //eslint-disable-line
-    }
-  });
-
-  const variables = { search, season, seasonYear };
-  const query = `
-query ($id: Int, $search: String, $season: MediaSeason, $seasonYear: Int) {
-  Media (id: $id, search: $search, season: $season, seasonYear: $seasonYear) {
-    id
-  }
-}
-`;
-  const url = 'https://graphql.anilist.co';
-  const body = JSON.stringify({ query, variables });
-  const options = {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body,
-  };
-  const { data } = await (await fetch(url, options)).json();
-
-  return data.Media ? anilist(data.Media.id) : null;
 }
 export async function getServers(episodeId: string) {
   const res = await fetch(

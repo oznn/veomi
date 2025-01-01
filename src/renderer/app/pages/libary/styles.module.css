@@ -17,8 +17,8 @@
 .options button {
   color: grey;
   transition: color 200ms ease-in;
-  padding: 0 .1em;
   padding: 0 .2em;
+  margin: .1em 0;
 }
 
 .options button:hover,
@@ -123,6 +123,7 @@
 
 .download>div {
   position: fixed;
+  width: 70%;
   border-radius: 10px;
   padding: .5em;
   background: #222;

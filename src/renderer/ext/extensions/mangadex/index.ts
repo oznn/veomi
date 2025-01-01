@@ -30,30 +30,38 @@ export async function getDetails() {
 }
 export async function getMedia(result: Result): Promise<Chapter[]> {
   const res = await fetch(
-    `${baseURL}/manga/${result.path}/feed?limit=500&translatedLanguage[]=en&order[chapter]=asc&includeEmptyPages=0`,
+    `${baseURL}/manga/${result.path}/feed?limit=500&translatedLanguage[]=en&order[chapter]=asc&includeEmptyPages=0&includes[]=scanlation_group`,
   );
   const { data } = await res.json();
-  // const scanaltionGroupIds = data.map((c: any) => c.relationships[0].id);
-  // const scanaltionGroupId = scanaltionGroupIds.reduce(
-  //   (a: string, b: string, _: number, arr: string[]) =>
-  //     arr.filter((v) => v === a).length >= arr.filter((v) => v === b).length
-  //       ? a
-  //       : b,
-  //   '',
-  // );
+  const groupedChapters: { name: string; id: string; chapters: Chapter[] }[] =
+    [];
 
-  const chapters: Chapter[] = data
-    // .filter((c: any) => c.relationships[0].id === scanaltionGroupId)
-    .map((e: any) => ({
-      id: e.id,
-      title: `${e.attributes.chapter || '0'}. ${
-        e.attributes.title || 'Chapter'
+  data.forEach((c: any) => {
+    const i = groupedChapters.findIndex((e) => e.id === c.relationships[0].id);
+    const chapter = {
+      id: c.id,
+      title: `${c.attributes.chapter || '0'}. ${
+        c.attributes.title || 'Chapter'
       }`,
       currentPage: 0,
       isSeen: false,
-    }));
+    };
 
-  return chapters;
+    if (i === -1)
+      groupedChapters.push({
+        name: c.relationships[0].attributes?.name || 'No group',
+        id: c.relationships[0].id,
+        chapters: [chapter],
+      });
+    else groupedChapters[i].chapters.push(chapter);
+  });
+
+  const a = groupedChapters.map((c) => ({
+    name: c.name,
+    chapters: c.chapters,
+  }));
+
+  return a[0].chapters;
 }
 
 export async function getPages(chapterId: string): Promise<string[]> {

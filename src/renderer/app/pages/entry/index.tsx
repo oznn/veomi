@@ -158,7 +158,9 @@ export default function Entry() {
   if (entry)
     return (
       <>
-        <h3 style={{ margin: '0', padding: '0 0 0 32px', lineHeight: 1.4 }}>
+        <h3
+          style={{ margin: '0', padding: '10px 0 10px 32px', lineHeight: 1.2 }}
+        >
           {entry.result.title}
         </h3>
         <div className={styles.container}>
@@ -251,7 +253,11 @@ export default function Entry() {
                     );
                     setSelected([]);
                   }}
-                  disabled={selected.every((s) => entry.media[s].isSeen)}
+                  disabled={selected.every(
+                    (s) =>
+                      entry.media[entry.isDesc ? entry.media.length - s - 1 : s]
+                        .isSeen,
+                  )}
                 >
                   seen
                 </button>
@@ -268,7 +274,12 @@ export default function Entry() {
                     );
                     setSelected([]);
                   }}
-                  disabled={selected.every((s) => !entry.media[s].isSeen)}
+                  disabled={selected.every(
+                    (s) =>
+                      !entry.media[
+                        entry.isDesc ? entry.media.length - s - 1 : s
+                      ].isSeen,
+                  )}
                 >
                   unseen
                 </button>

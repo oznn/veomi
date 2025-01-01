@@ -10,6 +10,7 @@ export default {
   mangadex: { name: 'Mangadex', lang: ['en'] },
   mangasee: { name: 'Mangasee', lang: ['en'] },
   myflixer: { name: 'MyFlixer', lang: ['en'] },
+  vidlink: { name: 'VidLink', lang: ['multi'] },
   // witanime: { name: 'Witanime', lang: ['ar'] },
   // wecima: { name: 'WeCima', lang: ['ar'] },
 } as { [k: string]: { name: string } };

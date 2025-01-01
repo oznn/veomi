@@ -71,7 +71,6 @@ function Anilist({
   const app = useAppSelector((state) => state.app);
   const entry = app.entry as Entry;
   const [results, setResults] = useState<string[] | null>([]);
-  const [isAnime, setIsAnime] = useState(entry.result.type === 'VIDEO');
   const [search, setSearch] = useState(entry.result.title);
 
   useEffect(() => {
@@ -81,9 +80,7 @@ function Anilist({
       const query = `
         query ($id: Int, $page: Int, $perPage: Int, $search: String) {
           Page (page: $page, perPage: $perPage) {
-            media (id: $id, search: $search, type:${
-              isAnime ? 'ANIME' : 'MANGA'
-            }) {
+            media (id: $id, search: $search) {
               id
               coverImage {
                 extraLarge
@@ -102,7 +99,7 @@ function Anilist({
       const { data } = await (await fetch(url, options)).json();
       setResults(data.Page.media.map((e: any) => e.coverImage.extraLarge));
     })();
-  }, [search, isAnime]);
+  }, [search]);
 
   return (
     <>
@@ -124,25 +121,6 @@ function Anilist({
           key === 'Enter' && setSearch((target as HTMLInputElement).value)
         }
       />
-      <br />
-      <button
-        className={buttonStyles.container}
-        type="button"
-        onClick={() => setIsAnime(true)}
-        disabled={isAnime}
-        style={{ fontSize: '.8em' }}
-      >
-        ANIME
-      </button>
-      <button
-        className={buttonStyles.container}
-        type="button"
-        onClick={() => setIsAnime(false)}
-        disabled={!isAnime}
-        style={{ fontSize: '.8em' }}
-      >
-        MANGA
-      </button>
       <Results results={results} close={close} rerender={rerender} />
     </>
   );

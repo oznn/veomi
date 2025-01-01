@@ -100,10 +100,7 @@ export async function getServers(dataId: string): Promise<Server[]> {
 export async function getVideo(server: Server): Promise<Video | undefined> {
   const res = await fetch(`${baseURL}/ajax/episode/sources/${server.id}`);
   const { link } = await res.json();
-  const [url, file] = (await embedExtractor(link, [
-    'getSources',
-    '.m3u8',
-  ])) as string;
+  const [url, m3u8] = await embedExtractor(link, ['getSources', '.m3u8']);
   const headers = {
     custom: JSON.stringify({
       'X-Requested-With': 'XMLHttpRequest',
@@ -112,6 +109,7 @@ export async function getVideo(server: Server): Promise<Video | undefined> {
     }),
   };
   const { tracks } = await (await fetch(url, { headers })).json();
+  const sources = await getSources(m3u8);
 
-  return { sources: [{ file, qual: 1080 }], tracks };
+  return { sources, tracks };
 }

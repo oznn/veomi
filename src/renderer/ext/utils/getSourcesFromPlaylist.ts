@@ -6,8 +6,8 @@ export default async function f(url: string): Promise<Source[]> {
   console.log('playlistURL', url);
   const res = await fetch(url);
   const playlist = parse(await res.text());
-  console.log('playlist', playlist);
 
+  if (!playlist.isMasterPlaylist) return [{ file: url, qual: 1080 }];
   return (playlist as MasterPlaylist).variants
     .filter((t) => !t.isIFrameOnly)
     .map(({ uri, resolution }) => ({
