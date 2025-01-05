@@ -26,6 +26,7 @@ type ImagesFolder = {
 };
 
 const electronHandler = {
+  zoom: (n: number) => ipcRenderer.invoke('zoom', n),
   store: {
     get: async (k: string) => ipcRenderer.invoke('store-get', k),
     set(k: string, v: unknown) {

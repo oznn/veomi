@@ -10,15 +10,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import {
-  app,
-  BrowserWindow,
-  shell,
-  ipcMain,
-  session,
-  dialog,
-  globalShortcut,
-} from 'electron';
+import { app, BrowserWindow, shell, ipcMain, session, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import Store from 'electron-store';
@@ -183,6 +175,11 @@ ipcMain.handle('session-search', (_, pattern) => {
 ipcMain.handle('console-log', (_, messages) => {
   console.log(...messages);
 });
+ipcMain.handle('zoom', (_, n) => {
+  const current = mw?.webContents.getZoomFactor() || 0;
+  const zoom = Math.max(0.1, Math.min(current + n * 0.1, 2));
+  mw?.webContents.setZoomFactor(zoom);
+});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -289,20 +286,23 @@ app
   .whenReady()
   .then(() => {
     createWindow();
-    globalShortcut.register('alt+i', () => {
-      const current = mw?.webContents.getZoomFactor() || 0;
-      mw?.webContents.setZoomFactor(Math.min(2, current + 0.1));
-    });
-    globalShortcut.register('alt+o', () => {
-      const current = mw?.webContents.getZoomFactor() || 0;
-      mw?.webContents.setZoomFactor(Math.max(0.3, current - 0.1));
-    });
 
     session.defaultSession.webRequest.onHeadersReceived(
       { urls: ['*://*/*'] },
       (details, callback) => {
-        if (details.responseHeaders)
-          details.responseHeaders['content-security-policy'] = [''];
+        if (details.responseHeaders) {
+          const acao = 'Access-Control-Allow-Origin';
+          const acah = 'Access-Control-Allow-Hrigin';
+          const csp = 'Content-Security-Policy';
+          if (details.responseHeaders[acao])
+            details.responseHeaders[acao] = ['*'];
+          else details.responseHeaders[acao.toLowerCase()] = ['*'];
+          if (details.responseHeaders[acah])
+            details.responseHeaders[acah] = ['*'];
+          else details.responseHeaders[acah.toLowerCase()] = ['*'];
+          if (details.responseHeaders[csp]) details.responseHeaders[csp] = [''];
+          else details.responseHeaders[csp.toLowerCase()] = [''];
+        }
         callback({ cancel: false, responseHeaders: details.responseHeaders });
       },
     );

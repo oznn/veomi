@@ -14,6 +14,7 @@ import Browse from './pages/browse';
 import Entry from './pages/entry';
 import Watch from './pages/watch';
 import Downloads from './pages/downloads';
+import Extensions from './pages/extensions';
 import { store } from './redux/store';
 import './index.css';
 import { refreshEntry, setQueue, setQueueProgress } from './redux';
@@ -151,6 +152,7 @@ export default function App() {
           <Route path="/read" element={<Read />} />
           <Route path="/downloads" element={<Downloads />} />
           <Route path="/live" element={<Live />} />
+          <Route path="/extensions" element={<Extensions />} />
         </Routes>
         <br />
       </Provider>

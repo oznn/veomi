@@ -4,6 +4,9 @@ import arrowBack from '@assets/arrowback.png';
 import extensions from '../../../extensions';
 import styles from './styles.module.css';
 import { useAppSelector } from '../../redux/store';
+import useDidMountEffect from '@components/useDidMountEffect';
+import { setAddedExtensions } from '../../redux';
+import { useDispatch } from 'react-redux';
 
 const { electron } = window;
 const width = `${
@@ -18,15 +21,18 @@ export default function Nav() {
   const nav = useNavigate();
   const { pathname } = useLocation();
   const app = useAppSelector((state) => state.app);
-  const { queue } = app;
+  const { addedExtensions, queue } = app;
   const [extensionQuery, setExtensionQuery] = useState('');
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    document.onkeyup = ({ key }) => {
-      // const tagName = document.activeElement?.tagName;
-      // if (tagName === 'INPUT' || pathname === '/watch') return;
-      // if (key === 'L') nav('/');
-      // if (key === 'D') nav('/downloads');
+    document.onwheel = ({ ctrlKey, deltaY }) => {
+      if (ctrlKey && deltaY > 1) electron.zoom(1);
+      if (ctrlKey && deltaY < 1) electron.zoom(-1);
+    };
+    document.onkeyup = ({ code, key, ctrlKey }) => {
+      if (ctrlKey && code === 'Equal') electron.zoom(1);
+      if (ctrlKey && code === 'Minus') electron.zoom(-1);
       if (key === '/') searchRef.current?.focus();
       if (key === '?') {
         extensionsRef.current?.focus();
@@ -52,10 +58,22 @@ export default function Nav() {
   useEffect(() => {
     (async () => {
       const res = await electron.store.get('selectedExt');
+      const added = await electron.store.get('addedExtensions');
 
-      setSelectedExt(res || Object.keys(extensions)[0]);
+      dispatch(setAddedExtensions(added));
+      if (res) setSelectedExt(res);
     })();
   }, []);
+  useDidMountEffect(() => {
+    if (!selectedExt) {
+      setSelectedExt(addedExtensions[0]);
+      electron.store.set('selectedExt', addedExtensions[0]);
+    }
+    if (!addedExtensions.length) {
+      setSelectedExt('');
+      electron.store.set('selectedExt', '');
+    }
+  }, [addedExtensions]);
 
   function boldCharacter(s: string) {
     const i = s.toLowerCase().indexOf(extensionQuery.toLowerCase());
@@ -66,29 +84,33 @@ export default function Nav() {
     return `${start}<b>${extensionQuery}</b>${end}`;
   }
 
-  if (selectedExt)
-    return (
-      <nav className={styles.container}>
-        <div>
-          <button
-            type="button"
-            className={styles.arrow}
-            tabIndex={0}
-            onClick={() => nav(-1)}
-            onKeyUp={({ key }) => key === 'Enter' && nav(-1)}
-            disabled={pathname === '/'}
-          >
-            <img src={arrowBack} alt="icon" />
-          </button>
-          <Link to="/">
-            Library
-            <sup style={{ color: 'transparent', userSelect: 'none' }}>0</sup>
-          </Link>
-          <Link to="/downloads">
-            Downloads
-            <sup style={{ color: 'grey' }}>{queue.length}</sup>
-          </Link>
-        </div>
+  return (
+    <nav className={styles.container}>
+      <div>
+        <button
+          type="button"
+          className={styles.arrow}
+          tabIndex={0}
+          onClick={() => nav(-1)}
+          onKeyUp={({ key }) => key === 'Enter' && nav(-1)}
+          disabled={pathname === '/'}
+        >
+          <img src={arrowBack} alt="icon" />
+        </button>
+        <Link to="/">
+          Library
+          <sup style={{ color: 'transparent', userSelect: 'none' }}>0</sup>
+        </Link>
+        <Link to="/extensions">
+          Extensions
+          <sup style={{ color: 'transparent', userSelect: 'none' }}>0</sup>
+        </Link>
+        <Link to="/downloads">
+          Downloads
+          <sup style={{ color: 'grey' }}>{queue.length}</sup>
+        </Link>
+      </div>
+      {addedExtensions.length > 0 && selectedExt && (
         <div>
           <div
             className={styles.select}
@@ -117,7 +139,9 @@ export default function Nav() {
                 }}
               >
                 {Object.keys(extensions)
-                  .filter((k) => k !== selectedExt)
+                  .filter(
+                    (k) => k !== selectedExt && addedExtensions.includes(k),
+                  )
                   .toSorted(
                     (_, k) => +k.includes(extensionQuery.toLowerCase()) - 1,
                   )
@@ -153,6 +177,7 @@ export default function Nav() {
             }}
           />
         </div>
-      </nav>
-    );
+      )}
+    </nav>
+  );
 }

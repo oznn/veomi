@@ -68,8 +68,8 @@ export default function ProgressBar({ videoRef }: Props) {
     }
   }
   useEffect(() => {
-    window.onmousedown = () => (isMouseDown = true); //eslint-disable-line
-    window.onmouseup = () => (isMouseDown = false); //eslint-disable-line
+    document.onmousedown = () => (isMouseDown = true); //eslint-disable-line
+    document.onmouseup = () => (isMouseDown = false); //eslint-disable-line
 
     if (!seekerRef.current) return;
 
@@ -80,7 +80,11 @@ export default function ProgressBar({ videoRef }: Props) {
     });
     resizeObserver.observe(seekerRef.current);
 
-    return () => resizeObserver.disconnect(); //eslint-disable-line
+    return () => {
+      resizeObserver.disconnect();
+      document.onmousedown = () => {};
+      document.onmouseup = () => {};
+    }; //eslint-disable-line
   }, [seekerRef.current]);
 
   if (!videoRef.current) return '';

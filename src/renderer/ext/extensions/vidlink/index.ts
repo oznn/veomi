@@ -73,6 +73,12 @@ export async function getServers(episodeId: string): Promise<Server[]> {
 export async function getVideo(server: Server): Promise<Video | undefined> {
   const [url] = await embedExtractor(server.id, [`${baseURL}/api/b`]);
   const { stream } = await (await fetch(url)).json();
+  console.log(
+    'stream caption',
+    stream.captions.toSorted(
+      (a, b) => (a.language.toUpperCase() > b.language.toUpperCase()) - 1,
+    ),
+  );
   const tracks = stream.captions.map((t: any) => ({
     file: t.url,
     label: t.language,

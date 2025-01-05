@@ -387,7 +387,7 @@ export default function Context({ x, y }: { x: number; y: number }) {
             }}
             onWheel={(e) => {
               let v = e.deltaY > 0 ? -1 : 1;
-              v = minmax(0, entrySettings.markAsSeenPercent + v, 999);
+              v = minmax(0, entrySettings.timeJump + v, 999);
               (e.target as HTMLInputElement).value = `${v}`;
               const p = { k: 'settings.timeJump', v };
               dispatch(setEntryProp(p));
@@ -431,13 +431,13 @@ export default function Context({ x, y }: { x: number; y: number }) {
             defaultValue={entrySettings.playbackRate.toFixed(2)}
             onBlur={(e) => {
               const t = e.target as HTMLInputElement;
-              t.value = `${minmax(0.25, +t.value, 4).toFixed(2)}`;
+              t.value = `${minmax(0.1, +t.value, 4).toFixed(2)}`;
               const p = { k: 'settings.playbackRate', v: +t.value };
               dispatch(setEntryProp(p));
             }}
             onWheel={(e) => {
               let v = e.deltaY > 0 ? -1 : 1;
-              v = minmax(0.25, entrySettings.playbackRate + v * 0.25, 4);
+              v = minmax(0.1, entrySettings.playbackRate + v * 0.1, 4);
               (e.target as HTMLInputElement).value = `${v.toFixed(2)}`;
               const p = { k: 'settings.playbackRate', v };
               dispatch(setEntryProp(p));

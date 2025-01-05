@@ -26,6 +26,7 @@ type InitialState = {
   };
   queue: Queue | [];
   entryRefresh: number;
+  addedExtensions: string[] | [];
 };
 
 const initialState = {
@@ -37,6 +38,7 @@ const initialState = {
   server: { idx: 0, list: null },
   queue: [],
   entryRefresh: 0,
+  addedExtensions: [],
 } as InitialState;
 
 const app = createSlice({
@@ -243,6 +245,10 @@ const app = createSlice({
     refreshEntry: (state) => {
       state.entryRefresh += 1;
     },
+    setAddedExtensions: (state, action: PayloadAction<string[]>) => {
+      state.addedExtensions = action.payload;
+      electron.store.set('addedExtensions', action.payload);
+    },
   },
 });
 
@@ -270,5 +276,6 @@ export const {
   setReadingMode,
   setCurrentPage,
   refreshEntry,
+  setAddedExtensions,
 } = app.actions;
 export default app.reducer;

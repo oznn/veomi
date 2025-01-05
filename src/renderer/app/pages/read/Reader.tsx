@@ -114,8 +114,8 @@ export default function Reader({ pages, mode }: Props) {
   }, [longStripZoom, gapSize]);
   useEffect(() => {
     // eslint-disable-next-line
-    window.onkeyup = ({ key }) => key === 'Shift' && (isShift = false);
-    window.onkeydown = ({ code }) => {
+    document.onkeyup = ({ key }) => key === 'Shift' && (isShift = false);
+    document.onkeydown = ({ code }) => {
       switch (code) {
         case 'Shift':
           isShift = true;
@@ -165,8 +165,8 @@ export default function Reader({ pages, mode }: Props) {
       }
     };
     return () => {
-      window.onkeydown = () => {};
-      window.onkeyup = () => {};
+      document.onkeydown = () => {};
+      document.onkeyup = () => {};
     };
   });
 
