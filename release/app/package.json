@@ -1,7 +1,7 @@
 {
   "author": "oznn",
   "name": "veomi",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "*",
   "license": "MIT",
   "main": "./dist/main/main.js",

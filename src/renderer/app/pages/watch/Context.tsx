@@ -50,7 +50,7 @@ function Subtitles() {
   const video = app.video as Video;
   const { trackIdx } = app;
 
-  if (video.tracks)
+  if (video.tracks && video.tracks.length)
     return video.tracks.map((track, i) => (
       <button
         key={track.file}
@@ -364,7 +364,7 @@ export default function Context({ x, y }: { x: number; y: number }) {
       {video.tracks && video.tracks.length && (
         <button type="button" onClick={() => setSettingIdx(2)}>
           <span className={styles.arrow} />
-          {video.tracks[trackIdx].label}
+          {video.tracks[trackIdx]?.label}
         </button>
       )}
       {video.tracks && (

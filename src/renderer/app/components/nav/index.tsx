@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import useDidMountEffect from '@components/useDidMountEffect';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import arrowBack from '@assets/arrowback.png';
 import extensions from '../../../extensions';
 import styles from './styles.module.css';
 import { useAppSelector } from '../../redux/store';
-import useDidMountEffect from '@components/useDidMountEffect';
 import { setAddedExtensions } from '../../redux';
-import { useDispatch } from 'react-redux';
 
 const { electron } = window;
 const width = `${
@@ -58,7 +58,7 @@ export default function Nav() {
   useEffect(() => {
     (async () => {
       const res = await electron.store.get('selectedExt');
-      const added = await electron.store.get('addedExtensions');
+      const added = (await electron.store.get('addedExtensions')) || [];
 
       dispatch(setAddedExtensions(added));
       if (res) setSelectedExt(res);

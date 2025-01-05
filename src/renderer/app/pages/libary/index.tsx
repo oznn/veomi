@@ -6,11 +6,12 @@ import Confirm from '@components/confirm';
 import resultsStyles from '@styles/Results.module.css';
 import buttonStyles from '@styles/Button.module.css';
 import { useDispatch } from 'react-redux';
-import { setEntry, setMediaIdx } from '../../redux';
+import { setCategoryIdx, setEntry, setMediaIdx } from '../../redux';
 import styles from './styles.module.css';
 import extensions from '../../../extensions';
 import Categorize from './Categorize';
 import Download from './Download';
+import { useAppSelector } from '../../redux/store';
 
 const { electron } = window;
 let entries: (Entry & { isUpdating: boolean })[] | null = null;
@@ -19,12 +20,12 @@ export default function Libary() {
   const nav = useNavigate();
   const [, rerender] = useReducer((n) => n + 1, 0);
   const dispatch = useDispatch();
+  const { categoryIdx, entryRefresh } = useAppSelector((state) => state.app);
   const [selected, setSelected] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [isShowConfirmation, setIsShowConfirmation] = useState(false);
   const [isShowCategorization, setIsShowCategorization] = useState(false);
   const [isShowDownload, setIsShowDownload] = useState(false);
-  const [categoryIdx, setCategoryIdx] = useState(0);
   const isUseCategories = entries
     ? entries.some((e) => !categories.includes(e.category))
     : false;
@@ -46,7 +47,7 @@ export default function Libary() {
         console.log(`${err}`);
       }
     })();
-  }, []);
+  }, [entryRefresh]);
 
   if (!entries) return '';
   if (!entries.length) return <Message msg="Libary is empty" />;
@@ -114,7 +115,7 @@ export default function Libary() {
         electron.store.set(`entries.${entries[e].key}.category`, c);
       }
     });
-    setCategoryIdx(0);
+    dispatch(setCategoryIdx(0));
   }
 
   function clearCategory(c: string) {
@@ -125,7 +126,7 @@ export default function Libary() {
           electron.store.set(`entries.${entries[i].key}.category`, '');
         }
       });
-    setCategoryIdx(0);
+    dispatch(setCategoryIdx(0));
   }
   return (
     <>
@@ -168,7 +169,7 @@ export default function Libary() {
                     )
                     .toSorted();
                   if (i === categoryIdx) update(target);
-                  else setCategoryIdx(i);
+                  else dispatch(setCategoryIdx(i));
                 }
               }}
             >
@@ -206,7 +207,9 @@ export default function Libary() {
                   src={`${entry.posterPath}?${new Date().getTime()}`}
                   alt="poster"
                   style={{ transitionDelay: `${i * 10}ms` }}
-                  onLoad={(e) => (e.target.style.opacity = 1)}
+                  onLoad={(e) => {
+                    (e.target as HTMLImageElement).style.opacity = '1';
+                  }}
                 />
               </div>
               <span className={resultsStyles.title} title={entry.result.title}>
