@@ -158,6 +158,16 @@ export default function Entry() {
   if (entry)
     return (
       <>
+        <span
+          style={{
+            display: 'block',
+            padding: '10px 0 0px 32px',
+            lineHeight: 0.5,
+            fontSize: '.9em',
+          }}
+        >
+          {extensions[entry.result.ext].name}
+        </span>
         <h3
           style={{ margin: '0', padding: '10px 0 10px 32px', lineHeight: 1.2 }}
         >

@@ -73,18 +73,17 @@
   transition: 200ms;
 }
 
-.volume {
-  position: absolute;
-  left: 50%;
-  transform: translate(-50%);
+.msg {
   background-color: rgba(0, 0, 0, .8);
   backdrop-filter: blur(10px);
   border-radius: 15px;
-  padding: 0 .6em;
   margin-top: 1em;
+  margin: auto auto;
+  padding: 0 20px;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 200ms ease;
+  transition: opacity 150ms ease, transform 100ms ease;
+  text-align: center;
+  display: inline-block;
 }
 
 .subtitles {

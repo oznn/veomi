@@ -153,7 +153,7 @@ export default function ProgressBar({ videoRef }: Props) {
               height: '12px',
               backgroundColor: 'silver',
               margin: '0px 10px 5px 10px',
-              borderRadius: videoRef.current.paused ? '50%' : '0',
+              borderRadius: '50%',
               transition: 'all 300ms ease',
             }}
           />

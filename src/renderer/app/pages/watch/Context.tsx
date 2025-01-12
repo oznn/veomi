@@ -123,7 +123,7 @@ function SubtitlesFont() {
             }}
             onWheel={(e) => {
               let v = e.deltaY > 0 ? -1 : 1;
-              v = minmax(10, subtitlesFont.size + v * 5, 400);
+              v = minmax(10, subtitlesFont.size + v * 10, 400);
               (e.target as HTMLInputElement).value = `${v}`;
               const p = { k: 'settings.subtitlesFont.size', v };
               dispatch(setEntryProp(p));
@@ -350,7 +350,7 @@ export default function Context({ x, y }: { x: number; y: number }) {
               transform: `scale(${entrySettings.isShowSubtitles ? 1 : 3})`,
             }}
           />
-          Show subtitles
+          Subtitles
         </button>
       </div>
       <button type="button" onClick={() => setSettingIdx(0)}>
@@ -431,13 +431,13 @@ export default function Context({ x, y }: { x: number; y: number }) {
             defaultValue={entrySettings.playbackRate.toFixed(2)}
             onBlur={(e) => {
               const t = e.target as HTMLInputElement;
-              t.value = `${minmax(0.1, +t.value, 4).toFixed(2)}`;
+              t.value = `${minmax(0.2, +t.value, 4).toFixed(2)}`;
               const p = { k: 'settings.playbackRate', v: +t.value };
               dispatch(setEntryProp(p));
             }}
             onWheel={(e) => {
               let v = e.deltaY > 0 ? -1 : 1;
-              v = minmax(0.1, entrySettings.playbackRate + v * 0.1, 4);
+              v = minmax(0.2, entrySettings.playbackRate + v * 0.2, 4);
               (e.target as HTMLInputElement).value = `${v.toFixed(2)}`;
               const p = { k: 'settings.playbackRate', v };
               dispatch(setEntryProp(p));

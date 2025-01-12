@@ -128,6 +128,7 @@ export default function Libary() {
       });
     dispatch(setCategoryIdx(0));
   }
+
   return (
     <>
       <div

@@ -171,7 +171,6 @@ export default function Nav() {
             onKeyUp={({ key, target }) => {
               if (key === 'Enter') {
                 const q = (target as HTMLInputElement).value;
-                (target as HTMLInputElement).value = '';
                 if (q) nav(`/browse?query=${q}&ext=${selectedExt}`);
               }
             }}

@@ -20,8 +20,10 @@ import styles from './styles.module.css';
 const { electron } = window;
 const parser = new WebVTTParser();
 let cursorTimer: any;
-let volumeTimer: any;
+let msgTimer: any;
+let timeChange = 0;
 type TextTrack = { start: number; end: number; text: string };
+const minmax = (a: number, b: number, c: number) => Math.max(a, Math.min(b, c));
 
 export default function Player() {
   const dispatch = useDispatch();
@@ -38,26 +40,48 @@ export default function Player() {
   const episodeKey = `entries.${entry.key}.media.${mediaIdx}`;
   const settings = entry.settings as PlayerSettings;
   const [isShowCursor, setIsShowCursor] = useState(false);
-  const [isShowVolume, setIsShowVolume] = useState(false);
+  const [msg, setMsg] = useState({ content: '', isShow: false });
   const [context, setContext] = useState({ isShow: false, x: 0, y: 0 });
   const [isVideoLoading, setIsVideoLoading] = useState(false);
   const [textTracks, setTextTracks] = useState<TextTrack[] | null>(null);
   const hls = new Hls({ debug: false });
+
+  function message(content: string) {
+    setMsg({ content, isShow: true });
+    clearTimeout(msgTimer);
+    msgTimer = setTimeout(() => {
+      setMsg({ content, isShow: false });
+      timeChange = 0;
+    }, 1000);
+  }
+  function timeJump(n: number) {
+    if (videoRef.current) {
+      const { currentTime, duration } = videoRef.current;
+      const td = minmax(0, currentTime + n, duration);
+      videoRef.current.currentTime = td;
+      console.log(n);
+      timeChange += n;
+      message(`${timeChange > 0 ? '+' : ''}${timeChange}s`);
+    }
+  }
 
   function changeVolume(v: number) {
     if (videoRef.current) {
       const volume = Math.max(0, Math.min(settings.volume + v, 20));
       videoRef.current.volume = volume * 0.05;
       dispatch(setVolume(volume));
-      setIsShowVolume(true);
-      clearTimeout(volumeTimer);
-      volumeTimer = setTimeout(() => setIsShowVolume(false), 1000);
+      message(`${volume * 5}%`);
     }
   }
   function playPause() {
     if (videoRef.current) {
-      if (videoRef.current.paused) videoRef.current.play();
-      else if (!context.isShow) videoRef.current.pause();
+      if (videoRef.current.paused) {
+        videoRef.current.play();
+        message('play');
+      } else if (!context.isShow) {
+        videoRef.current.pause();
+        message('pause');
+      }
     }
     setContext({ isShow: false, x: 0, y: 0 });
   }
@@ -67,18 +91,12 @@ export default function Player() {
         case 'ArrowRight':
         case 'KeyL':
         case 'KeyD':
-          videoRef.current.currentTime = Math.min(
-            videoRef.current.duration,
-            videoRef.current.currentTime + (ctrlKey ? 1 / 24 : 5),
-          );
+          timeJump(ctrlKey ? 1 / 24 : 5);
           break;
         case 'ArrowLeft':
         case 'KeyH':
         case 'KeyA':
-          videoRef.current.currentTime = Math.max(
-            0,
-            videoRef.current.currentTime - (ctrlKey ? 1 / 24 : 5),
-          );
+          timeJump(-(ctrlKey ? 1 / 24 : 5));
           break;
         case 'ArrowUp':
         case 'KeyK':
@@ -100,12 +118,18 @@ export default function Player() {
           dispatch(setMediaIdx(Math.max(0, mediaIdx - 1)));
           break;
         case 'Comma':
-          dispatch(
-            setPlaybackRate(Math.max(0.25, settings.playbackRate - 0.25)),
-          );
+          {
+            const v = Math.max(0.2, settings.playbackRate - 0.2);
+            dispatch(setPlaybackRate(v));
+            message(`${v.toFixed(2)}x`);
+          }
           break;
         case 'Period':
-          dispatch(setPlaybackRate(Math.min(settings.playbackRate + 0.25, 4)));
+          {
+            const v = Math.min(settings.playbackRate + 0.2, 4);
+            dispatch(setPlaybackRate(v));
+            message(`${v.toFixed(2)}x`);
+          }
           break;
         case 'KeyC':
           dispatch(
@@ -114,12 +138,17 @@ export default function Player() {
               v: !settings.isShowSubtitles,
             }),
           );
+          message(!settings.isShowSubtitles ? 'subtitles on' : 'subtitles off');
           break;
         case 'KeyT':
-          videoRef.current.currentTime = Math.min(
-            videoRef.current.duration,
-            videoRef.current.currentTime + settings.timeJump,
-          );
+          timeJump(settings.timeJump);
+          break;
+        case 'KeyM':
+          {
+            const isMuted = videoRef.current.muted;
+            videoRef.current.muted = !isMuted;
+            message(isMuted ? 'unmute' : 'mute');
+          }
           break;
         default:
         // no default
@@ -231,9 +260,17 @@ export default function Player() {
         {episode.title}
       </span>
       {isVideoLoading && <Loading centerY />}
-      <span className={styles.volume} style={{ opacity: +isShowVolume }}>
-        {settings.volume * 5}%
-      </span>
+      <div style={{ textAlign: 'center', pointerEvents: 'none' }}>
+        <span
+          className={styles.msg}
+          style={{
+            opacity: +msg.isShow,
+            transform: `scale(${+msg.isShow})`,
+          }}
+        >
+          {msg.content}
+        </span>
+      </div>
 
       {settings.isShowSubtitles && textTracks && (
         <pre
