@@ -16,6 +16,7 @@ const { electron } = window;
 type InitialState = {
   entry: Entry | null;
   video: Video | null | undefined;
+  msg: { content: string; isShow: boolean };
   mediaIdx: number;
   sourceIdx: number;
   trackIdx: number;
@@ -33,6 +34,7 @@ type InitialState = {
 const initialState = {
   entry: null,
   video: null,
+  msg: { content: '', isShow: false },
   mediaIdx: 0,
   sourceIdx: 0,
   trackIdx: 0,
@@ -254,6 +256,9 @@ const app = createSlice({
     setCategoryIdx: (state, action: PayloadAction<number>) => {
       state.categoryIdx = action.payload;
     },
+    setMsg: (state, action) => {
+      state.msg = action.payload;
+    },
   },
 });
 
@@ -283,5 +288,6 @@ export const {
   refreshEntry,
   setAddedExtensions,
   setCategoryIdx,
+  setMsg,
 } = app.actions;
 export default app.reducer;

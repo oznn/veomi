@@ -10,8 +10,11 @@ import Player from './Player';
 import styles from './styles.module.css';
 
 const { electron } = window;
+
 function Container({ children }: { children: ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const app = useAppSelector((state) => state.app);
+  const { msg } = app;
   const nav = useNavigate();
 
   useEffect(() => {
@@ -25,7 +28,22 @@ function Container({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  return <div ref={containerRef}>{children}</div>;
+  return (
+    <div ref={containerRef}>
+      {children}
+      <div style={{ textAlign: 'center', pointerEvents: 'none' }}>
+        <span
+          className={styles.msg}
+          style={{
+            opacity: +msg.isShow,
+            transform: `scale(${+msg.isShow})`,
+          }}
+        >
+          {msg.content}
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export default function Watch() {

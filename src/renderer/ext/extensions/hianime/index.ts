@@ -58,6 +58,7 @@ export async function getMedia(result: Result) {
   return episodes;
 }
 export async function getServers(episodeId: string) {
+  console.log('episodeId', episodeId);
   const res = await fetch(
     `${baseURL}/ajax/v2/episode/servers?episodeId=${episodeId}`,
   );
@@ -82,10 +83,10 @@ export async function getVideo(server: Server): Promise<Video> {
   const res = await fetch(`${baseURL}/ajax/v2/episode/sources?id=${server.id}`);
   const { link } = await res.json();
   console.log('link', link);
-  const [apiURL, playlistURL] = (await embedExtractor(link, [
+  const [apiURL, playlistURL] = await embedExtractor(link, [
     'getSources?id=',
     '.m3u8',
-  ])) as string;
+  ]);
   const data = await (await fetch(apiURL)).json();
   const { tracks, intro, outro } = data;
   const sources = await getSources(playlistURL);

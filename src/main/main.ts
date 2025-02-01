@@ -242,12 +242,10 @@ const createWindow = async () => {
   mw.maximize();
 
   mw.on('ready-to-show', () => {
-    if (!mw) {
-      throw new Error('"mw" is not defined');
-    }
-    if (process.env.START_MINIMIZED) {
-      mw.minimize();
-    } else {
+    if (!mw) throw new Error('"mw" is not defined');
+    if (process.env.START_MINIMIZED) mw.minimize();
+    else {
+      mw.setBackgroundColor('#111');
       mw.show();
     }
   });

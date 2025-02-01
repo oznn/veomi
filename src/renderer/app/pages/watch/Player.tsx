@@ -13,6 +13,7 @@ import {
   serverRetry,
   setPlaybackRate,
   setEntryProp,
+  setMsg,
 } from '../../redux';
 import Context from './Context';
 import styles from './styles.module.css';
@@ -40,17 +41,16 @@ export default function Player() {
   const episodeKey = `entries.${entry.key}.media.${mediaIdx}`;
   const settings = entry.settings as PlayerSettings;
   const [isShowCursor, setIsShowCursor] = useState(false);
-  const [msg, setMsg] = useState({ content: '', isShow: false });
   const [context, setContext] = useState({ isShow: false, x: 0, y: 0 });
   const [isVideoLoading, setIsVideoLoading] = useState(false);
   const [textTracks, setTextTracks] = useState<TextTrack[] | null>(null);
   const hls = new Hls({ debug: false });
 
   function message(content: string) {
-    setMsg({ content, isShow: true });
+    dispatch(setMsg({ content, isShow: true }));
     clearTimeout(msgTimer);
     msgTimer = setTimeout(() => {
-      setMsg({ content, isShow: false });
+      dispatch(setMsg({ content, isShow: false }));
       timeChange = 0;
     }, 1000);
   }
@@ -112,10 +112,16 @@ export default function Player() {
           playPause();
           break;
         case 'KeyN':
-          dispatch(setMediaIdx(Math.min(entry.media.length - 1, mediaIdx + 1)));
+          if (mediaIdx < entry.media.length - 1) {
+            dispatch(setMediaIdx(mediaIdx + 1));
+            message('next');
+          } else message('no next episode');
           break;
         case 'KeyP':
-          dispatch(setMediaIdx(Math.max(0, mediaIdx - 1)));
+          if (mediaIdx > 0) {
+            dispatch(setMediaIdx(mediaIdx - 1));
+            message('prev');
+          } else message('no previous episode');
           break;
         case 'Comma':
           {
@@ -243,7 +249,9 @@ export default function Player() {
         }}
         onEnded={() => {
           electron.store.set(`${episodeKey}.currentTime`, 0);
-          dispatch(setMediaIdx(Math.min(entry.media.length - 1, mediaIdx + 1)));
+          if (mediaIdx < entry.media.length - 1)
+            dispatch(setMediaIdx(mediaIdx + 1));
+          else message('no next episode');
         }}
         onMouseMove={() => {
           setIsShowCursor(true);
@@ -260,20 +268,9 @@ export default function Player() {
         {episode.title}
       </span>
       {isVideoLoading && <Loading centerY />}
-      <div style={{ textAlign: 'center', pointerEvents: 'none' }}>
-        <span
-          className={styles.msg}
-          style={{
-            opacity: +msg.isShow,
-            transform: `scale(${+msg.isShow})`,
-          }}
-        >
-          {msg.content}
-        </span>
-      </div>
 
       {settings.isShowSubtitles && textTracks && (
-        <pre
+        <div
           className={styles.subtitles}
           style={{
             fontSize: `${(settings.subtitlesFont.size * 0.01).toFixed(1)}em`,
