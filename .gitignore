@@ -28,4 +28,5 @@ npm-debug.log.*
 *.sass.d.ts
 *.scss.d.ts
 
-assets
+assets/ffmpeg.exe
+assets/ffprobe.exe
